@@ -1,0 +1,683 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.banner {
+    width: 100%;
+    height: 100vh;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(background.jpg);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.navbar {
+    width: 38%;
+    margin-left: auto; /* Push the navbar to the right */
+    padding: 75px 0;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 30%;
+    height: auto;
+    cursor: pointer;
+}
+
+.navbar ul li {
+    list-style: none;
+    display: inline-block;
+    margin: 0 20px;
+    position: relative;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-family: "CustomFont2", sans-serif;
+    text-transform: uppercase;
+}
+
+.navbar ul li::after {
+    content: '';
+    height: 3px;
+    width: 0;
+    background: #fff;
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    transition: width 0.5s;
+}
+
+.navbar ul li:hover::after {
+    width: 100%;
+}
+
+
+.content{
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    color: #fff;
+}
+.content h1{
+    font-size: 50px;
+    margin-right: 10%;
+    margin-left: 10%;
+    font-family: 'CustomFont', sans-serif;
+    margin-top: 80px;
+    letter-spacing: 2px;
+}
+.content p{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 20%;
+    margin-left: 20%;
+    font-weight: 300;
+    font-family: 'CustomFont3', serif;
+    line-height: 25px;
+    font-size: 22px;
+    letter-spacing: .5px;
+    padding: 10px;
+}
+
+
+button{
+    width: 200px;
+    padding: 15px 0;
+    text-align: center;
+    margin: 20px 10px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-family: 'CustomFont2', sans-serif;
+    border: 2px solid #b59410;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+button a{
+    color: white;
+    font-family: 'CustomFont2', sans-serif;
+    text-decoration: none;
+}
+
+
+span{
+    background: #b59410;
+    height: 100%;
+    width: 0%;
+    border-radius: 25px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: -1;
+    transition: 0.5s;
+}
+button:hover span{
+    width: 100%;
+}
+button:hover{
+    border: none;
+}
+
+#feature{
+    width: 100%;
+    padding: 70px 0;
+}
+
+.title-text{
+    text-align: center;
+    padding-bottom: 70px;
+}
+
+.title-text p{
+    margin: auto;
+    font-size: 22px;
+    font-family: "CustomFont3";
+    color: black;
+    font-weight: 70px;
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+}
+
+.title-text h1{
+    font-size: 50px;
+    font-family: "CustomFont";
+    letter-spacing: 2px;
+    color:#153147;
+}
+
+.feature-box{
+    width: 80%;
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: center;
+}
+
+.features{
+    flex-basis: 50%;
+}
+
+.features-img{
+    flex-basis: 50%;
+    margin: auto;
+}
+
+.features-img img{
+    width: 50%;
+    border-radius: 10px;
+}
+
+.features h1{
+    text-align:left;
+    margin-bottom: 10px;
+    font-family: "CustomFont";
+    color: #153147;
+}
+
+.features-desc{
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.features-icon .fas{
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+    line-height: 50px;
+    border-radius: 8px;
+    color:#153147;
+    border: 2.5px solid #153147;
+}
+
+.feature-text p{
+    padding: 0 20px;
+    text-align: initial;
+    font-family: "CustomFont3";
+    font-size: 20px;
+}
+
+@media screen and (max-width: 770px){
+    .title-text h1{
+        font-size: 35px;
+    }
+    .features{
+        flex-basis: 100%;
+    }
+    .features-img{
+        flex-basis: 100%;
+    }
+    .features-img img{
+        display:none;
+    }
+    .content h1{
+        font-size: 30px;
+    }
+    .content p{
+        font-size: 13px;
+    }
+    .logo {
+        width: 75%;
+        height: auto;
+        cursor: pointer;
+    }
+    .navbar {
+        display: none;
+    }    
+    .navbar ul li::after {
+        content: '';
+        height: 0px;
+        width: 0;
+        background: #fff;
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        transition: width 0.5s;
+    }
+    .content{
+        width: 100%;
+        position: absolute;
+        top: 20%;
+        transform: translateY(-50%);
+        text-align: center;
+        color: #fff;
+    }
+
+
+}
+
+#service{
+    width: 100%;
+    padding: 70px 0;
+    background: #edeae4;
+}
+
+.service-box{
+    width: 80%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin: auto;
+}
+
+.single-service{
+    flex-basis: 48%;
+    text-align: center;
+    border-radius: 7px;
+    margin-bottom: 20px;
+    color: #fff;
+    position: relative;
+}
+
+.single-service img{
+    width: 100%;
+    border-radius: 7px;
+}
+
+.overlay{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    background: linear-gradient(rgba(0,0,0,0.5),#ADB8BB);
+    opacity: 0;
+    transition: 1s;
+}
+.single-service:hover .overlay{
+    opacity: 1;
+}
+.service-desc{
+    width: 80%;
+    position: absolute;
+    bottom: 0%;
+    left: 50%;
+    opacity: 0;
+    transform: translateX(-50%);
+    transition: 1s;
+    font-family: "CustomFont";
+    font-size: 26px;
+}
+hr{
+    background: #fff;
+    height: 2px;
+    border: 0;
+    margin: 15px auto;
+    width: 60%;
+}
+
+h3{
+    font-family: "CustomFont";
+}
+
+.service-desc p{
+    font-size: 22px;
+    font-family: "CustomFont3";
+}
+.single-service:hover .service-desc{
+    bottom: 35%;
+    opacity: 1;
+}
+
+
+/*---media screen---*/
+
+@media screen and (max-width: 770px){
+
+   .single-service{
+        flex-basis: 100%;
+        margin-bottom: 30px;
+    }
+
+    .service-desc{
+        font-size: 16px;
+    }
+
+
+    .service-desc p{
+        font-size: 12px;
+    }
+    hr{
+        margin: 5px auto;
+    }
+    .single-service:hover .service-desc{
+        bottom: 25% !important;
+    }
+}
+
+/*---testimonial---*/
+
+#testimonial{
+    width: 100%;
+    padding: 70px 0;
+}
+
+.testimonial-row{
+    width: 80%;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.testimonial-col{
+
+    position: relative;
+    flex-basis: 10%;
+    padding: 10px;
+    margin-bottom: 30px;
+    border-radius: 5px;
+    box-shadow: 0 10px 20px 3px #edeae4;
+    cursor: pointer;
+    transition: .5s;
+}
+
+.fas.fa-quote-left {
+    left: 0;
+}
+
+
+.fas.fa-star {
+    position: absolute;
+    right: 10px;
+    color:#b59410;
+}
+
+.fas.fa-star:nth-child(6) {
+    right: 30px; /* Adjust the spacing between stars as needed */
+}
+
+.fas.fa-star:nth-child(3) {
+    right: 50px; /* Adjust the spacing between stars as needed */
+}
+
+.fas.fa-star:nth-child(4) {
+    right: 70px; /* Adjust the spacing between stars as needed */
+}
+
+.fas.fa-star:nth-child(5) {
+    right: 90px; /* Adjust the spacing between stars as needed */
+}
+
+.testimonial-col p {
+    font-size: 14px;
+    font-family: "CustomFont3";
+    font-style: italic;
+}
+
+
+.fas.fa-star {
+    margin-left: auto;
+}
+
+.testimonial-col .testimonial-signature{
+    text-align: right;
+    font-style:normal
+}
+
+.user{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.user img{
+    width: 300px;
+    margin: 0;
+    border-radius: 3px;
+}
+
+.user-info{
+    display: flex;
+    align-items: center;
+}
+
+h4{
+    font-family: "CustomFont";
+    font-size: 20px;
+}
+
+small{
+    font-family: "CustomFont";
+}
+
+.testimonial-col:hover{
+    transform: translateY(-7px);
+}
+
+h4, p, p.testimonial-signature{
+    margin-top: 10px;
+}
+
+/*--footer--*/
+
+#footer{
+    padding: 150px 0 50px;
+    background: #153147;
+    position: relative;
+}
+
+.footer-row{
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.footer-left,.footer-right{
+    flex-basis: 45%;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.footer-right{
+    text-align: right;
+}
+
+.footer-row h1{
+    font-family: 'CustomFont2';
+    color:#edeae4;
+    margin: 10px 0;
+}
+
+.footer-row p{
+    line-height: 25px;
+    font-family: "CustomFont3";
+    color:#ADB8BB;
+}
+
+.footer-right i {
+    font-size: 15px;
+    margin: 5px;
+}
+
+.footer-left i {
+    font-size: 15px;
+    margin: 5px;
+}
+
+.footer-left a {
+    text-decoration: none; /* Remove underline */
+    font-family: "CustomFont3";
+    color:#ADB8BB
+}
+
+.footer-img{
+    max-width: 200px;
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%,-50%);
+}
+
+.social-link{
+    text-align: center;
+}
+
+.social-link i {
+    height: 40px;
+    width: 40px;
+    font-size: 20px;
+    line-height: 40px;
+    border: 1px solid #edeae4;
+    color:#edeae4;
+    margin: 40px 5px 0;
+    cursor: pointer;
+    transition: .5s;
+    border-radius: 8px;
+}
+
+.social-link i:hover{
+    background: #edeae4;
+    color:#153147;
+    transform: translateY(-7px);
+}
+
+.fa-paper-plane:before {
+    color:#ADB8BB;
+}
+
+.fa-phone:before {
+    color:#ADB8BB;
+}
+
+#song-list {
+    background-color: #153147;
+    padding: 50px 0;
+    text-align: center;
+}
+
+.title-text2 h1{
+    text-align: center;
+    padding-right: 50px;
+    padding-left: 50px;
+    padding-bottom: 30px;
+    color:white;
+    font-family: "CustomFont", Arial, Helvetica, sans-serif;
+    font-size: 40px;
+}
+
+.song-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.song-list li {
+    font-size: 18px;
+    margin: 10px 0;
+    flex-basis: 18%; /* Adjust based on the number of columns you want */
+    text-align: left;
+}
+
+.song-list h2 {
+    color: #EDEAE4;
+    font-size: 24px;
+    margin-bottom: 5px;
+    font-family: "CustomFont";
+}
+
+.song-list song{
+    font-family: "CustomFont2";
+    color:#EDEAE4;
+    font-style:normal;
+}
+
+.song-list em {
+    font-family: "CustomFont3", serif;
+    color:#ADB8BB;
+}
+
+#song-list p{
+    margin: auto;
+    font-size: 22px;
+    font-family: "CustomFont3";
+    color: #ADB8BB;
+    font-weight: 70px;
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px; /* Adjust the margin as needed */
+}
+
+.button {
+    margin: 0 10px; /* Adjust the margin between buttons as needed */
+}
+
+
+
+@media screen and (max-width: 770px){
+    .footer-row {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center-align items vertically */
+        margin-top: 200px;
+    }
+
+    .footer-right {
+        display: none;
+    }
+
+    .footer-img{
+        position: absolute;
+        top: 30%;
+        left: 50%;
+    }
+    .song-list li {
+        font-size: 18px;
+        margin: 10px 0;
+        flex-basis: 100%; /* Adjust based on the number of columns you want */
+        text-align: center;
+    }
+}
+
+@font-face {
+    font-family: 'CustomFont';
+    src: url('Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+}
+
+body {
+    font-family: 'CustomFont', sans-serif; /* Use the custom font as a fallback with a generic font family */
+}
+
+@font-face {
+    font-family: 'CustomFont2';
+    src: url('Montserrat-VariableFont_wght.ttf') format('truetype');
+}
+
+body {
+    font-family: 'CustomFont2', sans-serif; /* Use the custom font as a fallback with a generic font family */
+}
+
+@font-face {
+    font-family: 'CustomFont3';
+    src: url('Bitter-VariableFont_wght.ttf') format('truetype');
+}
+
+body {
+    font-family: 'CustomFont3', serif; /* Use the custom font as a fallback with a generic font family */
+}
+
