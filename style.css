@@ -24,7 +24,7 @@
 .logo {
     width: 30%;
     height: auto;
-    cursor: pointer;
+    /*-- cursor: pointer; --*/
 }
 
 .navbar ul li {
@@ -95,7 +95,7 @@ button{
     border-radius: 25px;
     font-weight: bold;
     font-family: 'CustomFont2', sans-serif;
-    border: 2px solid #b59410;
+    border: 2px solid  #153147;
     background: transparent;
     color: #fff;
     cursor: pointer;
@@ -111,7 +111,7 @@ button a{
 
 
 span{
-    background: #b59410;
+    background: #153147;
     height: 100%;
     width: 0%;
     border-radius: 25px;
@@ -292,7 +292,7 @@ button:hover{
     position: absolute;
     top: 0;
     border-radius: 7px;
-    cursor: pointer;
+    /*-- cursor: pointer; --*/
     background: linear-gradient(rgba(0,0,0,0.5),#ADB8BB);
     opacity: 0;
     transition: 1s;
@@ -328,7 +328,7 @@ h3{
     font-family: "CustomFont3";
 }
 .single-service:hover .service-desc{
-    bottom: 35%;
+    bottom: 33%;
     opacity: 1;
 }
 
@@ -354,7 +354,7 @@ h3{
         margin: 5px auto;
     }
     .single-service:hover .service-desc{
-        bottom: 25% !important;
+        bottom: 20% !important;
     }
 }
 
@@ -382,7 +382,7 @@ h3{
     margin-bottom: 30px;
     border-radius: 5px;
     box-shadow: 0 10px 20px 3px #edeae4;
-    cursor: pointer;
+    /*-- cursor: pointer; --*/
     transition: .5s;
 }
 
