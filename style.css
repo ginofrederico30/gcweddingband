@@ -141,7 +141,7 @@ button:hover{
 .title-text p{
     margin: auto;
     font-size: 22px;
-    font-family: "CustomFont3";
+    font-family: "CustomFont";
     color: black;
     font-weight: 70px;
     position: relative;
@@ -151,7 +151,7 @@ button:hover{
 
 .title-text h1{
     font-size: 50px;
-    font-family: "CustomFont";
+    font-family: "CustomFont3";
     letter-spacing: 2px;
     color:#153147;
 }
@@ -567,10 +567,11 @@ h4, p, p.testimonial-signature{
     text-align: center;
     padding-right: 50px;
     padding-left: 50px;
-    padding-bottom: 30px;
+    padding-bottom: 70px;
     color:white;
-    font-family: "CustomFont", Arial, Helvetica, sans-serif;
-    font-size: 40px;
+    font-family: "CustomFont3", Arial, Helvetica, sans-serif;
+    font-size: 50px;
+    letter-spacing: 2px;
 }
 
 .song-list {
@@ -609,12 +610,14 @@ h4, p, p.testimonial-signature{
 #song-list p{
     margin: auto;
     font-size: 22px;
-    font-family: "CustomFont3";
+    font-family: "CustomFont";
     color: #ADB8BB;
     font-weight: 70px;
     position: relative;
     z-index: 1;
     display: inline-block;
+    padding-top: 20px;
+    padding-bottom: 3px;
 }
 
 .buttons-container {
