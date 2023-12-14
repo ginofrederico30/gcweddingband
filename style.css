@@ -657,6 +657,100 @@ h4, p, p.testimonial-signature{
     }
 }
 
+
+
+/* Media query for iPad in landscape mode, including iPad Pro 12.9" */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1366px) and (orientation: landscape) {
+    .logo {
+        width: 40%; /* Adjust the percentage as needed */
+    }
+    .navbar {
+        width: 45%;
+    }
+    .navbar ul li {
+        margin: 0 8px;
+    }
+    .features-img img{
+        display:none;
+    }
+    .features,
+    .features-img {
+        flex-basis: 100%;
+    }
+
+    .features-img img {
+        display: none;
+    }
+
+    .service-desc{
+        font-size: 20px;
+    }
+    .service-desc p{
+        font-size: 16px;
+    }
+    hr{
+        margin: 5px auto;
+        width: 75%;
+    }
+    .single-service:hover .service-desc{
+        bottom: 29% !important;
+    }
+}
+
+/* Media query for iPad in portrait mode, including iPad Pro 12.9" */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1366px) and (orientation: portrait) {
+    .logo {
+        width: 50%; /* Adjust the percentage as needed */
+    }
+    .navbar {
+        width: 65%;
+    }
+    .navbar ul li {
+        margin: 0 8px;
+    }
+    .features,
+    .features-img {
+        flex-basis: 100%;
+    }
+
+    .features-img img {
+        display: none;
+    }
+
+
+    .service-desc{
+        font-size: 16px;
+    }
+    .service-desc p{
+        font-size: 12px;
+    }
+    hr{
+        margin: 5px auto;
+        width: 75%;
+    }
+    .single-service:hover .service-desc{
+        bottom: 27% !important;
+    }
+
+    .footer-row h1{
+        font-size: 20px;
+    }
+    .footer-row p{
+        font-size:13px;
+    }
+}
+
+/* Add a new media query for landscape iPhones */
+@media only screen and (min-width: 568px) and (max-width: 812px) and (orientation: landscape) {
+    .logo {
+        width: 50%; /* Adjust the percentage based on your design preferences */
+        margin: auto; /* Center the logo by setting left and right margins to auto */
+        display: block; /* Ensure it's displayed as a block to center it properly */
+        margin-top: 30%;
+    }
+}
+
+
 @font-face {
     font-family: 'CustomFont';
     src: url('Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
