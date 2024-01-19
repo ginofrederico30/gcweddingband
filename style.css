@@ -21,6 +21,15 @@
     align-items: center;
 }
 
+#wp-ratedWA {
+    order: -1;
+    margin-left: 10px;
+}
+
+#wp-ratedWA img {
+    border: 0; /* Remove the border from the image */
+}
+
 .logo {
     width: 30%;
     height: auto;
@@ -625,7 +634,30 @@ h4, p, p.testimonial-signature{
     justify-content: center;
     align-items: center;
     margin-top: 20px; /* Adjust the margin as needed */
+    gap: 50px;
 }
+
+.knot-button {
+    transition: 0.5s;
+}
+
+.knot-button:hover{
+    transform: translateY(-7px);
+}
+
+#wp-ratedWA {
+    margin-right: 10px;
+    transition: 0.5s;
+}
+
+#wp-ratedWA:hover{
+    transform: translateY(-7px);
+}
+
+.knot-button img {
+    display: block; /* Ensures proper spacing between images */
+}
+
 
 .button {
     margin: 0 10px; /* Adjust the margin between buttons as needed */
