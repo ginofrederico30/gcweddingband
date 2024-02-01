@@ -218,6 +218,99 @@ button:hover{
     font-size: 20px;
 }
 
+.feature-box{
+    width: 80%;
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: center;
+}
+
+/* events */
+
+#events{
+    width: 100%;
+    padding: 70px 0;
+    background-color: #ADB8BB;
+}
+
+.title-text{
+    text-align: center;
+    padding-bottom: 5px;
+}
+
+.title-text p{
+    margin: auto;
+    font-size: 22px;
+    font-family: "CustomFont";
+    color: black;
+    font-weight: 70px;
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+}
+
+.title-text h1{
+    font-size: 50px;
+    font-family: "CustomFont3";
+    letter-spacing: 2px;
+    color:#153147;
+}
+
+/*
+.events-box{
+    width: 80%;
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: center;
+}
+*/
+.events{
+    flex-basis: 50%;
+    margin: auto;
+    align-items: center;
+    text-align: center;
+    padding-right: 200px;
+    padding-left: 200px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.events h1{
+    text-align:left;
+    margin-bottom: 10px;
+    font-family: "CustomFont";
+    color: #153147;
+}
+
+.events-desc{
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.events-icon .fas{
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+    line-height: 50px;
+    border-radius: 8px;
+    color:#153147;
+    border: 2.5px solid #153147;
+}
+
+.events-text p{
+    padding: 0 20px;
+    text-align: initial;
+    font-family: "CustomFont3";
+    font-size: 20px;
+}
+
+
+
 @media screen and (max-width: 770px){
     .title-text h1{
         font-size: 35px;
@@ -262,6 +355,16 @@ button:hover{
         transform: translateY(-50%);
         text-align: center;
         color: #fff;
+    }
+    .events{
+        flex-basis: 50%;
+        margin: auto;
+        align-items: center;
+        text-align: center;
+        padding-right: 75px;
+        padding-left: 30px;
+        padding-top: 20px;
+        padding-bottom: 20px;
     }
 
 
