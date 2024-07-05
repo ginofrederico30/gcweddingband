@@ -137,21 +137,132 @@ button:hover{
     border: none;
 }
 
+.event-container {
+    font-family: "CustomFont3", sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.event-container .event {
+    box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    border-radius: 8px;
+    margin: 32px 0;
+}
+
+.event .event-left {
+    background: #153147;
+    min-width: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color:white;
+    padding: 8px 48px;  /* Added missing colon */
+    font-weight: bold;
+    text-align: center;
+    border-radius: 8px 0 0 8px;
+    
+}
+
+.event .event-left .date {
+    font-size: 56px;
+    font-family: "CustomFont3", sans-serif;
+}
+
+.event .event-left .month {
+    font-size: 16px;
+    font-weight: normal;
+    font-family: "CustomFont3", sans-serif;
+}
+
+.event .event-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 24px;
+}
+
+.event .event-right .event-description {
+    font-family: "CustomFont3", sans-serif;
+}
+
+.event .event-right h3.event-title {
+    font-size: 24px;
+    margin: 24px 0 10px 0;
+    color: black;
+    text-transform: uppercase;
+}
+
+.event .event-right .event-timing {
+    background: #ADB8BB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    padding: 8px;
+    border-radius: 16px;
+    margin: 24px 0;
+    font-size: 14px;
+    font-family: "CustomFont3", sans-serif;
+}
+
+.event .event-right .event-timing img {
+    height: 20px;
+    padding-right: 8px;
+}
+
+@media (max-width: 600px) {
+    .event-container {
+        padding: 0 8px;  /* Adjust padding for smaller screens */
+    }
+    
+    .event-container .event {
+        flex-direction: column;  /* Stack elements on small screens */
+        border-radius: 8px;  /* Add full border radius */
+    }
+
+    .event .event-left {
+        border-radius: 8px 8px 0 0;  /* Adjust border radius for top left and top right corners */
+        padding: 8px 16px;  /* Adjust padding for smaller screens */
+    }
+
+    .event .event-right {
+        border-radius: 0 0 8px 8px;  /* Adjust border radius for bottom left and bottom right corners */
+        padding: 16px;  /* Add padding for mobile */
+    }
+
+    .event .event-right .event-timing {
+        width: 90%;  /* Make it full width on mobile */
+        margin: 12px 0;  /* Reduce margin for mobile */
+    }
+
+    .event .event-right h3.event-title {
+        font-size: 20px;  /* Adjust font size for mobile */
+        margin: 16px 0 8px 0;  /* Adjust margin for mobile */
+    }
+
+    .event .event-right .event-description {
+        font-size: 14px;  /* Adjust font size for mobile */
+    }
+}
+
 #feature{
     width: 100%;
     padding: 70px 0;
+    background:#153147;
 }
 
 .title-text{
     text-align: center;
     padding-bottom: 70px;
+    color: white;
 }
 
 .title-text p{
     margin: auto;
     font-size: 22px;
     font-family: "CustomFont";
-    color: black;
+    color: #ADB8BB;
     font-weight: 70px;
     position: relative;
     z-index: 1;
@@ -162,7 +273,7 @@ button:hover{
     font-size: 50px;
     font-family: "CustomFont3";
     letter-spacing: 2px;
-    color:#153147;
+    color:white;
 }
 
 .feature-box{
@@ -192,7 +303,7 @@ button:hover{
     text-align:left;
     margin-bottom: 10px;
     font-family: "CustomFont";
-    color: #153147;
+    color: white;
 }
 
 .features-desc{
@@ -207,8 +318,8 @@ button:hover{
     font-size: 30px;
     line-height: 50px;
     border-radius: 8px;
-    color:#153147;
-    border: 2.5px solid #153147;
+    color:white;
+    border: 2.5px solid white;
 }
 
 .feature-text p{
@@ -216,6 +327,7 @@ button:hover{
     text-align: initial;
     font-family: "CustomFont3";
     font-size: 20px;
+    color: #ADB8BB;
 }
 
 .feature-box{
@@ -232,30 +344,7 @@ button:hover{
 #video{
     width: 100%;
     padding: 70px 0;
-    background-color: #ADB8BB;
-}
-
-.title-text{
-    text-align: center;
-    padding-bottom: 5px;
-}
-
-.title-text p{
-    margin: auto;
-    font-size: 22px;
-    font-family: "CustomFont";
-    color: black;
-    font-weight: 70px;
-    position: relative;
-    z-index: 1;
-    display: inline-block;
-}
-
-.title-text h1{
-    font-size: 50px;
-    font-family: "CustomFont3";
-    letter-spacing: 2px;
-    color:#153147;
+    background-color: white;
 }
 
 .video-container {
@@ -334,7 +423,7 @@ button:hover{
 #service{
     width: 100%;
     padding: 70px 0;
-    background: #edeae4;
+    background: white;
 }
 
 .service-box{
@@ -726,8 +815,6 @@ h4, p, p.testimonial-signature{
 .button {
     margin: 0 10px; /* Adjust the margin between buttons as needed */
 }
-
-
 
 @media screen and (max-width: 770px){
     .footer-row {
