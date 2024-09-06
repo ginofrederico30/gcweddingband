@@ -415,9 +415,7 @@ button:hover{
         padding-left: 30px;
         padding-top: 20px;
         padding-bottom: 20px;
-    }
-
-
+}
 }
 
 #service{
@@ -732,7 +730,7 @@ h4, p, p.testimonial-signature{
     padding-bottom: 70px;
     color:white;
     font-family: "CustomFont3", Arial, Helvetica, sans-serif;
-    font-size: 50px;
+    font-size: 40px;
     letter-spacing: 2px;
 }
 
