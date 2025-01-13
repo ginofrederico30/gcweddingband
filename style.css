@@ -137,6 +137,7 @@ button:hover{
     border: none;
 }
 
+
 .event-container {
     font-family: "CustomFont3", sans-serif;
     max-width: 800px;
@@ -198,18 +199,37 @@ button:hover{
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 200px;
+    width: 100px;
     padding: 8px;
     border-radius: 16px;
     margin: 24px 0;
-    font-size: 14px;
+    font-size: 16px;
     font-family: "CustomFont3", sans-serif;
+    
 }
+
+.event .event-right .event-timing a {
+    text-decoration: none; /* Removes underline */
+    color: inherit;       /* Inherits the text color from parent */
+    font-size: inherit;   /* Matches the parent font size */
+    font-family: inherit; /* Matches the parent font family */
+    display: inline-block; /* Ensures the link behaves like text within the div */
+    width: 100%;          /* Optional: ensures the clickable area spans the full width */
+    text-align: center;   /* Centers the link text */
+}
+
+.event .event-right .event-timing:hover{
+    transform: translateY(-1px);
+}
+
 
 .event .event-right .event-timing img {
     height: 20px;
     padding-right: 8px;
 }
+
+
+
 
 @media (max-width: 600px) {
     .event-container {
@@ -232,7 +252,7 @@ button:hover{
     }
 
     .event .event-right .event-timing {
-        width: 90%;  /* Make it full width on mobile */
+        width: 30%;  /* Make it full width on mobile */
         margin: 12px 0;  /* Reduce margin for mobile */
     }
 
@@ -313,6 +333,16 @@ button:hover{
 }
 
 .features-icon .fas{
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+    line-height: 50px;
+    border-radius: 8px;
+    color:white;
+    border: 2.5px solid white;
+}
+
+.features-icon .fa-brands{
     width: 50px;
     height: 50px;
     font-size: 30px;
