@@ -989,3 +989,8 @@ body {
     font-family: 'CustomFont3', serif; /* Use the custom font as a fallback with a generic font family */
 }
 
+.event-subtitle {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: -0.5rem;
+}
