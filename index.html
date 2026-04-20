@@ -1,207 +1,232 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Good Company Wedding Band</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Good Company Wedding Band | Columbus, Ohio Live Wedding Music</title>
+    <meta name="description" content="Good Company is Columbus, Ohio's premier wedding band. Award-winning 8-piece ensemble for wedding receptions, cocktail hours &amp; ceremonies across Central Ohio. Book the #1 Columbus wedding band.">
+    <meta name="keywords" content="Columbus Ohio wedding band, Central Ohio wedding band, wedding band Columbus OH, live wedding music Columbus Ohio, Columbus wedding entertainment, Ohio wedding band, wedding reception band Columbus">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://kit.fontawesome.com/9d7b870bec.js" crossorigin="anonymous"></script>
-    <style>
-        .mySlides img {
-            border-radius: 50px;
-        }
-    </style>
-   <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script> 
-   <link rel="icon" href="Insta-Profile.ico" type="image/x-icon">
-   <script>
-    var scroll = new SmoothScroll('a[href*="#"]');
-    </script>
-    <meta property="og:title" content="Good Company">
-    <meta property="og:description" content="Columbus, Ohio-based wedding band that offers exceptional live music and MC entertainment">
-    <meta property="og:image" content="background.jpg">
+    <link rel="canonical" href="https://gcweddingband.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Good Company Wedding Band | Columbus, Ohio">
+    <meta property="og:description" content="Columbus, Ohio's premier 8-piece wedding band. Live music for receptions, cocktail hours &amp; ceremonies across Central Ohio. WeddingWire &amp; The Knot award winner.">
+    <meta property="og:image" content="https://gcweddingband.com/background.jpg">
     <meta property="og:url" content="https://gcweddingband.com/">
+    <meta property="og:site_name" content="Good Company Wedding Band">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Good Company">
-    <meta name="twitter:description" content="Columbus, Ohio-based wedding band that offers exceptional live music and MC entertainment">
-    <meta name="twitter:image" content="background.jpg">
+    <meta name="twitter:title" content="Good Company Wedding Band | Columbus, Ohio">
+    <meta name="twitter:description" content="Columbus, Ohio's premier wedding band. Live music for receptions, cocktail hours &amp; ceremonies across Central Ohio.">
+    <meta name="twitter:image" content="https://gcweddingband.com/background.jpg">
 
-    
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MusicGroup",
+      "name": "Good Company Wedding Band",
+      "url": "https://gcweddingband.com",
+      "logo": "https://gcweddingband.com/Circle%20GC%20Logo_White.png",
+      "image": "https://gcweddingband.com/background.jpg",
+      "description": "Columbus, Ohio's premier wedding band. An award-winning 8-piece ensemble offering live music for wedding receptions, cocktail hours, and ceremonies across Central Ohio.",
+      "telephone": "+18563812128",
+      "email": "gino@gcweddingband.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Columbus",
+        "addressRegion": "OH",
+        "addressCountry": "US"
+      },
+      "areaServed": ["Columbus, Ohio", "Central Ohio", "Columbus Metropolitan Area"],
+      "genre": ["Pop", "Soul", "R&B", "Funk", "Rock", "Motown", "Top 40"],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "reviewCount": "50",
+        "bestRating": "5"
+      },
+      "sameAs": [
+        "https://www.instagram.com/gcweddingband/",
+        "https://www.tiktok.com/@gcweddingband",
+        "https://www.youtube.com/channel/UCQ0YrFxvaUCeUXp8_JA6-vQ",
+        "https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html",
+        "https://www.theknot.com/marketplace/redirect-2079042"
+      ]
+    }
+    </script>
 
+    <!-- Preload critical assets -->
+    <link rel="preload" href="Montserrat-VariableFont_wght.ttf" as="font" type="font/truetype" crossorigin>
+    <link rel="preload" href="background.jpg" as="image">
 
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="Insta-Profile.ico" type="image/x-icon">
+    <script src="https://kit.fontawesome.com/9d7b870bec.js" crossorigin="anonymous" defer></script>
 </head>
 <body>
 
-    <div class="banner">
-        <div class="navbar">
-            <!---<img src="Main GC Logo_White.png" class="logo">--->
-            <ul>
-                <li><a href="#banner">Home</a></li>
-                <li><a href="#video">Live</a></li>
-                <li><a href="#feature">Services</a></li>
-                <li><a href="#song-list">Catalog</a></li>
-                <li><a href="#testimonial">Testimonials</a></li>
-            </ul>
-        </div>
+    <!-- ============ NAVIGATION ============ -->
+    <nav id="navbar" role="navigation" aria-label="Main navigation">
+        <a href="#hero" class="nav-brand">Good Company Wedding Band</a>
+        <ul class="nav-links">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#video">Live</a></li>
+            <li><a href="#feature">Services</a></li>
+            <li><a href="#song-list">Catalog</a></li>
+            <li><a href="#testimonial">Testimonials</a></li>
+            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLScz9qUmFPyNlvJ7Pf7rHNSMcEqyWXxTkqF9Qwd6M71b6cJJXA/viewform?usp=sf_link" target="_blank" rel="noopener" class="nav-cta">Book Now</a></li>
+        </ul>
+        <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" aria-hidden="true">
+        <ul>
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#video">Live</a></li>
+            <li><a href="#feature">Services</a></li>
+            <li><a href="#song-list">Catalog</a></li>
+            <li><a href="#testimonial">Testimonials</a></li>
+            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLScz9qUmFPyNlvJ7Pf7rHNSMcEqyWXxTkqF9Qwd6M71b6cJJXA/viewform?usp=sf_link" target="_blank" rel="noopener">Book Now</a></li>
+        </ul>
     </div>
 
-        <div id="banner2" class="content">
-            <img src="Main GC Logo_White.png" class="logo">
-            <br>
-            <button type="button">
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLScz9qUmFPyNlvJ7Pf7rHNSMcEqyWXxTkqF9Qwd6M71b6cJJXA/viewform?usp=sf_link" target=" _blank"> 
-                    <span></span>RECEIVE A QUOTE</a></button>
-            </div>
+    <!-- ============ HERO ============ -->
+    <section id="hero" class="banner">
+        <div class="hero-content">
+            <img src="Main GC Logo_White.png" class="hero-logo" alt="Good Company Wedding Band Logo">
+            <h1 class="hero-tagline">Columbus, Ohio's Premier Wedding Band</h1>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScz9qUmFPyNlvJ7Pf7rHNSMcEqyWXxTkqF9Qwd6M71b6cJJXA/viewform?usp=sf_link" target="_blank" rel="noopener" class="cta-button">Receive a Quote</a>
         </div>
-    </div>
+    </section>
 
-
+    <!-- ============ LIVE PERFORMANCES ============ -->
     <section id="video">
-        <div style="max-width: 1000px; margin: 0 auto;">
-
-
-
-    
-            <div style="position:relative; padding-bottom: 56.25%; padding-top: 30px;">
-               <iframe src="https://player.vimeo.com/video/1098603647?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Pink Pony Club (Chappell Roan Cover)"></iframe>
+        <div class="videos-section-inner">
+            <div class="videos-header fade-in">
+                <span class="eyebrow">LIVE PERFORMANCES</span>
+                <h2>WATCH US PERFORM</h2>
             </div>
-           <!--  <div style="position:relative; padding-bottom: 56.25%; padding-top: 30px;">
-                <iframe src="https://player.vimeo.com/video/934956449?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" style="position:absolute; top:0; left:0; width:100%; height:100%;" title="Good Company - 'Uptown Funk' (Bruno Mars Cover)"></iframe>
-            </div>
-            <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1006735482?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Dancing On the Ceiling (Lionel Richie Cover)"></iframe></div> -->
-            
-           <!-- 
-          <div class="event-container">
-                <h3 class="year"></h3>
-
-                <div class="event">
-                    <div class="event-left">
-                        <div class="event-date">
-                            <div class="date">24</div>
-                            <div class="month">Mar</div>
-                        </div>
-                    </div>
-                    
-                   <div class="event-right">
-                        <h3 class="event-title">March Showcase</h3>
-
-                        <div class="event-description">
-                            Come out to our March Showcase on Tuesday 3/24/26 and experience our live sound! The show is at Woodlands Tavern in Grandview. Doors will open at 7pm. Music will start at 8pm.
-                        </div>
-
-                        <div class="event-timing">
-                            <a href="https://www.ticketweb.com/event/good-company-wedding-band-showcase-woodlands-tavern-tickets/14130084?pl=wood" target="_blank">Get Tickets</a>
-                        </div>
+            <div class="videos-grid fade-in">
+                <div class="video-embed">
+                    <iframe src="https://player.vimeo.com/video/1098603647?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                        frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                        title="Good Company Wedding Band — Pink Pony Club (Chappell Roan Cover) | Columbus, Ohio"
+                        loading="lazy"></iframe>
                 </div>
--->
-                
-                
-            </div>
-
-            <div class="event-container">
-                <h3 class="year"></h3>
-
-                <div class="event">
-                    <div class="event-left">
-                        <div class="event-date">
-                            <div class="date">20</div>
-                            <div class="month">May</div>
-                        </div>
-                    </div>
-                    
-                <div class="event-right">
-                 <h3 class="event-title">Feel the Beat</h3>
-                <h4 class="event-subtitle">Fundraiser with the American Heart Association</h4>
-
-                <div class="event-description">
-                    Good Company is teaming up with the American Heart Association for Feel the Beat, a live concert with all proceeds donated to the AHA of Central Ohio. Come out to for live music and good eats and drinks for a great cause!
+                <div class="video-embed">
+                    <iframe src="https://player.vimeo.com/video/1136572322?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                        frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        title="Good Company Wedding Band — Signed, Sealed, Delivered (Stevie Wonder Cover) | Columbus, Ohio"
+                        loading="lazy"></iframe>
                 </div>
-
-                        <div class="event-timing">
-                            <a href="https://www.ticketweb.com/event/good-company-wedding-band-showcase-woodlands-tavern-tickets/14130094?pl=wood" target="_blank">Get Tickets</a>
-                        </div>
-                </div>
-
-                
-                
             </div>
         </div>
     </section>
-    
-    
-    
 
-
-    <section id="feature">
-        <div class="title-text">
-            <p>SERVICES</p>
-            <h1>WE ARE GOOD COMPANY</h1>
+    <!-- ============ UPCOMING SHOWS ============ -->
+    <section id="shows">
+        <div class="shows-inner">
+            <div class="shows-header fade-in">
+                <span class="eyebrow">LIVE IN COLUMBUS, OHIO</span>
+                <h2>UPCOMING SHOWS</h2>
+            </div>
+            <div class="shows-list fade-in">
+                <a href="https://www.ticketweb.com/event/good-company-wedding-band-showcase-woodlands-tavern-tickets/14130094?pl=wood"
+                   class="show-row" target="_blank" rel="noopener">
+                    <div class="show-date">
+                        <span class="show-day">20</span>
+                        <span class="show-month">MAY</span>
+                    </div>
+                    <div class="show-content">
+                        <h3 class="show-name">Feel the Beat</h3>
+                        <p class="show-meta">Fundraiser with the American Heart Association &nbsp;&middot;&nbsp; Woodlands Tavern &nbsp;&middot;&nbsp; Columbus, OH</p>
+                        <p class="show-desc">Good Company is teaming up with the American Heart Association for Feel the Beat — a live concert with all proceeds donated to the AHA of Central Ohio.</p>
+                    </div>
+                    <span class="show-cta">Get Tickets <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </a>
+            </div>
         </div>
-        <div class="feature-box">
+    </section>
+
+    <!-- ============ SERVICES / FEATURES ============ -->
+    <section id="feature">
+        <div class="title-text fade-in">
+            <p>SERVICES</p>
+            <h2>WE ARE GOOD COMPANY</h2>
+            <span class="section-location">Serving Columbus, Ohio and all of Central Ohio</span>
+        </div>
+        <div class="feature-box fade-in">
             <div class="features">
-                <h1>Reception Band</h1>
                 <div class="features-desc">
                     <div class="features-icon">
-                        <i class="fas fa-music"></i>
+                        <i class="fas fa-music" aria-hidden="true"></i>
                     </div>
-                    <div class="feature-text">
-                        <p>Our 8-piece ensemble includes guitar, keyboards, bass, saxophone, trumpet, drums, and vocals. We specialize in Pop, Soul, Top 40, Motown, Funk, R&B, and Rock.</p>
+                    <h3>Reception Band</h3>
+                    <div class="features-desc-inner feature-text">
+                        <p>Our 8-piece ensemble includes guitar, keyboards, bass, saxophone, trumpet, drums, and vocals. We specialize in Pop, Soul, Top 40, Motown, Funk, R&amp;B, and Rock.</p>
                     </div>
-                </div>
-                <h1>Cocktail Band</h1>
-                <div class="features-desc">
-                    <div class="features-icon">
-                        <i class="fas fa-martini-glass-empty"></i>
-                    </div>
-                    <div class="feature-text">
-                        <p>Our 3-piece Jazz Ensemble will play jazz standards during your cocktail hour starting the evening on a sophisicated and classy note.</p>
-                    </div>
-                
                 </div>
 
-                <h1>Ceremony Essentials</h1>
                 <div class="features-desc">
                     <div class="features-icon">
-                        <i class="fa-brands fa-pagelines"></i>
+                        <i class="fas fa-martini-glass-empty" aria-hidden="true"></i>
                     </div>
-                    <div class="feature-text">
+                    <h3>Cocktail Band</h3>
+                    <div class="features-desc-inner feature-text">
+                        <p>Our 3-piece Jazz Ensemble will play jazz standards during your cocktail hour, starting the evening on a sophisticated and classy note.</p>
+                    </div>
+                </div>
+
+                <div class="features-desc">
+                    <div class="features-icon">
+                        <i class="fa-brands fa-pagelines" aria-hidden="true"></i>
+                    </div>
+                    <h3>Ceremony Essentials</h3>
+                    <div class="features-desc-inner feature-text">
                         <p>We will facilitate your ceremony with seamless transitions, sound control, and a microphone for the officiant. Choose from a live violin and piano duo, pre-recorded music, or a hybrid blend of both to suit your preferences.</p>
                     </div>
-                
                 </div>
 
-                
-                <h1>Professional Sound and Lighting</h1>
                 <div class="features-desc">
                     <div class="features-icon">
-                        <i class="fas fa-record-vinyl"></i>
+                        <i class="fas fa-record-vinyl" aria-hidden="true"></i>
                     </div>
-                    <div class="feature-text">
-                        <p>Providing high quality sound and lighting equipment to enhance the music and ambience for your reception and ceremony, speeches, and pretty much anything that needs amplification and lighting. We've got you covered!</p>
+                    <h3>Professional Sound &amp; Lighting</h3>
+                    <div class="features-desc-inner feature-text">
+                        <p>Providing high quality sound and lighting equipment to enhance the music and ambience for your reception, ceremony, speeches, and pretty much anything that needs amplification and lighting.</p>
                     </div>
                 </div>
-                <h1>Polished MCs</h1>
+
                 <div class="features-desc">
                     <div class="features-icon">
-                        <i class="fas fa-user-tie"></i>
+                        <i class="fas fa-user-tie" aria-hidden="true"></i>
                     </div>
-                    <div class="feature-text">
-                        <p>Our MC will guide your reception, making key announcements and keeping everything on schedule, while ensuring your guests feel engaged and fully part of the celebration. You'll be in good hands!</p>
+                    <h3>Polished MCs</h3>
+                    <div class="features-desc-inner feature-text">
+                        <p>Our MC will guide your reception, making key announcements and keeping everything on schedule, while ensuring your guests feel engaged and fully part of the celebration.</p>
                     </div>
                 </div>
             </div>
             <div class="features-img">
-                <img src="image8.jpg">
+                <img src="image8.jpg" alt="Good Company Wedding Band performing live at a Columbus, Ohio wedding reception" loading="lazy">
             </div>
         </div>
     </section>
 
+    <!-- ============ SERVICE CARDS ============ -->
     <section id="service">
-        <!-- <div class="title-text">
-            <p>WE ARE</p>
-            <h1>LIVE MUSIC ENTHUSIASTS</h1>
-        </div> -->
         <div class="service-box">
-            <div class="single-service">
-                <img src="ian.png">
+            <div class="single-service fade-in">
+                <img src="ian.png" alt="Good Company MC Ian performing at a Columbus, Ohio wedding" loading="lazy">
                 <div class="overlay"></div>
                 <div class="service-desc">
                     <h3>Enhance Your Reception</h3>
@@ -209,17 +234,17 @@
                     <p>Our live reception band will guarantee the dance floor is packed! With the funkiest song catalog in town, you'll be movin' and groovin' all night long.</p>
                 </div>
             </div>
-            <div class="single-service">
-                <img src="sav.png">
+            <div class="single-service fade-in">
+                <img src="sav.png" alt="Good Company vocalist performing at a Central Ohio wedding" loading="lazy">
                 <div class="overlay"></div>
                 <div class="service-desc">
                     <h3>Experienced Performers</h3>
                     <hr>
-                    <p>We've been playing live music together for the past 10 years, from college house parties to sold out shows to dance floors at the most memoriable weddings.</p>
+                    <p>We've been playing live music together for the past 10 years, from college house parties to sold out shows to dance floors at the most memorable weddings.</p>
                 </div>
             </div>
-            <div class="single-service">
-                <img src="luke.png">
+            <div class="single-service fade-in">
+                <img src="luke.png" alt="Good Company guitarist playing at a wedding in Columbus, Ohio" loading="lazy">
                 <div class="overlay"></div>
                 <div class="service-desc">
                     <h3>The Perfect Playlist</h3>
@@ -227,8 +252,8 @@
                     <p>We'll collaborate with you months in advance to curate a customized playlist that captures the essence of your special day!</p>
                 </div>
             </div>
-            <div class="single-service">
-                <img src="gino.png">
+            <div class="single-service fade-in">
+                <img src="gino.png" alt="Good Company band leader Gino entertaining the crowd at a Columbus, Ohio wedding" loading="lazy">
                 <div class="overlay"></div>
                 <div class="service-desc">
                     <h3>A Night to Remember</h3>
@@ -239,401 +264,406 @@
         </div>
     </section>
 
-
-
-<section id="song-list">
-    <div class="title-text2">
-        <p>CATALOG</p>
-        <h1>CELEBRATE GOOD TIMES</h1>
-    </div>
-    <ul class="song-list">
-        <li>
-            <h2>Rock/Funk</h2>
-            <ul style="list-style-type: none; padding: 0;">
-                <li><song>Ain't It Fun</song><br><em>Paramore</em></li>
-                <li><song>All the Small Things</song><br><em>blink-182</em></li>
-                <li><song>Are You Gonna Be My Girl</song><br><em>Jet</em></li>
-                <li><song>Boogie Shoes</song><br><em>KC & The Sunshine Band</em></li>
-                <li><song>Bust a Move</song><br><em>Young MC</em></li>
-                <li><song>Canned Heat</song><br><em>Jamiroquai</em></li>
-                <li><song>Come and Get Your Love</song><br><em>Redbone</em></li>
-                <li><song>December, 1963 (Oh What a Night)</song><br><em>Frankie Vallie & The Four Seasons</em></li>
-                <li><song>Dreams</song><br><em>Fleetwood Mac</em></li>
-                <li><song>Funkytown</song><br><em>Lipps Inc.</em></li>
-                <li><song>Get Down On It</song><br><em>Kool & The Gang</em></li>
-                <li><song>Give It To Me Baby</song><br><em>Rick James</em></li>
-                <li><song>Heaven</song><br><em>Los Lonely Boys</em></li>
-                <li><song>I Wanna Be Your Lover</song><br><em>Prince</em></li>
-                <li><song>Le Freak</song><br><em>CHIC</em></li>
-                <li><song>Pick Up the Pieces</song><br><em>Average White Band</em></li>
-                <li><song>Play That Funky Music</song><br><em>Wild Cherry</em></li>
-                <li><song>Reelin' In The Years</song><br><em>Steely Dan</em></li>
-                <li><song>Rich Girl</song><br><em>Daryl Hall & John Oates</em></li>
-                <li><song>Semi-Charmed Life</song><br><em>Third Eye Blind</em></li>
-                <li><song>September</song><br><em>Earth, Wind & Fire</em></li>
-                <li><song>Shining Star</song><br><em>Earth, Wind & Fire</em></li>
-                <li><song>Stayin' Alive</song><br><em>Bee Gees</em></li>
-                <li><song>Tequila</song><br><em>The Champs</em></li>
-                <li><song>You Make My Dreams (Come True)</song><br><em>Daryl Hall & John Oates</em></li>
-                <li><song>1999</song><br><em>Prince</em></li>
-            </ul>
-        </li>
-        <li>
-            <h2>Pop/Country</h2>
-            <ul style="list-style-type: none; padding: 0;">
-                <li><song>All Your'n</song><br><em>Tyler Childers</em></li>
-                <li><song>Birthday</song><br><em>Katy Perry</em></li>
-                <li><song>Cake By the Ocean</song><br><em>DCNE</em></li>
-                <li><song>Come On Eileen</song><br><em>Dexys Midnight Runners</em></li>
-                <li><song>Crazy In Love</song><br><em>Beyonce</em></li>
-                <li><song>Dancing in the Moonlight</song><br><em>King Harvest</em></li>
-                <li><song>Dancing Queen</song><br><em>ABBA</em></li>
-                <li><song>Don't Start Now</song><br><em>Dua Lipa</em></li>
-                <li><song>Gimme Gimme Gimme</song><br><em>ABBA</em></li>
-                <li><song>Hips Don't Lie</song><br><em>Shakira</em></li>
-                <li><song>HOT TO GO!</song><br><em>Chappell Roan</em></li>
-                <li><song>Hot Stuff</song><br><em>Donna Summers</em></li>
-                <li><song>How Bizarre</song><br><em>OMC</em></li>
-                <li><song>Is This Love</song><br><em>Bob Marley & The Wailers</em></li>
-                <li><song>Levitating</song><br><em>Dua Lipa</em></li>
-                <li><song>Lil Boo Thang</song><br><em>Paul Russell</em></li>
-                <li><song>Love Story</song><br><em>Taylor Swift</em></li>
-            </ul>
-        </li>
-        <!-- Pop cont. -->
-        <li style="list-style-type: none; padding: 0;">
-            <ul style="list-style-type: none; padding: 0;">
-                <li><song>Man! I Feel Like a Woman!</song><br><em>Shania Twain</em></li>
-                <li><song>Man I Need</song><br><em>Olivia Dean</em></li>
-                <li><song>Mr. Brightside</song><br><em>The Killers</em></li>
-                <li><song>Music For a Sushi Restaurant</song><br><em>Harry Styles</em></li>
-                <li><song>Pink Pony Club</song><br><em>Chappell Roan</em></li>
-                <li><song>Red Wine Supernova</song><br><em>Chappell Roan</em></li>
-                <li><song>Shake Your Body (Down to the Ground)</song><br><em>The Jacksons</em></li>
-                <li><song>Sunday Morning</song><br><em>Maroon 5</em></li>
-                <li><song>The Real Slim Shady</song><br><em>Eminem</em></li>
-                <li><song>Treasure</song><br><em>Bruno Mars</em></li>
-                <li><song>Unwritten</song><br><em>Natasha Beddingfield</em></li>
-                <li><song>Until I Found You</song><br><em>Stephen Sanchez</em></li>
-                <li><song>Uptown Funk</song><br><em>Mark Ronson, Bruno Mars</em></li>
-                <li><song>Valerie</song><br><em>Mark Ronson, Amy Winehouse</em></li>
-                <li><song>WHERE IS MY HUSBAND!</song><br><em>RAYE</em></li>
-                <li><song>You Are the Best Thing</song><br><em>Ray LaMontagne</em></li>
-                <li><song>You Make Me Feel Like Dancing</song><br><em>Leo Sayer</em></li>
-            </ul>
-        </li>
-        <li>
-            <h2>R&B/Soul</h2>
-            <ul style="list-style-type: none; padding: 0;">
-                <li><song>Ain't No Mountain High Enough</song><br><em>Marvin Gaye</em></li>
-                <li><song>All Night Long (All Night)</song><br><em>Lionel Richie</em></li>
-                <li><song>Blame It On the Boogie</song><br><em>The Jacksons</em></li>
-                <li><song>Brick House</song><br><em>Commodores</em></li>
-                <li><song>Celebration</song><br><em>Kool & The Gang</em></li>
-                <li><song>Dancing On the Ceiling</song><br><em>Lionel Richie</em></li>
-                <li><song>I Wanna Dance With Somebody</song><br><em>Whitney Houston</em></li>
-                <li><song>I Wish</song><br><em>Stevie Wonder</em></li>
-                <li><song>If I Ain't Got You</song><br><em>Alicia Keys</em></li>
-                <li><song>My Girl</song><br><em>The Temptations</em></li>
-                <li><song>Signed, Sealed, Delivered (I'm Yours)</song><br><em>Stevie Wonder</em></li>
-                <li><song>Sir Duke</song><br><em>Stevie Wonder</em></li>
-                <li><song>Superstition</song><br><em>Stevie Wonder</em></li>
-                <li><song>Tennessee Whiskey</song><br><em>Chris Stapleton</em></li>
-                <li><song>This Will Be (An Everlasting Love)</song><br><em>Natalie Cole</em></li>
-                <li><song>We Are Family</song><br><em>Sister Sledge</em></li>
-                <li><song>What a Wonderful World</song><br><em>Louis Armstrong</em></li>
-                <li><song>You Sexy Thing</song><br><em>Hot Chocolate</em></li>
-            </ul>
-        </li>
-    </ul>
-</section>
-
-    
-                    
+    <!-- ============ SONG CATALOG ============ -->
+    <section id="song-list">
+        <div class="title-text2 fade-in">
+            <p>CATALOG</p>
+            <h2>CELEBRATE GOOD TIMES</h2>
+        </div>
+        <ul class="song-list" aria-label="Good Company Wedding Band song catalog">
+            <li>
+                <h3>Rock / Funk</h3>
+                <ul>
+                    <li><song>Ain't It Fun</song><br><em>Paramore</em></li>
+                    <li><song>All the Small Things</song><br><em>blink-182</em></li>
+                    <li><song>Are You Gonna Be My Girl</song><br><em>Jet</em></li>
+                    <li><song>Boogie Shoes</song><br><em>KC &amp; The Sunshine Band</em></li>
+                    <li><song>Bust a Move</song><br><em>Young MC</em></li>
+                    <li><song>Canned Heat</song><br><em>Jamiroquai</em></li>
+                    <li><song>Come and Get Your Love</song><br><em>Redbone</em></li>
+                    <li><song>December, 1963 (Oh What a Night)</song><br><em>Frankie Vallie &amp; The Four Seasons</em></li>
+                    <li><song>Dreams</song><br><em>Fleetwood Mac</em></li>
+                    <li><song>Funkytown</song><br><em>Lipps Inc.</em></li>
+                    <li><song>Get Down On It</song><br><em>Kool &amp; The Gang</em></li>
+                    <li><song>Give It To Me Baby</song><br><em>Rick James</em></li>
+                    <li><song>Heaven</song><br><em>Los Lonely Boys</em></li>
+                    <li><song>I Wanna Be Your Lover</song><br><em>Prince</em></li>
+                    <li><song>Le Freak</song><br><em>CHIC</em></li>
+                    <li><song>Pick Up the Pieces</song><br><em>Average White Band</em></li>
+                    <li><song>Play That Funky Music</song><br><em>Wild Cherry</em></li>
+                    <li><song>Reelin' In The Years</song><br><em>Steely Dan</em></li>
+                    <li><song>Rich Girl</song><br><em>Daryl Hall &amp; John Oates</em></li>
+                    <li><song>Semi-Charmed Life</song><br><em>Third Eye Blind</em></li>
+                    <li><song>September</song><br><em>Earth, Wind &amp; Fire</em></li>
+                    <li><song>Shining Star</song><br><em>Earth, Wind &amp; Fire</em></li>
+                    <li><song>Stayin' Alive</song><br><em>Bee Gees</em></li>
+                    <li><song>Tequila</song><br><em>The Champs</em></li>
+                    <li><song>You Make My Dreams (Come True)</song><br><em>Daryl Hall &amp; John Oates</em></li>
+                    <li><song>1999</song><br><em>Prince</em></li>
                 </ul>
-            </section>
-            
-    
+            </li>
+            <li>
+                <h3>Pop / Country</h3>
+                <ul>
+                    <li><song>All Your'n</song><br><em>Tyler Childers</em></li>
+                    <li><song>Birthday</song><br><em>Katy Perry</em></li>
+                    <li><song>Cake By the Ocean</song><br><em>DNCE</em></li>
+                    <li><song>Come On Eileen</song><br><em>Dexys Midnight Runners</em></li>
+                    <li><song>Crazy In Love</song><br><em>Beyoncé</em></li>
+                    <li><song>Dancing in the Moonlight</song><br><em>King Harvest</em></li>
+                    <li><song>Dancing Queen</song><br><em>ABBA</em></li>
+                    <li><song>Don't Start Now</song><br><em>Dua Lipa</em></li>
+                    <li><song>Gimme Gimme Gimme</song><br><em>ABBA</em></li>
+                    <li><song>Hips Don't Lie</song><br><em>Shakira</em></li>
+                    <li><song>HOT TO GO!</song><br><em>Chappell Roan</em></li>
+                    <li><song>Hot Stuff</song><br><em>Donna Summer</em></li>
+                    <li><song>How Bizarre</song><br><em>OMC</em></li>
+                    <li><song>Is This Love</song><br><em>Bob Marley &amp; The Wailers</em></li>
+                    <li><song>Levitating</song><br><em>Dua Lipa</em></li>
+                    <li><song>Lil Boo Thang</song><br><em>Paul Russell</em></li>
+                    <li><song>Love Story</song><br><em>Taylor Swift</em></li>
+                    <li><song>Man! I Feel Like a Woman!</song><br><em>Shania Twain</em></li>
+                    <li><song>Man I Need</song><br><em>Olivia Dean</em></li>
+                    <li><song>Mr. Brightside</song><br><em>The Killers</em></li>
+                    <li><song>Music For a Sushi Restaurant</song><br><em>Harry Styles</em></li>
+                    <li><song>Pink Pony Club</song><br><em>Chappell Roan</em></li>
+                    <li><song>Red Wine Supernova</song><br><em>Chappell Roan</em></li>
+                    <li><song>Shake Your Body (Down to the Ground)</song><br><em>The Jacksons</em></li>
+                    <li><song>Sunday Morning</song><br><em>Maroon 5</em></li>
+                    <li><song>The Real Slim Shady</song><br><em>Eminem</em></li>
+                    <li><song>Treasure</song><br><em>Bruno Mars</em></li>
+                    <li><song>Unwritten</song><br><em>Natasha Bedingfield</em></li>
+                    <li><song>Until I Found You</song><br><em>Stephen Sanchez</em></li>
+                    <li><song>Uptown Funk</song><br><em>Mark Ronson, Bruno Mars</em></li>
+                    <li><song>Valerie</song><br><em>Mark Ronson, Amy Winehouse</em></li>
+                    <li><song>WHERE IS MY HUSBAND!</song><br><em>RAYE</em></li>
+                    <li><song>You Are the Best Thing</song><br><em>Ray LaMontagne</em></li>
+                    <li><song>You Make Me Feel Like Dancing</song><br><em>Leo Sayer</em></li>
+                </ul>
+            </li>
+            <li>
+                <h3>R&amp;B / Soul</h3>
+                <ul>
+                    <li><song>Ain't No Mountain High Enough</song><br><em>Marvin Gaye</em></li>
+                    <li><song>All Night Long (All Night)</song><br><em>Lionel Richie</em></li>
+                    <li><song>Blame It On the Boogie</song><br><em>The Jacksons</em></li>
+                    <li><song>Brick House</song><br><em>Commodores</em></li>
+                    <li><song>Celebration</song><br><em>Kool &amp; The Gang</em></li>
+                    <li><song>Dancing On the Ceiling</song><br><em>Lionel Richie</em></li>
+                    <li><song>I Wanna Dance With Somebody</song><br><em>Whitney Houston</em></li>
+                    <li><song>I Wish</song><br><em>Stevie Wonder</em></li>
+                    <li><song>If I Ain't Got You</song><br><em>Alicia Keys</em></li>
+                    <li><song>My Girl</song><br><em>The Temptations</em></li>
+                    <li><song>Signed, Sealed, Delivered (I'm Yours)</song><br><em>Stevie Wonder</em></li>
+                    <li><song>Sir Duke</song><br><em>Stevie Wonder</em></li>
+                    <li><song>Superstition</song><br><em>Stevie Wonder</em></li>
+                    <li><song>Tennessee Whiskey</song><br><em>Chris Stapleton</em></li>
+                    <li><song>This Will Be (An Everlasting Love)</song><br><em>Natalie Cole</em></li>
+                    <li><song>We Are Family</song><br><em>Sister Sledge</em></li>
+                    <li><song>What a Wonderful World</song><br><em>Louis Armstrong</em></li>
+                    <li><song>You Sexy Thing</song><br><em>Hot Chocolate</em></li>
+                </ul>
+            </li>
         </ul>
     </section>
 
- <section id="video">
-        <div style="max-width: 1000px; margin: 0 auto;">    
-            <div style="position:relative; padding-bottom: 56.25%; padding-top: 30px;">
-            <iframe src="https://player.vimeo.com/video/1136572322?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Signed, Sealed, Delivered (Stevie Wonder Cover)"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
+
+    <!-- ============ TESTIMONIALS ============ -->
+    <section id="testimonial">
+        <div class="title-text testimonial-title fade-in">
+            <p>REVIEWS</p>
+            <h2>WHAT COUPLES ARE SAYING</h2>
+            <span class="section-location">Columbus, Ohio's top-reviewed wedding band on Google, Wedding Wire, and The Knot</span>
         </div>
-    </section>    
-    
- <!-- Testimonial --> 
- 
- <section id="testimonial">
-    <!-- <div class="title-text">
-        <p>WE ARE</p>
-        <h1>HOPELESS ROMANTICS</h1>
-    </div> -->
-    <div class="testimonial-row">
-        
-        <div class="testimonial-col">
-            <div class="user">
-                <img src="Tori.png">
+
+        <div class="testimonial-row">
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="Tori.png" alt="Jack and Tori — Columbus Ohio wedding band review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>A MUST have at your event!</h4>
+                <p>Good Company was absolutely incredible to work with on our wedding day! They provided us an incredibly detailed Google sheet to help plan the night which made everything go so smoothly. They provided mics and music for the ceremony/first dances/speeches, a jazz trio for cocktail hour, and full band for the reception. They had so many song choices, as well as learned some that I requested. I didn't want the night to end, neither did our guests! If you're thinking about going with a band for your wedding, you should and the only choice should be GC!</p>
+                <p class="testimonial-signature">—Jack &amp; Tori, Wedding Wire, August 2025 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="marina.png" alt="Tyler and Marina — Central Ohio live wedding music review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>Good Company = GREAT Party!!!</h4>
+                <p>My husband and I cannot say enough amazing things about Good Company Wedding Band! From start to finish, they were everything we hoped for and more. Good Company as a whole brought unmatched energy, incredible talent, and pure joy to our celebration. Their song selection was absolutely perfect — every track kept the dance floor packed and our guests singing and dancing all night long. With Good Company, it truly felt like a concert and party rolled into one. Booking Good Company was one of the best decisions we made when it came to our wedding.</p>
+                <p class="testimonial-signature">—Tyler &amp; Marina, Wedding Wire, September 2025 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="maddie.png" alt="Charlie and Maddie — Good Company wedding band Columbus Ohio" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>If there was an option for more stars, the Good Company Band would earn 10!!</h4>
+                <p>The band, the band, the band!!! That is all I have heard since my wedding August 9th, 2025, how AMAZING the band was!! The Good Company Band is phenomenal! Working with them is no stress, easy communication, personalized everything and truly a dream! They are high energy, keeping everyone on the dance floor all night!! Gino is an amazing contact and will ensure everything is PERFECT for your day! If you are in search of a band for your day, STOP HERE because you've found the best!!</p>
+                <p class="testimonial-signature">—Charlie &amp; Maddie, August 2025 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="alex_tyler.png" alt="Tyler and Alex — live wedding music Columbus Ohio review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>Truly Unforgettable!</h4>
+                <p>We cannot thank Good Company Wedding Band enough for making our special day truly unforgettable! Not only did they absolutely crush it musically, but they handled all the sound for the entire event — from the ceremony to the last dance — with total professionalism and care. The dance floor was packed all night long — our guests are still talking about how much fun they had. We couldn't have asked for a better band.</p>
+                <p class="testimonial-signature">—Tyler &amp; Alex, The Knot, June 2025 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="billmags.png" alt="Bill and Maggie — Columbus Ohio wedding band review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>We love Good Company!</h4>
+                <p>If I could give Good Company 10 stars, I would! We had the absolute best experience with them playing at our wedding. They are so accommodating and, of course, FUN! We had a full dance floor the entire night and we owe that to our friends at Good Company!</p>
+                <p class="testimonial-signature">—Bill &amp; Maggie, The Knot, October 2023 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="sterling.png" alt="Sterling and Taylor — wedding band Columbus Ohio five star review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>Phenomenal!</h4>
+                <p>We loved having these guys play for our wedding! Everything about their set is fantastic. The addition of the saxophone and trumpet players adds so many fun elements to a traditional wedding band. They were great with song requests and still gave us enough time to play our own music as well. Incredible energy and musicality. 3 years later and we still have people telling us how great the band at our wedding was!</p>
+                <p class="testimonial-signature">—Sterling &amp; Taylor, Wedding Wire, September 2021 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="Alayna.jpeg" alt="Alayna and Jordan — Central Ohio wedding band review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>Made Our Wedding Unforgettable!</h4>
+                <p>Good Company made an effort to get to know us as a couple, understanding our music interests, and this was evident in their performance. The sound and lighting were top-notch, creating the perfect ambiance for both relaxed mingling and energetic dancing. Good Company did an exceptional job catering to the crowd, ensuring the party kept going and everyone was on the dance floor. We couldn't have asked for a better band to make our wedding unforgettable. Highly recommend Good Company for any event!</p>
+                <p class="testimonial-signature">—Alayna &amp; Jordan, Wedding Wire, June 2024 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="stylski2.png" alt="Andrew and Abby — Good Company wedding band Columbus Ohio" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>Good Company goes to work!</h4>
+                <p>These gentlemen are very professional and had the party going for our wedding! They went to work as soon as we contacted them. Any questions or concerns we had they were very responsive. The sound was crystal clear! I would recommend them to anyone that wants to have the best live music and MCing at your wedding! Love the work that they put in to make our wedding special!</p>
+                <p class="testimonial-signature">—Andrew &amp; Abby, Wedding Wire, March 2022 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+            <article class="testimonial-col fade-in">
+                <div class="user">
+                    <img src="megdrew.png" alt="Drew and Meghan — best wedding band Columbus Ohio review" loading="lazy">
+                </div>
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <div class="stars" aria-label="5 out of 5 stars">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                </div>
+                <h4>Elevated the entire wedding!</h4>
+                <p>Cannot recommend this band enough for your wedding. I never in a million years thought people would say "you had the best wedding I've ever been to," but that's what happened and having Good Company perform played a HUGE role in that. They did a jazz ensemble during our cocktail hour before bringing down the HOUSE at our reception. If you play your cards right this is the only wedding you get — so make the smart choice and book Good Company!</p>
+                <p class="testimonial-signature">—Drew &amp; Meghan, The Knot, August 2021 <i class="fas fa-quote-right" aria-hidden="true"></i></p>
+            </article>
+
+        </div>
+
+        <!-- Award Badges -->
+        <div class="awards-section fade-in">
+            <div class="award-item">
+                <a target="_blank" href="https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html" rel="nofollow noopener" title="WeddingWire Couples' Choice Award Winner 2026">
+                    <img width="120" height="120" alt="WeddingWire Couples Choice Award 2026 — Good Company Wedding Band Columbus Ohio" src="https://cdn1.weddingwire.com/img/badges/2026/badge-weddingawards_en_US.png" loading="lazy">
+                </a>
             </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>A MUST have at your event!</h4>
-            <p>Good Company was absolutely incredible to work with on our wedding day! They provided us an incredibly detailed Google sheet to help plan the night which made everything go so smoothly. They provided mics and music for the ceremony/first dances/speeches, a jazz trio for cocktail hour, and full band for the reception. They had so many song choices, as well as learned some that I requested. I didn’t want the night to end, neither did our guests! If you’re thinking about going with a band for your wedding, you should and the only choice should be GC!</p>
-            <p class="testimonial-signature">
-                -Jack & Tori, Wedding Wire, August 2025<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-
-                <div class="testimonial-col">
-            <div class="user">
-                <img src="marina.png">
+            <div class="award-item">
+                <a target="_blank" href="https://www.theknot.com/marketplace/redirect-2079042" rel="noopener">
+                    <img src="BOW Badge (Primary).png" width="140" height="140" alt="The Knot Best of Weddings 2026 — Good Company Wedding Band Columbus Ohio" loading="lazy">
+                </a>
             </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>Good Company = GREAT Party !!!</h4>
-            <p>My husband and I cannot say enough amazing things about Good Company Wedding Band! From start to finish, they were everything we hoped for and more.
-                Good Company as a whole brought unmatched energy, incredible talent, and pure joy to our celebration. Their song selection was absolutely perfect—every track kept the dance floor packed and our guests singing and dancing all night long. They knew exactly how to read the room and kept the vibe fun, upbeat, and unforgettable. Not only were they musically gifted, but they were also so engaging and clearly having a blast, which made it even more special for us and everyone there. With Good Company, it truly felt like a concert and party rolled into one. In addition to the band, we have to give a special shoutout to our MC, Ian, who was such a delight! He was so personable and kind, and kept the flow of the evening smooth and engaging, hyped up the crowd, and made every transition feel effortless and exciting. His presence added so much personality and polish to the night. If you're looking for a band that will elevate your event and leave your guests raving, look no further because Good Company is the one. We’re still getting compliments weeks later! Booking Good Company was one of the best decisions we made when it came to our wedding. We’re beyond grateful for the musical magic they brought to our special day!</p>
-            <p class="testimonial-signature">
-                -Tyler & Marina, Wedding Wire, September 2025<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-
-                <div class="testimonial-col">
-            <div class="user">
-                <img src="maddie.png">
+            <div class="award-item">
+                <a target="_blank" href="https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html" rel="nofollow noopener" title="WeddingWire Couples' Choice Award Winner 2025">
+                    <img width="120" height="120" alt="WeddingWire Couples Choice Award 2025 — Good Company Wedding Band Columbus Ohio" src="https://cdn1.weddingwire.com/img/badges/2025/badge-weddingawards_en_US.png" loading="lazy">
+                </a>
             </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>If there was an option for more stars, the Good Company Band would earn 10!!</h4>
-            <p>the band, the band, the band!!! That is all I have heard since my wedding August 9th, 2025, how AMAZING the band was!! The Good Company Band is phenomenal! Working with them is no stress, easy communication, personalized everything and truly a dream! I booked the Good Company Band after watching so many of their amazing videos but believe me when I tell you, they really exceed everything when performing live!! They are high energy, keeping everyone on the dance floor all night!! Gino is an amazing contact and will ensure everything is PERFECT for your day! Ian is a top notch performer and I truly cannot recommend them enough! If you are in search of a band for your day, STOP HERE because you've found the best!!</p>
-            <p class="testimonial-signature">
-                -Charlie & Maddie, August 2025<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-
-         <div class="testimonial-col">
-            <div class="user">
-                <img src="alex_tyler.png">
+            <div class="award-item">
+                <a target="_blank" href="https://www.theknot.com/marketplace/redirect-2079042" rel="noopener">
+                    <img src="bow-2025-badge.png" width="140" height="140" alt="The Knot Best of Weddings 2025 — Good Company Wedding Band Columbus Ohio" loading="lazy">
+                </a>
             </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>Truly Unforgettable!</h4>
-            <p>We cannot thank Good Company Wedding Band enough for making our special day truly unforgettable! Not only did they absolutely crush it musically, but they handled all the sound for the entire event - from the ceremony to the last dance - with total professionalism and care. Having a great friend in the band made it all the more meaningful, and the whole group went above and beyond to make sure everything ran smoothly. They were incredibly accommodating, easy to work with, and genuinely cared about making our day perfect. The dance floor was packed all night long - our guests are still talking about how much fun they had. Every special moment, from our first dance to speeches and beyond, sounded amazing thanks to their attention to detail. We couldn't have asked for a better band. Thank you for being such a huge part of the best day of our lives!</p>
-            <p class="testimonial-signature">
-                -Tyler & Alex, The Knot, June 2025<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-
-
-
-         <div class="testimonial-col">
-            <div class="user">
-                <img src="billmags.png">
+            <div class="award-item">
+                <a target="_blank" href="https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html" rel="nofollow noopener" title="WeddingWire Couples' Choice Award Winner 2024">
+                    <img width="120" height="120" alt="WeddingWire Couples Choice Award 2024 — Good Company Wedding Band Columbus Ohio" src="https://cdn1.weddingwire.com/img/badges/2024/badge-weddingawards_en_US.png" loading="lazy">
+                </a>
             </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>We love Good Company!</h4>
-            <p>If I could give Good Company 10 stars, I would! We had the absolute best experience with them playing at our wedding. They are so accommodating and, of course, FUN! We had a full dance floor the entire night and we owe that to our friends at Good Company!</p>
-            <p class="testimonial-signature">
-                -Bill & Maggie, The Knot, October 2023<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-
-        <div class="testimonial-col">
-            <div class="user">
-                <img src="sterling.png">
+            <div class="award-item">
+                <a target="_blank" href="https://www.theknot.com/marketplace/redirect-2079042" rel="noopener">
+                    <img src="TK_BOW_Primary_500px.png" width="120" height="120" alt="The Knot Best of Weddings 2024 — Good Company Wedding Band Columbus Ohio" loading="lazy">
+                </a>
             </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>Phenomenal!</h4>
-            <p>We loved having these guys play for our wedding! Everything about their set is fantastic. The addition of the saxophone and trumpet players adds so many fun elements to a traditional wedding band. They were great with song requests and still gave us enough time to play our own music as well. Incredible energy and musicality. 3 years later and we still have people telling us how great the band at our wedding was!</p>
-            <p class="testimonial-signature">
-                -Sterling & Taylor, Wedding Wire, September 2021<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-        <div class="testimonial-col">
-            <div class="user">
-                <img src="Alayna.jpeg">
-            </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>Made Our Wedding Unforgettable!</h4>
-            <p>Good Company made an effort to get to know us as a couple, understanding our music interests, and this was evident in their performance. The sound and lighting were top-notch, creating the perfect ambiance for both relaxed mingling and energetic dancing. Good Company did an exceptional job catering to the crowd, ensuring the party kept going and everyone was on the dance floor. Our goal was to create an enjoyable experience for guests of all ages, and the band accomplished this perfectly by playing a diverse mix of music that everyone enjoyed. We couldn't have asked for a better band to make our wedding unforgettable. Highly recommend Good Company for any event!</p>
-            <p class="testimonial-signature">
-                -Alayna & Jordan, Wedding Wire, June 2024<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-        <div class="testimonial-col">
-            <div class="user">
-                <img src="stylski2.png">
-            </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>Good Company goes to work!</h4>
-            <p>These gentlemen are very professional and had the party going for our wedding! They went to work as soon as we contacted them. Any questions or concerns we had they were very responsive. The sound was crystal clear! I would recommend them to anyone that wants to have the best live music and MCing at your wedding! Love the work that they put in to make the our wedding special!</p>
-            <p class="testimonial-signature">
-                -Andrew & Abby, Wedding Wire, March 2022<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-        </div>
-        <div class="testimonial-col">
-            <div class="user">
-                <img src="megdrew.png">
-            </div>
-            <i class="fas fa-quote-left"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <h4>Elevated the entire wedding!</h4>
-            <p>Cannot recommend this band enough for your wedding. I never in a million years thought people would say "you had the best wedding I've ever been to," but that's what happened and having Good Company perform played a HUGE role in that. They did a jazz ensemble during our cocktail hour before bringing down the HOUSE at our reception. If you play your cards right this is the only wedding you get - so make the smart choice and book Good Company!</p>
-            <p class="testimonial-signature">
-                -Drew & Meghan, The Knot, August 2021<br>
-                <i class="fas fa-quote-right"></i>
-            </p>
-
-        </div>
-    </div>
-    <div class="buttons-container">
-        <!-- WeddingWire Button -->
-        <div id="wp-ratedWA">
-    <a target="_blank" href="https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html" rel="nofollow" title="WeddingWire Couples' Choice Award Winner 2026">
-        <img width="125" height="125" alt="Good Company" id="wp-ratedWA-img-2026" src="https://cdn1.weddingwire.com/img/badges/2026/badge-weddingawards_en_US.png">
-    </a>
-</div>
-<script type="text/javascript" src="https://cdn1.weddingwire.com/_js/wp-rated.js?v=4"></script>
-<script>wpShowRatedWAv3('2165859','2026');</script>
-
-    
-        <!-- The Knot Button -->
-        <div class="knot-button">
-            <a target="_blank" href="https://www.theknot.com/marketplace/redirect-2079042">
-                <img src="BOW Badge (Primary).png" width="150" height="150" alt="The Knot Best of Weddings - 2024 Pick" border="0">
-            </a>
-        </div>
-    
-            <div class="buttons-container">
-        <!-- WeddingWire Button -->
-        <div id="wp-ratedWA">
-    <a target="_blank" href="https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html" rel="nofollow" title="WeddingWire Couples' Choice Award Winner 2025">
-        <img width="125" height="125" alt="Good Company" id="wp-ratedWA-img-2025" src="https://cdn1.weddingwire.com/img/badges/2025/badge-weddingawards_en_US.png">
-    </a>
-</div>
-<script type="text/javascript" src="https://cdn1.weddingwire.com/_js/wp-rated.js?v=4"></script>
-<script>wpShowRatedWAv3('2165859','2025');</script>
-
-    
-        <!-- The Knot Button -->
-        <div class="knot-button">
-            <a target="_blank" href="https://www.theknot.com/marketplace/redirect-2079042">
-                <img src="bow-2025-badge.png" width="150" height="150" alt="The Knot Best of Weddings - 2024 Pick" border="0">
-            </a>
         </div>
 
-<div class="buttons-container">
-<div id="wp-ratedWA">
-    <a target="_blank" href="https://www.weddingwire.com/biz/good-company/f6565314f0b6b85e.html" rel="nofollow" title="WeddingWire Couples' Choice Award Winner 2024">
-        <img width="125" height="125" alt="Good Company" id="wp-ratedWA-img-2024" src="https://cdn1.weddingwire.com/img/badges/2024/badge-weddingawards_en_US.png">
-    </a>
-</div>
-<script type="text/javascript" src="https://cdn1.weddingwire.com/_js/wp-rated.js?v=4"></script>
-<script>wpShowRatedWAv3('2165859','2024');</script>
-
-
-
-    
-        <!-- The Knot Button -->
-        <div class="knot-button">
-            <a target="_blank" href="https://www.theknot.com/marketplace/redirect-2079042">
-                <img src="TK_BOW_Primary_500px.png" width="125" height="125" alt="The Knot Best of Weddings - 2024 Pick" border="0">
-            </a>
+        <!-- Bottom CTA -->
+        <div class="testimonial-cta fade-in">
+            <p>Ready to make your Columbus, Ohio wedding unforgettable?</p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScz9qUmFPyNlvJ7Pf7rHNSMcEqyWXxTkqF9Qwd6M71b6cJJXA/viewform?usp=sf_link" target="_blank" rel="noopener" class="cta-button cta-dark">Book Good Company Today</a>
         </div>
-            
     </section>
-    
-</section>
 
-<section id="footer">
-    <img src="Circle GC Logo_White.png" class="footer-img">
-    <div class="footer-row">
-        <div class="footer-left">
-            <h1>Get In Touch</h1>
-            <!-- Use mailto protocol to open a new email message -->
-            <p><i class="fas fa-paper-plane"></i><a href="mailto:gino@gcweddingband.com?subject=Wedding%20Band%20Inquiry">gino@gcweddingband.com</a></p>
-            <p><i class="fas fa-phone"></i><a href="tel:+18563812128">+1 (856) 381-2128</a></p>
+    <!-- ============ FOOTER ============ -->
+    <footer id="footer" role="contentinfo">
+        <img src="Circle GC Logo_White.png" class="footer-img" alt="Good Company Wedding Band circular logo — Columbus, Ohio" loading="lazy">
+        <div class="footer-row">
+            <div class="footer-left">
+                <h2>Get In Touch</h2>
+                <address>
+                    <p><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Columbus, Ohio</p>
+                    <p><i class="fas fa-paper-plane" aria-hidden="true"></i><a href="mailto:gino@gcweddingband.com?subject=Wedding%20Band%20Inquiry">gino@gcweddingband.com</a></p>
+                    <p><i class="fas fa-phone" aria-hidden="true"></i><a href="tel:+18563812128">+1 (856) 381-2128</a></p>
+                </address>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScz9qUmFPyNlvJ7Pf7rHNSMcEqyWXxTkqF9Qwd6M71b6cJJXA/viewform?usp=sf_link" target="_blank" rel="noopener" class="footer-cta">Book Good Company</a>
+            </div>
+            <div class="footer-right">
+                <h2>Good Company <i class="fas fa-copyright" aria-hidden="true"></i></h2>
+                <p>Columbus, Ohio's Premier Wedding Band</p>
+                <p>2026</p>
+            </div>
         </div>
-        <div class="footer-right">
-            <h1>Good Company<i class="fas fa-copyright"></i></h1>
-            <p>2026</p>
-        </div>    
-    </div>
+        <div class="social-link">
+            <a href="https://www.instagram.com/gcweddingband/" target="_blank" rel="noopener noreferrer" aria-label="Good Company Wedding Band on Instagram">
+                <i class="fab fa-instagram" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.tiktok.com/@gcweddingband?_t=8lYAkhNu5Hf&_r=1" target="_blank" rel="noopener noreferrer" aria-label="Good Company Wedding Band on TikTok">
+                <i class="fa-brands fa-tiktok" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.youtube.com/channel/UCQ0YrFxvaUCeUXp8_JA6-vQ" target="_blank" rel="noopener noreferrer" aria-label="Good Company Wedding Band on YouTube">
+                <i class="fa-brands fa-youtube" aria-hidden="true"></i>
+            </a>
+        </div>
+        <p class="footer-tagline">Serving Columbus, Ohio and all of Central Ohio &mdash; Making your wedding unforgettable.</p>
+    </footer>
 
-    <div class="social-link">
-        <!-- Update the href attribute to link to the Facebook profile -->
-      
-       <!--<a href="https://www.facebook.com/people/Good-Company/61554654480770/" target="_blank" rel="noopener noreferrer">
-            <i class="fa-brands fa-facebook-f"></i>
-        </a> -->
-        <a href="https://www.instagram.com/gcweddingband/" target="_blank" rel="noopener noreferrer">
-            <i class="fab fa-instagram"></i>
-        </a>
-        <a href="https://www.tiktok.com/@gcweddingband?_t=8lYAkhNu5Hf&_r=1" target="_blank" rel="noopener noreferrer">
-            <i class="fa-brands fa-tiktok"></i>
-        </a>
-        <a href="https://www.youtube.com/channel/UCQ0YrFxvaUCeUXp8_JA6-vQ" target="_blank" rel="noopener noreferrer">
-            <i class="fa-brands fa-youtube"></i>
-        </a>         
-        <!-- <a href="https://twitter.com/goodcompany614" target="_blank" rel="noopener noreferrer">
-            <i class="fa-brands fa-x-twitter"></i>
-        </a>
-        <i class="fa-brands fa-youtube"></i> -->
-    </div>
-</section>
+    <script>
+        // Smooth scroll (native CSS handles most, but for older Safari)
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
 
+        // Navbar scroll behavior
+        var navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', function() {
+            navbar.classList.toggle('scrolled', window.scrollY > 80);
+        }, { passive: true });
 
+        // Hamburger menu
+        var hamburger = document.querySelector('.hamburger');
+        var mobileMenu = document.getElementById('mobile-menu');
+        hamburger.addEventListener('click', function() {
+            var isOpen = mobileMenu.classList.toggle('open');
+            hamburger.classList.toggle('open');
+            hamburger.setAttribute('aria-expanded', isOpen);
+            mobileMenu.setAttribute('aria-hidden', !isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+        mobileMenu.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                mobileMenu.classList.remove('open');
+                hamburger.classList.remove('open');
+                hamburger.setAttribute('aria-expanded', 'false');
+                mobileMenu.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            });
+        });
 
-
+        // Scroll-triggered fade animations
+        if ('IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+            document.querySelectorAll('.fade-in').forEach(function(el) {
+                observer.observe(el);
+            });
+        } else {
+            // Fallback: show everything immediately
+            document.querySelectorAll('.fade-in').forEach(function(el) {
+                el.classList.add('visible');
+            });
+        }
+    </script>
 </body>
 </html>
