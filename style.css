@@ -631,25 +631,25 @@ img {
 #feature {
     width: 100%;
     padding: 100px 0;
-    background: var(--navy);
+    background: var(--cream);
 }
 
-/* Dark-mode overrides for feature section */
-#feature .title-text h2      { color: var(--cream); }
-#feature .title-text p       { color: var(--steel); }
-#feature .title-text .section-location { color: var(--steel); }
-#feature .features h3        { color: var(--cream); }
-#feature .feature-text p     { color: var(--steel); }
-#feature .features-desc      { border-bottom-color: rgba(237,234,228,0.1); }
+/* Light-mode overrides for feature section */
+#feature .title-text h2      { color: var(--navy); }
+#feature .title-text p       { color: #999; }
+#feature .title-text .section-location { color: #666; }
+#feature .features h3        { color: var(--navy); }
+#feature .feature-text p     { color: #555; }
+#feature .features-desc      { border-bottom-color: rgba(21,49,71,0.07); }
 #feature .features-icon .fas,
 #feature .features-icon .fa-brands {
-    color: var(--cream);
-    border-color: rgba(237,234,228,0.25);
+    color: var(--navy);
+    border-color: rgba(21,49,71,0.22);
 }
 #feature .features-desc:hover .features-icon .fas,
 #feature .features-desc:hover .features-icon .fa-brands {
-    border-color: var(--cream);
-    background: rgba(237,234,228,0.08);
+    border-color: var(--navy);
+    background: rgba(21,49,71,0.06);
 }
 
 .feature-box {
