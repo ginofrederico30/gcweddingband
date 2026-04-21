@@ -56,6 +56,11 @@
     }
     </script>
 
+    <!-- Preconnect to external origins -->
+    <link rel="preconnect" href="https://www.tiktok.com">
+    <link rel="preconnect" href="https://kit.fontawesome.com">
+    <link rel="dns-prefetch" href="https://lf16-tiktok-web.ttwstatic.com">
+
     <!-- Preload critical assets -->
     <link rel="preload" href="Montserrat-VariableFont_wght.ttf" as="font" type="font/truetype" crossorigin>
     <link rel="preload" href="background.jpg" as="image">
@@ -149,43 +154,43 @@
                 <div class="reels-track" id="reelsTrack">
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7524123543550922039" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7524123543550922039" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7547216606863084855" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7547216606863084855" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7545257929251851533" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7545257929251851533" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7630831457967131917" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7630831457967131917" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7369302101811318059" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7369302101811318059" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7446453856902434094" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7446453856902434094" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7432300404693667114" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7432300404693667114" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7557387223411281207" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7557387223411281207" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7557097550784761101" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7557097550784761101" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                     <div class="reel-card">
-                        <iframe src="https://www.tiktok.com/embed/v2/7480164034982202670" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                        <iframe data-src="https://www.tiktok.com/embed/v2/7480164034982202670" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
                     </div>
 
                 </div><!-- /reels-track -->
@@ -689,6 +694,24 @@
             };
             next.addEventListener('click', function() { track.scrollBy({ left: cardW() * 2, behavior: 'smooth' }); });
             prev.addEventListener('click', function() { track.scrollBy({ left: -cardW() * 2, behavior: 'smooth' }); });
+        })();
+    </script>
+
+    <script>
+        // Lazy-load TikTok iframes — activate only when section scrolls into view
+        (function() {
+            var iframes = document.querySelectorAll('iframe[data-src]');
+            if (!iframes.length) return;
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        var el = entry.target;
+                        el.src = el.dataset.src;
+                        observer.unobserve(el);
+                    }
+                });
+            }, { rootMargin: '200px' });
+            iframes.forEach(function(el) { observer.observe(el); });
         })();
     </script>
 
