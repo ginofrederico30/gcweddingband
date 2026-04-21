@@ -132,6 +132,76 @@
         </div>
     </section>
 
+    <!-- ============ TIKTOK VIDEOS ============ -->
+    <section id="reels">
+        <div class="reels-inner">
+            <div class="reels-header fade-in">
+                <div>
+                    <span class="eyebrow">LATEST HIGHLIGHTS</span>
+                    <h2>FROM OUR TIKTOK</h2>
+                </div>
+                <a href="https://www.tiktok.com/@gcweddingband" target="_blank" rel="noopener noreferrer" class="reels-ig-link">
+                    <i class="fa-brands fa-tiktok" aria-hidden="true"></i> @gcweddingband
+                </a>
+            </div>
+
+            <div class="reels-carousel-wrapper fade-in">
+                <div class="reels-track" id="reelsTrack">
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7524123543550922039" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7547216606863084855" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7545257929251851533" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7630831457967131917" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7369302101811318059" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7446453856902434094" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7432300404693667114" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7557387223411281207" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7557097550784761101" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                    <div class="reel-card">
+                        <iframe src="https://www.tiktok.com/embed/v2/7480164034982202670" allowfullscreen scrolling="no" allow="encrypted-media;" title="Good Company Wedding Band TikTok"></iframe>
+                    </div>
+
+                </div><!-- /reels-track -->
+
+                <div class="reels-nav">
+                    <button class="reels-btn" id="reelsPrev" aria-label="Previous reels">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    </button>
+                    <button class="reels-btn" id="reelsNext" aria-label="Next reels">
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- ============ UPCOMING SHOWS ============ -->
     <section id="shows">
         <div class="shows-inner">
@@ -606,6 +676,21 @@
         </div>
         <p class="footer-tagline">Serving Columbus, Ohio and all of Central Ohio &mdash; Making your wedding unforgettable.</p>
     </footer>
+
+    <script>
+        (function() {
+            var track = document.getElementById('reelsTrack');
+            var prev  = document.getElementById('reelsPrev');
+            var next  = document.getElementById('reelsNext');
+            if (!track || !prev || !next) return;
+            var cardW = function() {
+                var c = track.querySelector('.reel-card');
+                return c ? c.offsetWidth + 20 : 345;
+            };
+            next.addEventListener('click', function() { track.scrollBy({ left: cardW() * 2, behavior: 'smooth' }); });
+            prev.addEventListener('click', function() { track.scrollBy({ left: -cardW() * 2, behavior: 'smooth' }); });
+        })();
+    </script>
 
     <script>
         // Smooth scroll (native CSS handles most, but for older Safari)
