@@ -152,6 +152,7 @@ img {
     border: 2px solid rgba(255,255,255,0.75);
     padding: 8px 20px;
     border-radius: 24px;
+    white-space: nowrap;
     transition: background var(--ease), border-color var(--ease), color var(--ease);
 }
 
@@ -163,6 +164,27 @@ img {
     background: #fff;
     border-color: #fff;
     color: var(--navy);
+}
+
+.nav-links .nav-portal-login {
+    border: 1px solid rgba(255,255,255,0.35);
+    padding: 7px 16px;
+    border-radius: 24px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.75;
+    transition: opacity var(--ease), border-color var(--ease);
+}
+
+.nav-links .nav-portal-login::after {
+    display: none;
+}
+
+.nav-links .nav-portal-login:hover {
+    opacity: 1;
+    border-color: rgba(255,255,255,0.7);
 }
 
 /* Hamburger */
@@ -1505,8 +1527,10 @@ img {
     .features-img { display: none; }
     .features { flex-basis: 100%; }
     .single-service { flex: 0 1 calc(50% - 0px); }
-    .nav-links { gap: 16px; }
+    .nav-links { gap: 12px; }
     .nav-links a { font-size: 11px; }
+    .nav-links .nav-cta { padding: 7px 14px; }
+    .nav-links .nav-portal-login { padding: 6px 12px; }
     .videos-section-inner { padding: 0 24px; }
     .shows-inner { padding: 0 24px; }
     .show-name { font-size: 24px; }
