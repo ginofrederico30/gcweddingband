@@ -384,11 +384,47 @@ function _removeAutocompleteDropdown() {
   if (_nominatimDropdown) { _nominatimDropdown.remove(); _nominatimDropdown = null; }
 }
 
+const _STATE_ABBR = {
+  'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA',
+  'Colorado':'CO','Connecticut':'CT','Delaware':'DE','Florida':'FL','Georgia':'GA',
+  'Hawaii':'HI','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA','Kansas':'KS',
+  'Kentucky':'KY','Louisiana':'LA','Maine':'ME','Maryland':'MD','Massachusetts':'MA',
+  'Michigan':'MI','Minnesota':'MN','Mississippi':'MS','Missouri':'MO','Montana':'MT',
+  'Nebraska':'NE','Nevada':'NV','New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM',
+  'New York':'NY','North Carolina':'NC','North Dakota':'ND','Ohio':'OH','Oklahoma':'OK',
+  'Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC',
+  'South Dakota':'SD','Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT',
+  'Virginia':'VA','Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY',
+  'District of Columbia':'DC'
+};
+
+function _formatNominatimAddress(r) {
+  const a = r.address || {};
+  const parts = [];
+
+  // Venue / place name (only if distinct from the road)
+  const name = a.amenity || a.leisure || a.tourism || a.building || a.shop || '';
+  if (name) parts.push(name);
+
+  // Street address
+  const street = [a.house_number, a.road].filter(Boolean).join(' ');
+  if (street) parts.push(street);
+
+  // City
+  const city = a.city || a.town || a.village || a.hamlet || '';
+  const state = _STATE_ABBR[a.state] || a.state || '';
+  const zip   = (a.postcode || '').split('-')[0]; // drop ZIP+4 extension
+
+  const cityLine = [city, state ? (zip ? state + ' ' + zip : state) : zip].filter(Boolean).join(', ');
+  if (cityLine) parts.push(cityLine);
+
+  return parts.join(', ') || r.display_name;
+}
+
 function attachNominatimAutocomplete(inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
 
-  // Skip if Google Maps attached
   if (input._nominatimAttached) return;
   input._nominatimAttached = true;
 
@@ -397,10 +433,10 @@ function attachNominatimAutocomplete(inputId) {
     const q = this.value.trim();
     if (q.length < 3) { _removeAutocompleteDropdown(); return; }
     _nominatimDebounce[inputId] = setTimeout(async () => {
-      if (input._gmAttached) return; // Google Maps took over
+      if (input._gmAttached) return;
       try {
         const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' +
-          encodeURIComponent(q) + '&limit=6&countrycodes=us&addressdetails=0';
+          encodeURIComponent(q) + '&limit=6&countrycodes=us&addressdetails=1';
         const res  = await fetch(url);
         const data = await res.json();
         _showNominatimDropdown(input, data);
@@ -421,18 +457,22 @@ function _showNominatimDropdown(input, results) {
   const rect = input.getBoundingClientRect();
   const ul   = document.createElement('ul');
   ul.className = 'autocomplete-dropdown';
-  ul.style.top    = (rect.bottom + window.scrollY + 3) + 'px';
-  ul.style.left   = rect.left + 'px';
-  ul.style.width  = rect.width + 'px';
+  ul.style.top   = (rect.bottom + window.scrollY + 3) + 'px';
+  ul.style.left  = rect.left + 'px';
+  ul.style.width = rect.width + 'px';
   _nominatimDropdown = ul;
 
+  // Deduplicate by formatted address
+  const seen = new Set();
   results.forEach(r => {
+    const label = _formatNominatimAddress(r);
+    if (seen.has(label)) return;
+    seen.add(label);
     const li = document.createElement('li');
-    // Shorten display: strip ", United States" suffix
-    li.textContent = r.display_name.replace(/, United States$/, '');
+    li.textContent = label;
     li.addEventListener('mousedown', function(e) {
       e.preventDefault();
-      input.value = li.textContent;
+      input.value = label;
       input.dispatchEvent(new Event('input'));
       _removeAutocompleteDropdown();
     });
@@ -856,6 +896,12 @@ function renderClientContract(clientId) {
   const unsignedSection    = document.getElementById('contract-unsigned-section');
   const clientSignedSection = document.getElementById('contract-client-signed-section');
   const executedSection    = document.getElementById('contract-executed-section');
+
+  // Strip highlights once fully executed
+  const contractCard = document.getElementById('contract-print-area');
+  if (contractCard) {
+    contractCard.classList.toggle('contract-executed', !!(contract.signedAt && contract.adminSignedAt));
+  }
 
   if (contract.signedAt && contract.adminSignedAt) {
     // FULLY EXECUTED

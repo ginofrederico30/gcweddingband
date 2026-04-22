@@ -1580,6 +1580,17 @@ textarea { resize: vertical; }
     color: #2d7a2d;
     font-weight: 700;
 }
+/* Remove all field highlights once fully executed */
+.contract-executed .cc-highlight-yellow,
+.contract-executed .cc-highlight-green {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
 
 /* ============================================
    Contract — Field tags
