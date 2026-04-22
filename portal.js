@@ -102,8 +102,11 @@ const DB = {
   getClients()   { return this._get('gc_clients') || []; },
   setClients(v)  { this._set('gc_clients', v); },
 
-  getMasterSongs()  { return this._get('gc_master_songs') || []; },
-  setMasterSongs(v) { this._set('gc_master_songs', v); },
+  getMasterSongs()     { return this._get('gc_master_songs') || []; },
+  setMasterSongs(v)    { this._set('gc_master_songs', v); },
+
+  getMasterContract()  { return this._get('gc_master_contract') || {}; },
+  setMasterContract(v) { this._set('gc_master_contract', v); },
 
   getContract(cid) {
     return (this._get('gc_contracts') || {})[cid] || { admin: {}, client: {}, signedAt: null, signatureData: null };
@@ -180,7 +183,7 @@ function logout() {
    ============================================ */
 const VIEWS = [
   'view-login', 'view-admin-dash', 'view-admin-client',
-  'view-admin-songs', 'view-client-dash', 'view-contract',
+  'view-admin-songs', 'view-master-contract', 'view-client-dash', 'view-contract',
   'view-songs', 'view-checklist', 'view-ceremony'
 ];
 
@@ -1152,6 +1155,14 @@ const CONTRACT_SECTIONS = [
   { key: 'governingLaw',    label: '21. Governing Law' }
 ];
 
+function _sectionBaseHTML(key) {
+  // The baseline for a section: master contract override, then raw HTML default
+  const master = DB.getMasterContract();
+  if (master[key]) return master[key];
+  const domEl = document.querySelector('[data-contract-section="' + key + '"]');
+  return domEl ? domEl.innerHTML.trim() : '';
+}
+
 function renderLangEditor(clientId) {
   const container = document.getElementById('lang-editor-sections');
   if (!container) return;
@@ -1159,28 +1170,22 @@ function renderLangEditor(clientId) {
   const customText = contract.customText || {};
 
   container.innerHTML = CONTRACT_SECTIONS.map(s => {
-    // Read default HTML straight from the live contract DOM
-    const domEl      = document.querySelector('[data-contract-section="' + s.key + '"]');
-    const defaultHTML = domEl ? domEl.innerHTML.trim() : '';
-    // Use custom text if saved, otherwise the default
-    const currentHTML = customText[s.key] || defaultHTML;
+    const baseHTML    = _sectionBaseHTML(s.key);
+    const currentHTML = customText[s.key] || baseHTML;
+    const isCustom    = !!customText[s.key];
     return `<div class="lang-section-block">
       <div class="lang-section-block-label">
-        <span>${escHtml(s.label)}</span>
-        <button type="button" class="lang-reset-btn" data-section="${s.key}" title="Reset to default">Reset</button>
+        <span>${escHtml(s.label)}${isCustom ? ' <span class="lang-custom-badge">Custom</span>' : ''}</span>
+        <button type="button" class="lang-reset-btn" data-section="${s.key}" title="Reset to master/default">Reset</button>
       </div>
       <div class="lang-section-edit" id="lang-${s.key}" contenteditable="true">${currentHTML}</div>
     </div>`;
   }).join('');
 
-  // Store defaults for reset buttons
   container.querySelectorAll('.lang-reset-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      const key   = this.dataset.section;
-      const domEl = document.querySelector('[data-contract-section="' + key + '"]');
-      if (!domEl) return;
-      const edit  = document.getElementById('lang-' + key);
-      if (edit) edit.innerHTML = domEl.innerHTML.trim();
+      const edit = document.getElementById('lang-' + this.dataset.section);
+      if (edit) edit.innerHTML = _sectionBaseHTML(this.dataset.section);
     });
   });
 }
@@ -1191,11 +1196,9 @@ function saveLangOverrides(clientId) {
   CONTRACT_SECTIONS.forEach(s => {
     const el = document.getElementById('lang-' + s.key);
     if (!el) return;
-    const domEl      = document.querySelector('[data-contract-section="' + s.key + '"]');
-    const defaultHTML = domEl ? domEl.innerHTML.trim() : '';
     const currentHTML = el.innerHTML.trim();
-    // Only store if actually different from default
-    if (currentHTML !== defaultHTML) customText[s.key] = currentHTML;
+    const baseHTML    = _sectionBaseHTML(s.key);
+    if (currentHTML !== baseHTML) customText[s.key] = currentHTML;
   });
   contract.customText = customText;
   DB.setContract(clientId, contract);
@@ -1204,15 +1207,66 @@ function saveLangOverrides(clientId) {
 }
 
 function applyLangOverrides(contract) {
+  const masterText = DB.getMasterContract();
   const customText = contract.customText || {};
   CONTRACT_SECTIONS.forEach(s => {
     const el = document.querySelector('[data-contract-section="' + s.key + '"]');
     if (!el) return;
+    // Priority: per-client override → master contract → HTML default
     if (customText[s.key]) {
       el.innerHTML = customText[s.key];
+    } else if (masterText[s.key]) {
+      el.innerHTML = masterText[s.key];
     }
-    // else leave default HTML intact
   });
+}
+
+/* ============================================
+   ADMIN MASTER CONTRACT EDITOR
+   ============================================ */
+
+function renderMasterContractEditor() {
+  const container  = document.getElementById('master-contract-sections');
+  if (!container) return;
+  const masterText = DB.getMasterContract();
+
+  container.innerHTML = CONTRACT_SECTIONS.map(s => {
+    const domEl      = document.querySelector('[data-contract-section="' + s.key + '"]');
+    const htmlDefault = domEl ? domEl.innerHTML.trim() : '';
+    const currentHTML = masterText[s.key] || htmlDefault;
+    const isOverride  = !!masterText[s.key];
+    return `<div class="lang-section-block">
+      <div class="lang-section-block-label">
+        <span>${escHtml(s.label)}${isOverride ? ' <span class="lang-custom-badge">Modified</span>' : ''}</span>
+        <button type="button" class="lang-reset-btn master-reset-btn" data-section="${s.key}" title="Reset to original HTML default">Reset to Original</button>
+      </div>
+      <div class="lang-section-edit" id="master-lang-${s.key}" contenteditable="true">${currentHTML}</div>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.master-reset-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const key   = this.dataset.section;
+      const domEl = document.querySelector('[data-contract-section="' + key + '"]');
+      const edit  = document.getElementById('master-lang-' + key);
+      if (edit && domEl) edit.innerHTML = domEl.innerHTML.trim();
+    });
+  });
+}
+
+function saveMasterContract() {
+  const masterText = {};
+  CONTRACT_SECTIONS.forEach(s => {
+    const el = document.getElementById('master-lang-' + s.key);
+    if (!el) return;
+    const domEl      = document.querySelector('[data-contract-section="' + s.key + '"]');
+    const htmlDefault = domEl ? domEl.innerHTML.trim() : '';
+    const currentHTML = el.innerHTML.trim();
+    if (currentHTML !== htmlDefault) masterText[s.key] = currentHTML;
+  });
+  DB.setMasterContract(masterText);
+  flashSaved('master-contract-saved');
+  showToast('Master contract saved. All future contracts will use this language.');
 }
 
 /* ============================================
@@ -1597,6 +1651,17 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ---- Admin: delete client ---- */
   document.getElementById('btn-delete-client').addEventListener('click', function() {
     if (currentAdminClientId) confirmDeleteClient(currentAdminClientId);
+  });
+
+  /* ---- Admin: master contract ---- */
+  document.getElementById('btn-master-contract').addEventListener('click', function() {
+    renderMasterContractEditor(); showView('view-master-contract'); setNavSection('Master Contract');
+  });
+  document.getElementById('master-contract-back').addEventListener('click', function() {
+    renderAdminDash(); showView('view-admin-dash'); setNavSection('Admin Portal');
+  });
+  document.getElementById('btn-save-master-contract').addEventListener('click', function() {
+    saveMasterContract();
   });
 
   /* ---- Admin: manage songs ---- */
