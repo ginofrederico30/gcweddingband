@@ -776,7 +776,6 @@
                 <h2>Song Selector</h2>
                 <span class="page-subhead" id="songs-selected-count">0 songs selected</span>
             </div>
-            <button class="btn-secondary" id="btn-select-all-songs">Select All</button>
             <button class="btn-primary" id="btn-save-songs"><i class="fas fa-save"></i> Save &amp; Return</button>
         </div>
         <div class="song-catalog-desc">
@@ -793,15 +792,15 @@
                 <div><strong>Do Not Play</strong> — We will never play this at your event</div>
             </div>
         </div>
-        <div class="card">
-            <div class="card-header song-selector-header">
-                <input type="text" id="song-selector-search" class="search-input" placeholder="Search songs…">
-                <div class="song-col-headers">
-                    <span></span>
-                    <span class="scol-priority">Priority</span>
-                    <span class="scol-yes">Yes</span>
-                    <span class="scol-dnp">Do Not Play</span>
-                </div>
+        <div class="card song-selector-card">
+            <div class="card-header">
+                <input type="text" id="song-selector-search" class="search-input" placeholder="Search songs…" style="max-width:260px">
+            </div>
+            <div class="song-col-headers">
+                <span></span>
+                <span class="scol-priority">Priority</span>
+                <span class="scol-yes">Yes</span>
+                <span class="scol-dnp">Do Not Play</span>
             </div>
             <div id="new-songs-section" class="hidden">
                 <h4 class="songs-section-label new-songs-label"><i class="fas fa-star"></i> New Additions</h4>

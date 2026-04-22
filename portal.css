@@ -1863,20 +1863,20 @@ textarea { resize: vertical; }
 .catalog-desc-item:nth-child(3) i { color: #888; }
 .catalog-desc-item strong { color: var(--navy); }
 
-.song-selector-header {
-    flex-direction: column;
-    align-items: stretch !important;
-    gap: 10px;
-    padding-bottom: 0 !important;
+/* Shared column definition — used by both header and rows */
+:root {
+    --song-col-tpl: minmax(0, 1fr) 96px 96px 112px;
+    --song-col-px: 20px;
 }
 
+/* Column header bar — direct child of .card, same padding as rows */
 #view-songs .song-col-headers {
     display: grid;
-    grid-template-columns: 1fr 90px 60px 90px;
-    gap: 0;
-    padding: 8px 24px 8px;
-    border-top: 1px solid #f0efec;
+    grid-template-columns: var(--song-col-tpl);
+    padding: 9px var(--song-col-px);
     background: #f8f7f4;
+    border-top: 1px solid #f0efec;
+    border-bottom: 1px solid #f0efec;
 }
 .song-col-headers span {
     font-family: var(--font-sans);
@@ -1885,32 +1885,30 @@ textarea { resize: vertical; }
     text-transform: uppercase;
     letter-spacing: 1.5px;
     text-align: center;
+    white-space: nowrap;
 }
 .scol-priority { color: #b91c1c; }
 .scol-yes      { color: #155724; }
 .scol-dnp      { color: #888; }
 
-/* Song item row with checkboxes — client selector only */
+/* Song item row — same grid + padding as column headers */
 #view-songs .song-item {
     display: grid;
-    grid-template-columns: 1fr 90px 60px 90px;
+    grid-template-columns: var(--song-col-tpl);
     align-items: center;
-    justify-items: center;
-    padding: 10px 24px;
+    padding: 11px var(--song-col-px);
     border-bottom: 1px solid #f4f3f0;
     gap: 0;
 }
 #view-songs .song-item:last-child { border-bottom: none; }
 #view-songs .song-item .song-info {
-    justify-self: start;
-    width: 100%;
+    min-width: 0;
 }
 
 .song-check-cell {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
 }
 .song-check-cell input[type="checkbox"] {
     width: 18px;
@@ -2094,8 +2092,7 @@ textarea { resize: vertical; }
     .contract-grid { grid-template-columns: 1fr; }
     .agreement-body { padding: 24px 20px 36px; }
     .contract-doc-header { padding: 24px 20px; }
-    #view-songs .song-col-headers { grid-template-columns: 1fr 70px 50px 80px; padding: 6px 16px; }
-    #view-songs .song-item { grid-template-columns: 1fr 70px 50px 80px; padding: 10px 16px; }
+    :root { --song-col-tpl: minmax(0,1fr) 72px 72px 88px; --song-col-px: 16px; }
     .req-form-grid { grid-template-columns: 1fr; }
     .req-add-col { grid-column: auto; }
     .sig-block-grid { grid-template-columns: 1fr; }
