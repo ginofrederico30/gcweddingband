@@ -538,10 +538,10 @@ function openClientDetail(clientId) {
   document.getElementById('ac-lodging').value          = a.lodging        || '';
   calcContractTotals();
 
-  // Scope of services checkboxes
+  // Scope of services checkboxes — only check what was explicitly saved
   const savedServices = a.scopeOfServices || [];
   document.querySelectorAll('input[name="scope-service"]').forEach(cb => {
-    cb.checked = savedServices.length === 0 || savedServices.includes(cb.value);
+    cb.checked = savedServices.includes(cb.value);
   });
 
   // Client-filled fields (readonly)
@@ -772,6 +772,17 @@ function renderClientDash(clientId) {
   cb.className   = 'module-status status-badge ' + cs.cls;
   cb.textContent = cs.label;
 
+  // Dim the contract card and update its description when not yet ready
+  const contractCard = document.getElementById('module-contract');
+  const contractDesc = contractCard ? contractCard.querySelector('.module-info p') : null;
+  const isPending = cs.label === 'Pending';
+  if (contractCard) contractCard.classList.toggle('module-card-pending', isPending);
+  if (contractDesc) {
+    contractDesc.textContent = isPending
+      ? 'Your contract is being prepared — check back soon'
+      : 'Review and sign your contract';
+  }
+
   // Songs status
   const selCnt = countSelectedSongs(clientId);
   const newSongCnt = countNewSongs(clientId);
@@ -830,10 +841,16 @@ function renderClientContract(clientId) {
   document.getElementById('cc-deposit').textContent       = fmtMoney(deposit);
   document.getElementById('cc-final-balance').textContent = fmtMoney(balance);
 
-  // Populate scope of services list from admin selections
+  // Always write scope-services-list from saved admin data.
+  // applyLangOverrides may have replaced the scope section HTML,
+  // so we re-query the element after it runs to ensure we get the live one.
   const servicesList = document.getElementById('scope-services-list');
-  if (servicesList && a.scopeOfServices && a.scopeOfServices.length) {
-    servicesList.innerHTML = a.scopeOfServices.map(s => `<li>${escHtml(s)}</li>`).join('');
+  if (servicesList) {
+    if (a.scopeOfServices && a.scopeOfServices.length) {
+      servicesList.innerHTML = a.scopeOfServices.map(s => `<li>${escHtml(s)}</li>`).join('');
+    } else {
+      servicesList.innerHTML = '<li style="color:#aaa;font-style:italic">Scope of services to be confirmed by Good Company.</li>';
+    }
   }
 
   const unsignedSection    = document.getElementById('contract-unsigned-section');
@@ -1708,6 +1725,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const s = getSession();
       if (!s || s.role !== 'client') return;
       if (target === 'view-contract') {
+        const cs = contractStatus(s.clientId);
+        if (cs.label === 'Pending') {
+          showToast('Your contract is being prepared by Good Company. Check back soon.');
+          return;
+        }
         renderClientContract(s.clientId); setNavSection('Performance Agreement');
       } else if (target === 'view-songs') {
         renderSongSelector(s.clientId); setNavSection('Song Selector');

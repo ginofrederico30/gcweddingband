@@ -1045,6 +1045,16 @@ textarea { resize: vertical; }
     border-color: var(--navy);
 }
 
+.module-card-pending {
+    opacity: 0.6;
+    cursor: default;
+}
+.module-card-pending:hover {
+    box-shadow: var(--shadow);
+    transform: none;
+    border-color: transparent;
+}
+
 .module-icon {
     width: 52px;
     height: 52px;
