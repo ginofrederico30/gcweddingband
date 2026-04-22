@@ -1895,16 +1895,22 @@ textarea { resize: vertical; }
     display: grid;
     grid-template-columns: 1fr 90px 60px 90px;
     align-items: center;
+    justify-items: center;
     padding: 10px 24px;
     border-bottom: 1px solid #f4f3f0;
     gap: 0;
 }
 #view-songs .song-item:last-child { border-bottom: none; }
+#view-songs .song-item .song-info {
+    justify-self: start;
+    width: 100%;
+}
 
 .song-check-cell {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 .song-check-cell input[type="checkbox"] {
     width: 18px;

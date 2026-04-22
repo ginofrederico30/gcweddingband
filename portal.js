@@ -1248,6 +1248,11 @@ function renderSongSelector(clientId) {
   const labelEl = document.getElementById('songs-selected-count');
   if (labelEl) labelEl.textContent = total + ' song' + (total === 1 ? '' : 's') + ' marked';
 
+  const allSongs_total = DB.getMasterSongs();
+  const anyMarked = allSongs_total.some(s => prefs[s.id]);
+  const selAllBtn = document.getElementById('btn-select-all-songs');
+  if (selAllBtn) selAllBtn.textContent = anyMarked ? 'Deselect All' : 'Select All';
+
   function songHTML(s) {
     const isNew = s.addedAt > client.createdAt;
     const pref  = prefs[s.id] || '';
@@ -1391,6 +1396,23 @@ function deleteSongRequest(clientId, requestId) {
   gcp.songRequests = (gcp.songRequests || []).filter(r => r.id !== requestId);
   DB.setGCP(clientId, gcp);
   renderSongRequests(clientId);
+}
+
+function selectAllSongs(clientId) {
+  const gcp      = DB.getGCP(clientId);
+  const prefs    = {};
+  Object.keys(gcp.songs || {}).forEach(k => { prefs[k] = _normalizePref(gcp.songs[k]); });
+  const allSongs = DB.getMasterSongs();
+  const anyMarked = allSongs.some(s => prefs[s.id]);
+
+  if (anyMarked) {
+    gcp.songs = {};
+  } else {
+    allSongs.forEach(s => { prefs[s.id] = 'Yes'; });
+    gcp.songs = prefs;
+  }
+  DB.setGCP(clientId, gcp);
+  renderSongSelector(clientId);
 }
 
 function saveSongSelections(clientId) {
@@ -1721,6 +1743,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('song-selector-search').addEventListener('input', function() {
     const s = getSession();
     if (s) renderSongSelector(s.clientId);
+  });
+
+  /* ---- Client: select/deselect all songs ---- */
+  document.getElementById('btn-select-all-songs').addEventListener('click', function() {
+    const s = getSession();
+    if (s) selectAllSongs(s.clientId);
   });
 
   /* ---- Client: add song request ---- */
