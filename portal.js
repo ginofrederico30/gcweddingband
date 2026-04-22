@@ -881,10 +881,22 @@ function renderClientContract(clientId) {
   document.getElementById('cc-deposit').textContent       = fmtMoney(deposit);
   document.getElementById('cc-final-balance').textContent = fmtMoney(balance);
 
-  // Always write scope-services-list from saved admin data.
-  // applyLangOverrides may have replaced the scope section HTML,
-  // so we re-query the element after it runs to ensure we get the live one.
-  const servicesList = document.getElementById('scope-services-list');
+  // Populate scope-services-list from saved admin selections.
+  // Always done after applyLangOverrides so any section replacement can't hide the data.
+  // If a language override removed the list element entirely, rebuild it inside the scope section.
+  let servicesList = document.getElementById('scope-services-list');
+  if (!servicesList) {
+    const scopeEl = document.querySelector('[data-contract-section="scope"]');
+    if (scopeEl) {
+      const firstLi = scopeEl.querySelector('ol.contract-list > li:first-child');
+      if (firstLi) {
+        servicesList = document.createElement('ol');
+        servicesList.id   = 'scope-services-list';
+        servicesList.type = 'i';
+        firstLi.appendChild(servicesList);
+      }
+    }
+  }
   if (servicesList) {
     if (a.scopeOfServices && a.scopeOfServices.length) {
       servicesList.innerHTML = a.scopeOfServices.map(s => `<li>${escHtml(s)}</li>`).join('');
@@ -1198,6 +1210,11 @@ function adminCounterSign(clientId) {
 /* ============================================
    CONTRACT LANGUAGE EDITOR
    ============================================ */
+
+// Snapshot of original section HTML captured at DOMContentLoaded, before any render
+// modifies the live DOM. _sectionBaseHTML uses this so the comparison baseline never drifts.
+const _CONTRACT_HTML_DEFAULTS = {};
+
 const CONTRACT_SECTIONS = [
   { key: 'scope',           label: '2. Scope of Services' },
   { key: 'clientReqs',      label: '3. Client Requirements' },
@@ -1219,11 +1236,12 @@ const CONTRACT_SECTIONS = [
 ];
 
 function _sectionBaseHTML(key) {
-  // The baseline for a section: master contract override, then raw HTML default
+  // Priority: master contract override, then the original page HTML (captured at load time).
+  // Never reads the live DOM — renderClientContract modifies scope-services-list, so reading
+  // the live DOM would give a drifting baseline that causes false "modified" detections.
   const master = DB.getMasterContract();
   if (master[key]) return master[key];
-  const domEl = document.querySelector('[data-contract-section="' + key + '"]');
-  return domEl ? domEl.innerHTML.trim() : '';
+  return _CONTRACT_HTML_DEFAULTS[key] || '';
 }
 
 function renderLangEditor(clientId) {
@@ -1294,8 +1312,7 @@ function renderMasterContractEditor() {
   const masterText = DB.getMasterContract();
 
   container.innerHTML = CONTRACT_SECTIONS.map(s => {
-    const domEl      = document.querySelector('[data-contract-section="' + s.key + '"]');
-    const htmlDefault = domEl ? domEl.innerHTML.trim() : '';
+    const htmlDefault = _CONTRACT_HTML_DEFAULTS[s.key] || '';
     const currentHTML = masterText[s.key] || htmlDefault;
     const isOverride  = !!masterText[s.key];
     return `<div class="lang-section-block">
@@ -1309,10 +1326,8 @@ function renderMasterContractEditor() {
 
   container.querySelectorAll('.master-reset-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      const key   = this.dataset.section;
-      const domEl = document.querySelector('[data-contract-section="' + key + '"]');
-      const edit  = document.getElementById('master-lang-' + key);
-      if (edit && domEl) edit.innerHTML = domEl.innerHTML.trim();
+      const edit = document.getElementById('master-lang-' + this.dataset.section);
+      if (edit) edit.innerHTML = _CONTRACT_HTML_DEFAULTS[this.dataset.section] || '';
     });
   });
 }
@@ -1322,8 +1337,7 @@ function saveMasterContract() {
   CONTRACT_SECTIONS.forEach(s => {
     const el = document.getElementById('master-lang-' + s.key);
     if (!el) return;
-    const domEl      = document.querySelector('[data-contract-section="' + s.key + '"]');
-    const htmlDefault = domEl ? domEl.innerHTML.trim() : '';
+    const htmlDefault = _CONTRACT_HTML_DEFAULTS[s.key] || '';
     const currentHTML = el.innerHTML.trim();
     if (currentHTML !== htmlDefault) masterText[s.key] = currentHTML;
   });
@@ -1624,6 +1638,12 @@ function bootstrap() {
    EVENT LISTENERS
    ============================================ */
 document.addEventListener('DOMContentLoaded', function() {
+  // Capture original contract section HTML before any renders modify the DOM.
+  CONTRACT_SECTIONS.forEach(s => {
+    const el = document.querySelector('[data-contract-section="' + s.key + '"]');
+    if (el) _CONTRACT_HTML_DEFAULTS[s.key] = el.innerHTML.trim();
+  });
+
   bootstrap();
 
   /* ---- Login ---- */
