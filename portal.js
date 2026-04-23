@@ -340,9 +340,9 @@ function ceremonyProgress(cid) {
   const logistics = ['cer-start','cer-end','cer-officiant-mic','cer-readers-mic','cer-sep-location','cer-distance','cer-outdoor','cer-power'];
   let musicFields = [];
   if (scope.includes('Live Ceremony Music')) {
-    musicFields = ['cer-seating-genre','cer-live-family-song','cer-live-party-song','cer-live-bride-song','cer-live-exit-song'];
+    musicFields = ['cer-seating-genre','cer-live-family-song','cer-live-bride-song','cer-live-exit-song'];
   } else if (scope.includes('Ceremony Duties')) {
-    musicFields = ['cer-duties-seating-link','cer-duties-family-link','cer-duties-party-link','cer-duties-bride-link','cer-duties-exit-link'];
+    musicFields = ['cer-duties-seating-link','cer-duties-family-link','cer-duties-bride-link','cer-duties-exit-link'];
   }
   const required = [...logistics, ...musicFields];
   if (!required.length) return 0;
@@ -1530,12 +1530,10 @@ const CEREMONY_FIELDS = [
   'cer-sep-location','cer-distance','cer-outdoor','cer-power',
   'cer-seating-genre',
   'cer-live-family-song','cer-live-family-link',
-  'cer-live-party-song','cer-live-party-link',
   'cer-live-bride-song','cer-live-bride-link',
   'cer-live-exit-song','cer-live-exit-link','cer-live-notes',
   'cer-duties-seating-link','cer-duties-family-link',
-  'cer-duties-party-link','cer-duties-bride-link',
-  'cer-duties-exit-link','cer-duties-notes'
+  'cer-duties-bride-link','cer-duties-exit-link','cer-duties-notes'
 ];
 
 function loadCeremony(clientId) {
@@ -1879,6 +1877,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap']);
   clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap']);
+
+  /* ---- Admin: ceremony service mutual exclusivity ---- */
+  const _liveCb   = document.querySelector('input[name="scope-service"][value="Live Ceremony Music"]');
+  const _dutiesCb = document.querySelector('input[name="scope-service"][value="Ceremony Duties"]');
+  if (_liveCb)   _liveCb.addEventListener('change',   function() { if (this.checked && _dutiesCb) _dutiesCb.checked = false; });
+  if (_dutiesCb) _dutiesCb.addEventListener('change', function() { if (this.checked && _liveCb)   _liveCb.checked   = false; });
 
   /* ---- Client: save ceremony ---- */
   function handleSaveCeremony() { const s=getSession(); if(s) saveCeremony(s.clientId); }
