@@ -877,21 +877,33 @@
             <div class="card checklist-card">
                 <div class="card-header"><h3><i class="fas fa-truck"></i> Load In &amp; Arrival</h3></div>
                 <div class="checklist-grid">
-                    <div class="field-group"><label>Band Arrival Time</label><input type="time" id="cl-arrival-time"></div>
-                    <div class="field-group"><label>Load-in Location / Entrance</label><input type="text" id="cl-loadinlocation" placeholder="e.g. Side entrance, loading dock"></div>
-                    <div class="field-group"><label>Parking Available</label><select id="cl-parking"><option value="">Select…</option><option>Yes</option><option>No</option><option>Street only</option><option>Valet</option></select></div>
-                    <div class="field-group"><label>Parking Payment</label><select id="cl-parking-payment"><option value="">Select…</option><option>Complimentary</option><option>Paid — venue covers</option><option>Self-pay</option></select></div>
-                    <div class="field-group"><label>Dressing Room Available</label><select id="cl-dressing-room"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group">
+                        <label>Soonest Band Can Arrive</label>
+                        <input type="time" id="cl-arrival-time">
+                        <small class="field-note">We require at least 2 hours before guest arrival for setup.</small>
+                    </div>
                     <div class="field-group"><label>Guest Arrival Time</label><input type="time" id="cl-guest-arrival"></div>
+                    <div class="field-group"><label>Load-in Location / Entrance</label><input type="text" id="cl-loadinlocation" placeholder="e.g. Side entrance, loading dock"></div>
+                    <div class="field-group"><label>Dressing Room Available</label><select id="cl-dressing-room"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group full-width">
+                        <label>Parking Situation</label>
+                        <input type="text" id="cl-parking" placeholder="Describe parking availability — we may have up to 8 vehicles">
+                    </div>
+                    <div class="field-group full-width">
+                        <label>Parking Reimbursement</label>
+                        <small class="field-note">If paid parking is required, do you agree to reimburse the Artist?</small>
+                        <select id="cl-parking-payment"><option value="">Select…</option><option>Yes</option><option>No</option><option>N/A — parking is free</option></select>
+                    </div>
                 </div>
             </div>
             <div class="card checklist-card">
                 <div class="card-header"><h3><i class="fas fa-glass-cheers"></i> Cocktail Hour</h3></div>
                 <div class="checklist-grid">
                     <div class="field-group"><label>Separate Location from Reception?</label><select id="cl-cocktail-sep"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group"><label>Cocktail Hour Outside?</label><select id="cl-cocktail-outdoor"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group"><label>Cocktail Hour Start</label><input type="time" id="cl-cocktail-start"></div>
                     <div class="field-group"><label>Cocktail Hour End</label><input type="time" id="cl-cocktail-end"></div>
-                    <div class="field-group full-width"><label>Spotify Playlist (if DJ'd)</label><input type="text" id="cl-cocktail-spotify" placeholder="Playlist name or link"></div>
+                    <div class="field-group full-width hidden" id="cl-cocktail-spotify-wrap"><label>Cocktail Hour Spotify Playlist</label><input type="text" id="cl-cocktail-spotify" placeholder="Playlist name or link"></div>
                 </div>
             </div>
             <div class="card checklist-card">
@@ -916,10 +928,17 @@
                     <div class="field-group"><label>Reception End Time</label><input type="time" id="cl-reception-end"></div>
                     <div class="field-group"><label>Estimated Attendance</label><input type="number" id="cl-attendance" placeholder="# of guests"></div>
                     <div class="field-group"><label>Load-out Time</label><input type="time" id="cl-loadout"></div>
-                    <div class="field-group full-width"><label>Wedding Party Names</label><textarea id="cl-party-names" rows="3" placeholder="e.g. Maid of Honor — Jane Smith, Best Man — John Doe…"></textarea></div>
-                    <div class="field-group full-width"><label>Couple Announcement Style</label><input type="text" id="cl-couple-announce" placeholder='e.g. "Mr. and Mrs. Smith"'></div>
-                    <div class="field-group full-width"><label>Spotify — Wedding Party Entrance</label><input type="text" id="cl-spotify-party" placeholder="Playlist name or link"></div>
-                    <div class="field-group full-width"><label>Spotify — Bride &amp; Groom Entrance</label><input type="text" id="cl-spotify-couple" placeholder="Playlist name or link"></div>
+                    <!-- Wedding Party Entrance — conditional flow -->
+                    <div class="field-group full-width"><label>Announce Wedding Party Entrance?</label><select id="cl-announce-party"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group full-width hidden" id="cl-announce-party-how-wrap"><label>How will they be announced?</label><input type="text" id="cl-announce-party-how" placeholder="e.g. By couple, Individually, As one big group, Bridesmaids then Groomsmen…"></div>
+                    <div class="field-group full-width hidden" id="cl-party-names-wrap"><label>Wedding Party Names</label><textarea id="cl-party-names" rows="3" placeholder="e.g. Maid of Honor — Jane Smith, Best Man — John Doe…"></textarea></div>
+                    <div class="field-group full-width hidden" id="cl-spotify-party-wrap"><label>Wedding Party Entrance Song</label><input type="text" id="cl-spotify-party" placeholder="Song title, artist or link"></div>
+
+                    <!-- Couple Grand Entrance — conditional flow -->
+                    <div class="field-group full-width"><label>Couple Grand Entrance Announcement?</label><select id="cl-grand-entrance"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group full-width hidden" id="cl-couple-announce-wrap"><label>Announcement Style</label><input type="text" id="cl-couple-announce" placeholder='e.g. "Mr. and Mrs. Smith"'></div>
+                    <div class="field-group full-width hidden" id="cl-spotify-couple-wrap"><label>Couple Entrance Song</label><input type="text" id="cl-spotify-couple" placeholder="Song title, artist or link"></div>
+
                     <div class="field-group full-width"><label>Spotify — Dinner Music</label><input type="text" id="cl-spotify-dinner" placeholder="Playlist name or link"></div>
                     <div class="field-group full-width"><label>Spotify — Band Break Music</label><input type="text" id="cl-spotify-break" placeholder="Playlist name or link"></div>
                 </div>

@@ -1428,19 +1428,54 @@ function saveSongSelections(clientId) {
    ============================================ */
 const CHECKLIST_FIELDS = [
   'cl-arrival-time','cl-loadinlocation','cl-parking','cl-parking-payment',
-  'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-start',
-  'cl-cocktail-end','cl-cocktail-spotify','cl-coordinator','cl-wifi-name',
-  'cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power','cl-reception-start',
-  'cl-dinner-time','cl-dinner-style','cl-table-announce','cl-meals','cl-band-eat',
-  'cl-speeches','cl-first-dance','cl-parent-dances','cl-dance-floor',
-  'cl-reception-end','cl-attendance','cl-loadout','cl-party-names',
-  'cl-couple-announce','cl-spotify-party','cl-spotify-couple',
+  'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-outdoor',
+  'cl-cocktail-start','cl-cocktail-end','cl-cocktail-spotify','cl-coordinator',
+  'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
+  'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
+  'cl-meals','cl-band-eat','cl-speeches','cl-first-dance','cl-parent-dances',
+  'cl-dance-floor','cl-reception-end','cl-attendance','cl-loadout',
+  'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party',
+  'cl-grand-entrance','cl-couple-announce','cl-spotify-couple',
   'cl-spotify-dinner','cl-spotify-break'
 ];
+
+function _checklistToggle(selectId, wrapIds, showValue) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const show = sel.value === showValue;
+  wrapIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', !show);
+  });
+  sel.addEventListener('change', function() {
+    const show = this.value === showValue;
+    wrapIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden', !show);
+    });
+  });
+}
 
 function loadChecklist(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
+
+  // Cocktail Spotify: only show if Jazz Cocktail Band is NOT in scope of services
+  const contract = DB.getContract(clientId);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const hasJazzBand = scope.includes('Jazz Cocktail Band');
+  const cocktailSpotifyWrap = document.getElementById('cl-cocktail-spotify-wrap');
+  if (cocktailSpotifyWrap) cocktailSpotifyWrap.classList.toggle('hidden', hasJazzBand);
+
+  // Wedding party entrance conditional flow
+  _checklistToggle('cl-announce-party', [
+    'cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap'
+  ], 'Yes');
+
+  // Couple grand entrance conditional flow
+  _checklistToggle('cl-grand-entrance', [
+    'cl-couple-announce-wrap','cl-spotify-couple-wrap'
+  ], 'Yes');
 }
 
 function saveChecklist(clientId) {
