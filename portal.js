@@ -882,22 +882,9 @@ function renderClientContract(clientId) {
   document.getElementById('cc-deposit').textContent       = fmtMoney(deposit);
   document.getElementById('cc-final-balance').textContent = fmtMoney(balance);
 
-  // Populate scope-services-list from saved admin selections.
-  // Always done after applyLangOverrides so any section replacement can't hide the data.
-  // If a language override removed the list element entirely, rebuild it inside the scope section.
-  let servicesList = document.getElementById('scope-services-list');
-  if (!servicesList) {
-    const scopeEl = document.querySelector('[data-contract-section="scope"]');
-    if (scopeEl) {
-      const firstLi = scopeEl.querySelector('ol.contract-list > li:first-child');
-      if (firstLi) {
-        servicesList = document.createElement('ol');
-        servicesList.id   = 'scope-services-list';
-        servicesList.type = 'i';
-        firstLi.appendChild(servicesList);
-      }
-    }
-  }
+  // Populate scope-services-list from admin's checkbox selections.
+  // scope section is excluded from CONTRACT_SECTIONS so applyLangOverrides never touches it.
+  const servicesList = document.getElementById('scope-services-list');
   if (servicesList) {
     if (a.scopeOfServices && a.scopeOfServices.length) {
       servicesList.innerHTML = a.scopeOfServices.map(s => `<li>${escHtml(s)}</li>`).join('');
@@ -1217,7 +1204,6 @@ function adminCounterSign(clientId) {
 const _CONTRACT_HTML_DEFAULTS = {};
 
 const CONTRACT_SECTIONS = [
-  { key: 'scope',           label: '2. Scope of Services' },
   { key: 'clientReqs',      label: '3. Client Requirements' },
   { key: 'gcp',             label: '6. Good Company Planner' },
   { key: 'songRequests',    label: '7. Song Requests' },
