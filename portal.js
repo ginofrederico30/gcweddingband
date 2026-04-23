@@ -1622,10 +1622,11 @@ document.addEventListener('DOMContentLoaded', function() {
   bootstrap();
 
   /* ---- Artist portal password ---- */
-  const _artistPwEl = document.getElementById('artist-password-input');
+  const _artistPwEl  = document.getElementById('artist-password-input');
+  const _artistSaveBtn = document.getElementById('btn-save-artist-password');
   if (_artistPwEl) _artistPwEl.value = localStorage.getItem('gc_artist_password') || '';
-  document.getElementById('btn-save-artist-password').addEventListener('click', function() {
-    const pw = document.getElementById('artist-password-input').value.trim();
+  if (_artistSaveBtn) _artistSaveBtn.addEventListener('click', function() {
+    const pw = _artistPwEl ? _artistPwEl.value.trim() : '';
     if (!pw) { showToast('Enter a password first.'); return; }
     localStorage.setItem('gc_artist_password', pw);
     showToast('Artist password saved.');
