@@ -755,8 +755,8 @@ function renderClientDash(clientId) {
   // Checklist
   const clProg = checklistProgress(clientId);
   const clb = document.getElementById('status-checklist');
-  clb.className   = 'module-status status-badge ' + (clProg > 0 ? 'status-ready' : 'status-none');
-  clb.textContent = clProg > 0 ? clProg + '% done' : 'Not started';
+  clb.className   = 'module-status status-badge ' + (clProg === 100 ? 'status-signed' : clProg > 0 ? 'status-ready' : 'status-none');
+  clb.textContent = clProg === 100 ? 'Complete' : clProg > 0 ? clProg + '% done' : 'Not started';
 
   // Ceremony
   const cerProg = ceremonyProgress(clientId);
