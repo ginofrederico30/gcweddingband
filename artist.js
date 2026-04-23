@@ -104,20 +104,61 @@ function generateSetlist(clientId) {
   const reqs    = gcp.songRequests || [];
   const catalog = ADB.getMasterSongs();
 
-  const priority     = catalog.filter(s => prefs[s.id] === 'Priority')
-                              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' }));
-  const priorityReqs = reqs.filter(r => r.type === 'Priority')
-                           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' }));
-  const yes          = catalog.filter(s => prefs[s.id] === 'Yes')
-                              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' }));
-  const otherReqs    = reqs.filter(r => r.type !== 'Priority')
-                           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' }));
+  // Build priority-ordered pool of all selected songs
+  const pool = [
+    ...catalog.filter(s => prefs[s.id] === 'Priority')
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' })),
+    ...reqs.filter(r => r.type === 'Priority')
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' })),
+    ...catalog.filter(s => prefs[s.id] === 'Yes')
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' })),
+    ...reqs.filter(r => r.type !== 'Priority')
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' })),
+  ];
 
-  const ordered = [...priority, ...priorityReqs, ...yes, ...otherReqs];
-  return {
-    sets: [ordered.slice(0, SONGS_PER_SET), ordered.slice(SONGS_PER_SET, SONGS_PER_SET * 2)],
-    savedAt: Date.now(),
-  };
+  // Remove the first matching song from pool by title (case-insensitive exact, then partial)
+  function pluck(query) {
+    const q = query.toLowerCase();
+    let i = pool.findIndex(s => s.title.toLowerCase() === q);
+    if (i === -1) i = pool.findIndex(s => s.title.toLowerCase().includes(q));
+    return i === -1 ? null : pool.splice(i, 1)[0];
+  }
+
+  // Structural anchors derived from historical setlist patterns:
+  // Set 1: September always opens, Don't Start Now always follows, Tequila anchors the end.
+  // Set 2: Pink Pony Club opens, Hot To Go! leads the closing stretch,
+  //         Mr. Brightside is penultimate, Are You Gonna Be My Girl always closes.
+  // Songs are only pinned when they exist in the client's selected pool.
+  const september    = pluck('september');
+  const dontStart    = pluck("don't start now");
+  const tequila      = pluck('tequila');
+  const ppc          = pluck('pink pony club');
+  const hotToGo      = pluck('hot to go');
+  const mrBrightside = pluck('mr. brightside');
+  const areYouGonna  = pluck('are you gonna be my girl');
+
+  // Set 1: [September] [Don't Start Now] [...middle...] [Tequila]
+  const s1Pinned = [september, dontStart, tequila].filter(Boolean).length;
+  const s1Middle = pool.splice(0, Math.max(0, SONGS_PER_SET - s1Pinned));
+  const set1 = [
+    ...(september ? [september] : []),
+    ...(dontStart ? [dontStart] : []),
+    ...s1Middle,
+    ...(tequila   ? [tequila]   : []),
+  ];
+
+  // Set 2: [Pink Pony Club] [...middle...] [Hot To Go!] [Mr. Brightside] [Are You Gonna Be My Girl]
+  const s2Pinned = [ppc, hotToGo, mrBrightside, areYouGonna].filter(Boolean).length;
+  const s2Middle = pool.splice(0, Math.max(0, SONGS_PER_SET - s2Pinned));
+  const set2 = [
+    ...(ppc          ? [ppc]          : []),
+    ...s2Middle,
+    ...(hotToGo      ? [hotToGo]      : []),
+    ...(mrBrightside ? [mrBrightside] : []),
+    ...(areYouGonna  ? [areYouGonna]  : []),
+  ];
+
+  return { sets: [set1, set2], savedAt: Date.now() };
 }
 
 /* ============================================
