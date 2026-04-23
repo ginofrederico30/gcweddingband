@@ -1439,43 +1439,34 @@ const CHECKLIST_FIELDS = [
   'cl-spotify-dinner','cl-spotify-break'
 ];
 
-function _checklistToggle(selectId, wrapIds, showValue) {
-  const sel = document.getElementById(selectId);
-  if (!sel) return;
-  const show = sel.value === showValue;
-  wrapIds.forEach(id => {
+function _applyChecklistVisibility(clientId) {
+  // Cocktail Spotify: hide when Jazz Cocktail Band is in scope
+  const contract = DB.getContract(clientId);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const wrap = document.getElementById('cl-cocktail-spotify-wrap');
+  if (wrap) wrap.classList.toggle('hidden', scope.includes('Jazz Cocktail Band'));
+
+  // Wedding party entrance
+  const announceParty = document.getElementById('cl-announce-party');
+  const showParty = announceParty && announceParty.value === 'Yes';
+  ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('hidden', !show);
+    if (el) el.classList.toggle('hidden', !showParty);
   });
-  sel.addEventListener('change', function() {
-    const show = this.value === showValue;
-    wrapIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('hidden', !show);
-    });
+
+  // Couple grand entrance
+  const grandEntrance = document.getElementById('cl-grand-entrance');
+  const showCouple = grandEntrance && grandEntrance.value === 'Yes';
+  ['cl-couple-announce-wrap','cl-spotify-couple-wrap'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', !showCouple);
   });
 }
 
 function loadChecklist(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
-
-  // Cocktail Spotify: only show if Jazz Cocktail Band is NOT in scope of services
-  const contract = DB.getContract(clientId);
-  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
-  const hasJazzBand = scope.includes('Jazz Cocktail Band');
-  const cocktailSpotifyWrap = document.getElementById('cl-cocktail-spotify-wrap');
-  if (cocktailSpotifyWrap) cocktailSpotifyWrap.classList.toggle('hidden', hasJazzBand);
-
-  // Wedding party entrance conditional flow
-  _checklistToggle('cl-announce-party', [
-    'cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap'
-  ], 'Yes');
-
-  // Couple grand entrance conditional flow
-  _checklistToggle('cl-grand-entrance', [
-    'cl-couple-announce-wrap','cl-spotify-couple-wrap'
-  ], 'Yes');
+  _applyChecklistVisibility(clientId);
 }
 
 function saveChecklist(clientId) {
@@ -1819,6 +1810,18 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleSaveChecklist() { const s=getSession(); if(s) saveChecklist(s.clientId); }
   document.getElementById('btn-save-checklist').addEventListener('click', handleSaveChecklist);
   document.getElementById('btn-save-checklist-bottom').addEventListener('click', handleSaveChecklist);
+
+  /* ---- Checklist: conditional field toggles (attached once) ---- */
+  function clToggle(selectId, wrapIds) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    sel.addEventListener('change', function() {
+      const show = this.value === 'Yes';
+      wrapIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', !show); });
+    });
+  }
+  clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap']);
+  clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap']);
 
   /* ---- Client: save ceremony ---- */
   function handleSaveCeremony() { const s=getSession(); if(s) saveCeremony(s.clientId); }
