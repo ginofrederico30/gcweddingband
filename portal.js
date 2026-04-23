@@ -335,8 +335,19 @@ function checklistProgress(cid) {
 
 function ceremonyProgress(cid) {
   const cer = DB.getGCP(cid).ceremony || {};
-  const filled = Object.values(cer).filter(v => v !== '' && v != null).length;
-  return Math.min(100, Math.round((filled / 8) * 100));
+  const contract = DB.getContract(cid);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const logistics = ['cer-start','cer-end','cer-officiant-mic','cer-readers-mic','cer-sep-location','cer-distance','cer-outdoor','cer-power'];
+  let musicFields = [];
+  if (scope.includes('Live Ceremony Music')) {
+    musicFields = ['cer-seating-genre','cer-live-family-song','cer-live-party-song','cer-live-bride-song','cer-live-exit-song'];
+  } else if (scope.includes('Ceremony Duties')) {
+    musicFields = ['cer-duties-seating-link','cer-duties-family-link','cer-duties-party-link','cer-duties-bride-link','cer-duties-exit-link'];
+  }
+  const required = [...logistics, ...musicFields];
+  if (!required.length) return 0;
+  const filled = required.filter(id => cer[id] !== '' && cer[id] != null).length;
+  return Math.min(100, Math.round((filled / required.length) * 100));
 }
 
 function countNewSongs(clientId) {
@@ -759,10 +770,18 @@ function renderClientDash(clientId) {
   clb.textContent = clProg === 100 ? 'Complete' : clProg > 0 ? clProg + '% done' : 'Not started';
 
   // Ceremony
+  const contract = DB.getContract(clientId);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const cerCard = document.getElementById('module-ceremony');
+  if (cerCard) cerCard.classList.toggle('hidden', !hasCeremony);
+
   const cerProg = ceremonyProgress(clientId);
   const cerb = document.getElementById('status-ceremony');
-  cerb.className   = 'module-status status-badge ' + (cerProg > 0 ? 'status-ready' : 'status-none');
-  cerb.textContent = cerProg > 0 ? cerProg + '% done' : 'Not started';
+  if (cerb) {
+    cerb.className   = 'module-status status-badge ' + (cerProg === 100 ? 'status-signed' : cerProg > 0 ? 'status-ready' : 'status-none');
+    cerb.textContent = cerProg === 100 ? 'Complete' : cerProg > 0 ? cerProg + '% done' : 'Not started';
+  }
 }
 
 /* ============================================
@@ -1509,12 +1528,26 @@ function saveChecklist(clientId) {
 const CEREMONY_FIELDS = [
   'cer-start','cer-end','cer-officiant-mic','cer-readers-mic',
   'cer-sep-location','cer-distance','cer-outdoor','cer-power',
-  'cer-seating-music','cer-family-entrance','cer-party-entrance',
-  'cer-bride-entrance','cer-unity-song','cer-recessional','cer-notes'
+  'cer-seating-genre',
+  'cer-live-family-song','cer-live-family-link',
+  'cer-live-party-song','cer-live-party-link',
+  'cer-live-bride-song','cer-live-bride-link',
+  'cer-live-exit-song','cer-live-exit-link','cer-live-notes',
+  'cer-duties-seating-link','cer-duties-family-link',
+  'cer-duties-party-link','cer-duties-bride-link',
+  'cer-duties-exit-link','cer-duties-notes'
 ];
 
 function loadCeremony(clientId) {
   const cer = DB.getGCP(clientId).ceremony || {};
+  const contract = DB.getContract(clientId);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const isLive = scope.includes('Live Ceremony Music');
+  const isDuties = scope.includes('Ceremony Duties');
+  const livePanel = document.getElementById('cer-music-live');
+  const dutiesPanel = document.getElementById('cer-music-duties');
+  if (livePanel) livePanel.classList.toggle('hidden', !isLive);
+  if (dutiesPanel) dutiesPanel.classList.toggle('hidden', !isDuties);
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cer[id] !== undefined) el.value = cer[id]; });
 }
 

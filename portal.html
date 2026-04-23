@@ -129,6 +129,7 @@
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="Jazz Cocktail Band"> Jazz Cocktail Band</label>
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="MC for Reception"> MC for Reception</label>
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="DJ Services"> DJ Services</label>
+                    <label class="scope-check-label"><input type="checkbox" name="scope-service" value="Ceremony Duties"> Ceremony Duties</label>
                 </div>
                 <hr class="form-divider">
                 <h4 class="form-section-label" style="margin-top:4px">Compensation <span class="admin-field-tag">Admin fills</span></h4>
@@ -975,16 +976,32 @@
                     <div class="field-group"><label>Power Outlets Available?</label><select id="cer-power"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                 </div>
             </div>
-            <div class="card checklist-card">
-                <div class="card-header"><h3><i class="fas fa-music"></i> Ceremony Music</h3></div>
+            <!-- Live Ceremony Music variant -->
+            <div class="card checklist-card hidden" id="cer-music-live">
+                <div class="card-header"><h3><i class="fas fa-music"></i> Ceremony Music — Live Performance</h3></div>
                 <div class="checklist-grid">
-                    <div class="field-group full-width"><label>Seating / Prelude Music</label><input type="text" id="cer-seating-music" placeholder="e.g. Acoustic/soft jazz, or specific songs"></div>
-                    <div class="field-group full-width"><label>Family Processional</label><input type="text" id="cer-family-entrance" placeholder="Song title and artist"></div>
-                    <div class="field-group full-width"><label>Wedding Party Processional</label><input type="text" id="cer-party-entrance" placeholder="Song title and artist"></div>
-                    <div class="field-group full-width"><label>Bride / Partner Entrance</label><input type="text" id="cer-bride-entrance" placeholder="Song title and artist"></div>
-                    <div class="field-group full-width"><label>Signing / Unity Ceremony Song</label><input type="text" id="cer-unity-song" placeholder="Song title and artist"></div>
-                    <div class="field-group full-width"><label>Recessional (Couple Exit)</label><input type="text" id="cer-recessional" placeholder="Song title and artist"></div>
-                    <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
+                    <div class="field-group full-width"><label>Seating / Prelude — Genre Preference</label><input type="text" id="cer-seating-genre" placeholder="e.g. Classical, Modern Pop, Jazz, Acoustic"></div>
+                    <div class="field-group full-width"><label>Family Processional — Song Title</label><input type="text" id="cer-live-family-song" placeholder="Song title and artist"></div>
+                    <div class="field-group full-width"><label>Family Processional — Spotify Link</label><input type="text" id="cer-live-family-link" placeholder="Spotify link (optional)"></div>
+                    <div class="field-group full-width"><label>Wedding Party Processional — Song Title</label><input type="text" id="cer-live-party-song" placeholder="Song title and artist"></div>
+                    <div class="field-group full-width"><label>Wedding Party Processional — Spotify Link</label><input type="text" id="cer-live-party-link" placeholder="Spotify link (optional)"></div>
+                    <div class="field-group full-width"><label>Bride / Partner Entrance — Song Title</label><input type="text" id="cer-live-bride-song" placeholder="Song title and artist"></div>
+                    <div class="field-group full-width"><label>Bride / Partner Entrance — Spotify Link</label><input type="text" id="cer-live-bride-link" placeholder="Spotify link (optional)"></div>
+                    <div class="field-group full-width"><label>Couple Exit — Song Title</label><input type="text" id="cer-live-exit-song" placeholder="Song title and artist"></div>
+                    <div class="field-group full-width"><label>Couple Exit — Spotify Link</label><input type="text" id="cer-live-exit-link" placeholder="Spotify link (optional)"></div>
+                    <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-live-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
+                </div>
+            </div>
+            <!-- Ceremony Duties variant -->
+            <div class="card checklist-card hidden" id="cer-music-duties">
+                <div class="card-header"><h3><i class="fas fa-music"></i> Ceremony Music — Playlists</h3></div>
+                <div class="checklist-grid">
+                    <div class="field-group full-width"><label>Seating / Prelude Playlist</label><input type="text" id="cer-duties-seating-link" placeholder="Spotify playlist link"></div>
+                    <div class="field-group full-width"><label>Family Processional Playlist</label><input type="text" id="cer-duties-family-link" placeholder="Spotify playlist link"></div>
+                    <div class="field-group full-width"><label>Wedding Party Processional Playlist</label><input type="text" id="cer-duties-party-link" placeholder="Spotify playlist link"></div>
+                    <div class="field-group full-width"><label>Bride / Partner Entrance Playlist</label><input type="text" id="cer-duties-bride-link" placeholder="Spotify playlist link"></div>
+                    <div class="field-group full-width"><label>Couple Exit Playlist</label><input type="text" id="cer-duties-exit-link" placeholder="Spotify playlist link"></div>
+                    <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-duties-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
                 </div>
             </div>
         </form>
