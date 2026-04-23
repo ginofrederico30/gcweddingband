@@ -218,7 +218,7 @@ function setNavSection(text) {
    TOAST
    ============================================ */
 let _toastTimer;
-function showToast(msg) {
+function showToast(msg, duration) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
@@ -227,7 +227,7 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => {
     t.classList.remove('show');
     setTimeout(() => t.classList.add('hidden'), 300);
-  }, 2800);
+  }, duration || 2800);
 }
 
 /* ============================================
@@ -1403,6 +1403,20 @@ function deleteSongRequest(clientId, requestId) {
 }
 
 function saveSongSelections(clientId) {
+  const songs      = DB.getGCP(clientId).songs || {};
+  const catalog    = DB.getMasterSongs();
+  const dnpCount   = catalog.filter(s => songs[s.id] === 'Do Not Play').length;
+  const maxAllowed = Math.floor(catalog.length * 0.5);
+
+  if (dnpCount > maxAllowed) {
+    showToast(
+      "You’ve marked more than 50% of our catalog as Do Not Play. " +
+      "Please remove some selections so the band has enough material to fill your event.",
+      6000
+    );
+    return;
+  }
+
   showToast('Song selections saved!');
   renderClientDash(clientId);
   showView('view-client-dash');
