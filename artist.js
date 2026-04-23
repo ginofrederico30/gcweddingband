@@ -43,7 +43,8 @@ function artistLogout() {
 /* ---- View management ---- */
 function showView(id) {
   document.querySelectorAll('.portal-view').forEach(v => v.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('hidden');
 }
 
 /* ---- Toast ---- */
@@ -578,13 +579,18 @@ function _renderAddSongList(query) {
    ============================================ */
 document.addEventListener('DOMContentLoaded', function() {
 
-  /* Check for active session */
+  /* Check for active session — #view-login is visible by default (no 'hidden' class in HTML),
+     so the else branch is intentionally omitted. */
   if (getArtistSession()) {
-    document.getElementById('pnav-logout').classList.remove('hidden');
-    renderGigsDash();
-    showView('view-gigs');
-  } else {
-    showView('view-login');
+    try {
+      document.getElementById('pnav-logout').classList.remove('hidden');
+      renderGigsDash();
+      showView('view-gigs');
+    } catch (err) {
+      console.error('Artist portal init error:', err);
+      localStorage.removeItem('gc_artist_session');
+      /* view-login remains visible — no action needed */
+    }
   }
 
   /* Login */

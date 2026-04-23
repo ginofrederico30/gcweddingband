@@ -3,16 +3,6 @@
    Additional styles on top of portal.css
    ============================================ */
 
-/* ---- Login (center vertically like portal) ---- */
-#view-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 64px);
-    background: var(--navy);
-    padding: 40px 20px;
-}
-
 /* ---- Gig cards ---- */
 .artist-gig-card {
     display: flex;
