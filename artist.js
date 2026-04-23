@@ -1,0 +1,643 @@
+/* ============================================
+   ARTIST PORTAL — artist.js
+   Reads from the same localStorage as portal.js
+   ============================================ */
+
+/* ---- localStorage helpers ---- */
+function _get(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; }
+}
+function _set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+/* ---- Data access (same keys as portal.js) ---- */
+const ADB = {
+  getClients()     { return _get('gc_clients') || []; },
+  getContract(cid) { return ((_get('gc_contracts') || {})[cid]) || { admin:{}, client:{}, signedAt:null }; },
+  getGCP(cid)      { return ((_get('gc_gcp') || {})[cid]) || { songs:{}, songRequests:[], checklist:{}, ceremony:{} }; },
+  getMasterSongs() { return _get('gc_master_songs') || []; },
+  getSetlists()    { return _get('gc_setlists') || {}; },
+  setSetlists(d)   { _set('gc_setlists', d); },
+};
+
+/* ---- Auth ---- */
+function getArtistSession() {
+  const s = _get('gc_artist_session');
+  if (!s || Date.now() > s.expiresAt) { localStorage.removeItem('gc_artist_session'); return null; }
+  return s;
+}
+
+function artistLogin(password) {
+  const stored = localStorage.getItem('gc_artist_password');
+  if (!stored) return { ok:false, error:'Artist portal not yet configured. Contact the admin.' };
+  if (password !== stored) return { ok:false, error:'Incorrect password. Please try again.' };
+  _set('gc_artist_session', { expiresAt: Date.now() + 86400000 }); // 24 hours
+  return { ok:true };
+}
+
+function artistLogout() {
+  localStorage.removeItem('gc_artist_session');
+  document.getElementById('pnav-logout').classList.add('hidden');
+  showView('view-login');
+}
+
+/* ---- View management ---- */
+function showView(id) {
+  document.querySelectorAll('.portal-view').forEach(v => v.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+/* ---- Toast ---- */
+function showToast(msg) {
+  const t = document.getElementById('artist-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ---- Formatters ---- */
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  if (parts.length !== 3) return '—';
+  const dt = new Date(+parts[0], +parts[1]-1, +parts[2]);
+  return dt.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+function fmtDateShort(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  if (parts.length !== 3) return '—';
+  const dt = new Date(+parts[0], +parts[1]-1, +parts[2]);
+  return dt.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+}
+
+function fmtTime12(t) {
+  if (!t) return null;
+  const [h, m] = t.split(':').map(Number);
+  if (isNaN(h)) return null;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+}
+
+function fmtSetDuration(count) {
+  const totalMin = count * 4.25;
+  const h = Math.floor(totalMin / 60);
+  const m = Math.round(totalMin % 60);
+  if (h === 0) return m + ' min';
+  return m === 0 ? h + ' hr' : h + ' hr ' + m + ' min';
+}
+
+/* ============================================
+   SETLIST GENERATION
+   ============================================ */
+const SONGS_PER_SET = 18; // 18 × 4:15 ≈ 1 hr 16 min
+
+function generateSetlist(clientId) {
+  const gcp     = ADB.getGCP(clientId);
+  const prefs   = gcp.songs || {};
+  const reqs    = gcp.songRequests || [];
+  const catalog = ADB.getMasterSongs();
+
+  const priority     = catalog.filter(s => prefs[s.id] === 'Priority')
+                              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' }));
+  const priorityReqs = reqs.filter(r => r.type === 'Priority')
+                           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' }));
+  const yes          = catalog.filter(s => prefs[s.id] === 'Yes')
+                              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' }));
+  const otherReqs    = reqs.filter(r => r.type !== 'Priority')
+                           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' }));
+
+  const ordered = [...priority, ...priorityReqs, ...yes, ...otherReqs];
+  return {
+    sets: [ordered.slice(0, SONGS_PER_SET), ordered.slice(SONGS_PER_SET, SONGS_PER_SET * 2)],
+    savedAt: Date.now(),
+  };
+}
+
+/* ============================================
+   GIGS DASHBOARD
+   ============================================ */
+function renderGigsDash() {
+  const clients = ADB.getClients();
+  const today   = new Date().toISOString().slice(0,10);
+
+  const upcoming = clients
+    .filter(c => !c.eventDate || c.eventDate >= today)
+    .sort((a,b) => (a.eventDate||'9999').localeCompare(b.eventDate||'9999'));
+
+  const past = clients
+    .filter(c => c.eventDate && c.eventDate < today)
+    .sort((a,b) => b.eventDate.localeCompare(a.eventDate));
+
+  const container = document.getElementById('gigs-list');
+  const noMsg     = document.getElementById('no-gigs-msg');
+
+  if (!clients.length) {
+    container.innerHTML = '';
+    noMsg.classList.remove('hidden');
+    return;
+  }
+  noMsg.classList.add('hidden');
+
+  function gigCard(c) {
+    const contract = ADB.getContract(c.id);
+    const a  = contract.admin  || {};
+    const cl = contract.client || {};
+    const scope    = a.scopeOfServices || [];
+    const setlists = ADB.getSetlists();
+    const sl       = setlists[c.id];
+    const gcp      = ADB.getGCP(c.id);
+    const hasSongs = Object.values(gcp.songs || {}).some(v => v === 'Priority' || v === 'Yes')
+                     || (gcp.songRequests || []).length > 0;
+    const hasSetlist = sl && (sl.sets[0].length > 0 || sl.sets[1].length > 0);
+
+    const scopePills = scope.map(s =>
+      `<span class="status-badge status-info" style="font-size:11px">${escHtml(s)}</span>`
+    ).join('');
+
+    const setlistBadge = hasSetlist
+      ? `<span class="status-badge status-signed">Setlist Ready</span>`
+      : hasSongs
+        ? `<span class="status-badge status-pending">Songs Selected</span>`
+        : `<span class="status-badge status-none">No Songs Yet</span>`;
+
+    const venue = cl.venue || a.venue || '';
+
+    return `
+      <div class="artist-gig-card" data-client-id="${escHtml(c.id)}">
+        <div class="artist-gig-main">
+          <div class="artist-gig-name">${escHtml(c.name)}</div>
+          <div class="artist-gig-meta">
+            <span><i class="fas fa-calendar-alt"></i>${fmtDateShort(a.eventDate || c.eventDate)}</span>
+            ${venue ? `<span><i class="fas fa-map-marker-alt"></i>${escHtml(venue)}</span>` : ''}
+          </div>
+          ${scope.length ? `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">${scopePills}</div>` : ''}
+        </div>
+        <div class="artist-gig-right">
+          ${setlistBadge}
+          <i class="fas fa-chevron-right" style="color:#ccc;font-size:14px"></i>
+        </div>
+      </div>`;
+  }
+
+  let html = upcoming.map(gigCard).join('');
+  if (past.length) {
+    html += `<div class="artist-past-divider"><span>Past Events</span></div>`;
+    html += past.map(gigCard).join('');
+  }
+  container.innerHTML = html;
+
+  container.querySelectorAll('.artist-gig-card').forEach(card => {
+    card.addEventListener('click', () => renderGigDetail(card.dataset.clientId));
+  });
+}
+
+/* ============================================
+   GIG DETAIL
+   ============================================ */
+let _currentClientId = null;
+
+function renderGigDetail(clientId) {
+  _currentClientId = clientId;
+
+  const clients  = ADB.getClients();
+  const client   = clients.find(c => c.id === clientId);
+  if (!client) return;
+
+  const contract = ADB.getContract(clientId);
+  const a  = contract.admin  || {};
+  const cl = contract.client || {};
+  const gcp = ADB.getGCP(clientId);
+  const chk = gcp.checklist || {};
+  const cer = gcp.ceremony  || {};
+  const scope = a.scopeOfServices || [];
+
+  document.getElementById('gig-client-name').textContent = client.name;
+  document.getElementById('gig-event-date').textContent  = fmtDate(a.eventDate || client.eventDate);
+
+  /* ---- Scope pills ---- */
+  document.getElementById('gig-scope').innerHTML = scope.length
+    ? scope.map(s => `<span class="status-badge status-info" style="font-size:12px;padding:5px 14px">${escHtml(s)}</span>`).join('')
+    : '<span style="font-family:var(--font-sans);font-size:13px;color:#bbb">No services selected yet.</span>';
+
+  /* ---- Day Schedule ---- */
+  const scheduleItems = [
+    { icon:'fa-truck-loading',  label:'Load-in',           val: fmtTime12(chk['cl-arrival-time']) },
+    { icon:'fa-users',          label:'Guest Arrival',     val: fmtTime12(chk['cl-guest-arrival']) },
+    { icon:'fa-cocktail',       label:'Cocktail Hour',     val: (fmtTime12(chk['cl-cocktail-start']) && fmtTime12(chk['cl-cocktail-end']))
+                                                                 ? `${fmtTime12(chk['cl-cocktail-start'])} – ${fmtTime12(chk['cl-cocktail-end'])}`
+                                                                 : (fmtTime12(chk['cl-cocktail-start']) || null) },
+    { icon:'fa-glass-cheers',   label:'Reception Starts',  val: fmtTime12(chk['cl-reception-start']) },
+    { icon:'fa-utensils',       label:'Dinner',            val: fmtTime12(chk['cl-dinner-time']) },
+    { icon:'fa-heart',          label:'First Dance',       val: fmtTime12(chk['cl-first-dance']) },
+    { icon:'fa-user-friends',   label:'Parent Dances',     val: fmtTime12(chk['cl-parent-dances']) },
+    { icon:'fa-music',          label:'Dance Floor Opens', val: fmtTime12(chk['cl-dance-floor']) },
+    { icon:'fa-flag-checkered', label:'Reception Ends',    val: fmtTime12(chk['cl-reception-end']) },
+    { icon:'fa-box',            label:'Load-out',          val: fmtTime12(chk['cl-loadout']) },
+  ];
+
+  document.getElementById('gig-schedule').innerHTML = scheduleItems.map(item => `
+    <div class="artist-timeline-row">
+      <div class="artist-timeline-icon"><i class="fas ${item.icon}"></i></div>
+      <div class="artist-timeline-label">${item.label}</div>
+      <div class="artist-timeline-val${item.val ? '' : ' empty'}">${item.val || '—'}</div>
+    </div>`).join('');
+
+  /* ---- Logistics ---- */
+  function infoRow(label, val) {
+    const empty = !val || val === '—';
+    return `
+      <div class="artist-info-row">
+        <div class="artist-info-label">${label}</div>
+        <div class="artist-info-val${empty ? ' empty' : ''}">${escHtml(val || '—')}</div>
+      </div>`;
+  }
+
+  const logRows = [
+    infoRow('Venue',            cl.venue || '—'),
+    infoRow('Address',          cl.address || '—'),
+    infoRow('Client Contact',   cl.contactName ? `${cl.contactName}${cl.phone ? '  ·  ' + cl.phone : ''}` : '—'),
+    infoRow('Coordinator',      chk['cl-coordinator'] || '—'),
+    infoRow('Dress Code',       cl.dressCode || '—'),
+    infoRow('Load-in Location', chk['cl-loadinlocation'] || '—'),
+    infoRow('Parking',          chk['cl-parking'] || '—'),
+    infoRow('Parking Payment',  chk['cl-parking-payment'] || '—'),
+    infoRow('Dressing Room',    chk['cl-dressing-room'] || '—'),
+    infoRow('Stage Size',       chk['cl-stage-size'] || '—'),
+    infoRow('Outdoor',          chk['cl-outdoor'] || '—'),
+    infoRow('Power',            chk['cl-power'] || '—'),
+    infoRow('WiFi',             chk['cl-wifi-name']
+              ? chk['cl-wifi-name'] + (chk['cl-wifi-pass'] ? '  /  ' + chk['cl-wifi-pass'] : '  (no password)')
+              : '—'),
+    infoRow('Attendance',       chk['cl-attendance'] ? chk['cl-attendance'] + ' guests' : '—'),
+    infoRow('Dinner Style',     chk['cl-dinner-style'] || '—'),
+    infoRow('Meals Provided',   chk['cl-meals'] || '—'),
+    infoRow('Band Eats At',     chk['cl-band-eat'] || '—'),
+  ];
+  document.getElementById('gig-logistics').innerHTML = logRows.join('');
+
+  /* ---- Ceremony ---- */
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const cerCard = document.getElementById('gig-ceremony-card');
+  cerCard.classList.toggle('hidden', !hasCeremony);
+
+  if (hasCeremony) {
+    const isLive = scope.includes('Live Ceremony Music');
+    const cerRows = [
+      infoRow('Start Time',        fmtTime12(cer['cer-start']) || '—'),
+      infoRow('End Time',          fmtTime12(cer['cer-end']) || '—'),
+      infoRow('Officiant Mic',     cer['cer-officiant-mic'] || '—'),
+      infoRow('Readers Mic',       cer['cer-readers-mic'] || '—'),
+      infoRow('Separate Location', cer['cer-sep-location'] || '—'),
+      infoRow('Distance',          cer['cer-distance'] || '—'),
+      infoRow('Outdoor',           cer['cer-outdoor'] || '—'),
+      infoRow('Power',             cer['cer-power'] || '—'),
+    ];
+
+    if (isLive) {
+      cerRows.push(
+        infoRow('Seating Genre',
+          cer['cer-seating-genre'] || '—'),
+        infoRow('Family / Wedding Party Processional',
+          [cer['cer-live-family-song'], cer['cer-live-family-link']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Bride / Partner Entrance',
+          [cer['cer-live-bride-song'], cer['cer-live-bride-link']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Couple Exit',
+          [cer['cer-live-exit-song'], cer['cer-live-exit-link']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Notes', cer['cer-live-notes'] || '—'),
+      );
+    } else {
+      cerRows.push(
+        infoRow('Seating Playlist',
+          cer['cer-duties-seating-link'] || '—'),
+        infoRow('Family / Wedding Party Processional',
+          [cer['cer-duties-family-link'], cer['cer-duties-family-spotify']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Bride / Partner Entrance',
+          [cer['cer-duties-bride-link'], cer['cer-duties-bride-spotify']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Couple Exit',
+          [cer['cer-duties-exit-link'], cer['cer-duties-exit-spotify']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Notes', cer['cer-duties-notes'] || '—'),
+      );
+    }
+    document.getElementById('gig-ceremony').innerHTML = cerRows.join('');
+  }
+
+  /* ---- Setlist ---- */
+  loadAndRenderSetlist(clientId);
+
+  showView('view-gig');
+  window.scrollTo(0, 0);
+}
+
+/* ============================================
+   SETLIST
+   ============================================ */
+let _setlistSets = [[], []]; // in-memory working copy
+
+function loadAndRenderSetlist(clientId) {
+  const setlists = ADB.getSetlists();
+  if (setlists[clientId]) {
+    _setlistSets = [
+      (setlists[clientId].sets[0] || []).slice(),
+      (setlists[clientId].sets[1] || []).slice(),
+    ];
+  } else {
+    const gen = generateSetlist(clientId);
+    _setlistSets = gen.sets;
+  }
+  _renderSetlistUI();
+}
+
+function _renderSetlistUI() {
+  const container = document.getElementById('setlist-container');
+
+  function buildSetHTML(si) {
+    const songs = _setlistSets[si];
+    const dur   = fmtSetDuration(songs.length);
+
+    const rows = songs.map((s, i) => `
+      <div class="setlist-row" draggable="true" data-set="${si}" data-idx="${i}">
+        <div class="setlist-drag-handle"><i class="fas fa-grip-vertical"></i></div>
+        <div class="setlist-num">${i + 1}</div>
+        <div class="setlist-info">
+          <div class="setlist-title">${escHtml(s.title)}</div>
+          <div class="setlist-artist">${escHtml(s.artist)}</div>
+        </div>
+        ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
+        <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>`).join('') ||
+      `<div class="setlist-empty">No songs in this set — use "Add Song" to add some.</div>`;
+
+    return `
+      <div class="setlist-set-block">
+        <div class="setlist-set-header">
+          <span class="setlist-set-title">Set ${si + 1}</span>
+          <span class="setlist-set-meta">${songs.length} song${songs.length !== 1 ? 's' : ''} · ~${dur}</span>
+          <button class="btn-ghost setlist-add-btn" data-set="${si}">
+            <i class="fas fa-plus"></i> Add Song
+          </button>
+        </div>
+        <div class="setlist-rows" id="setlist-rows-${si}">${rows}</div>
+      </div>`;
+  }
+
+  container.innerHTML =
+    buildSetHTML(0) +
+    `<div class="setlist-break-divider">
+      <div class="setlist-break-line"></div>
+      <span class="setlist-break-label">30-Minute Break</span>
+      <div class="setlist-break-line"></div>
+    </div>` +
+    buildSetHTML(1);
+
+  _attachSetlistEvents();
+}
+
+function _attachSetlistEvents() {
+  /* Remove buttons */
+  document.querySelectorAll('.setlist-remove-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const si  = +this.dataset.set;
+      const idx = +this.dataset.idx;
+      _setlistSets[si].splice(idx, 1);
+      _renderSetlistUI();
+    });
+  });
+
+  /* Add Song buttons */
+  document.querySelectorAll('.setlist-add-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const targetSet = +this.dataset.set;
+      document.querySelectorAll('input[name="add-to-set"]').forEach(r => {
+        r.checked = (+r.value === targetSet);
+      });
+      openAddSongModal();
+    });
+  });
+
+  /* ---- Drag and drop ---- */
+  let dragSrc = null;
+
+  document.querySelectorAll('.setlist-row').forEach(row => {
+    row.addEventListener('dragstart', function(e) {
+      dragSrc = { si: +this.dataset.set, idx: +this.dataset.idx };
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    row.addEventListener('dragend', function() {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.setlist-row, .setlist-rows').forEach(el => {
+        el.classList.remove('drag-over');
+      });
+      dragSrc = null;
+    });
+
+    row.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.setlist-row').forEach(r => r.classList.remove('drag-over'));
+      this.classList.add('drag-over');
+    });
+
+    row.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!dragSrc) return;
+
+      const destSi  = +this.dataset.set;
+      const destIdx = +this.dataset.idx;
+      if (dragSrc.si === destSi && dragSrc.idx === destIdx) return;
+
+      const song = _setlistSets[dragSrc.si].splice(dragSrc.idx, 1)[0];
+      // Adjust target index when removing from the same set before the target
+      let ti = destIdx;
+      if (dragSrc.si === destSi && dragSrc.idx < destIdx) ti = destIdx - 1;
+      _setlistSets[destSi].splice(ti, 0, song);
+      dragSrc = null;
+      _renderSetlistUI();
+    });
+  });
+
+  /* Allow dropping onto empty set containers */
+  document.querySelectorAll('.setlist-rows').forEach(block => {
+    block.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    });
+    block.addEventListener('dragleave', function() {
+      this.classList.remove('drag-over');
+    });
+    block.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      if (!dragSrc) return;
+      const destSi = +this.id.replace('setlist-rows-', '');
+      const song   = _setlistSets[dragSrc.si].splice(dragSrc.idx, 1)[0];
+      _setlistSets[destSi].push(song);
+      dragSrc = null;
+      _renderSetlistUI();
+    });
+  });
+}
+
+/* ---- Save setlist ---- */
+function saveSetlist(clientId) {
+  const setlists = ADB.getSetlists();
+  setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
+  ADB.setSetlists(setlists);
+  showToast('Setlist saved!');
+}
+
+/* ============================================
+   ADD SONG MODAL
+   ============================================ */
+function openAddSongModal() {
+  document.getElementById('add-song-search').value = '';
+  _renderAddSongList('');
+  document.getElementById('modal-add-song').classList.remove('hidden');
+  setTimeout(() => document.getElementById('add-song-search').focus(), 50);
+}
+
+function _renderAddSongList(query) {
+  const catalog  = ADB.getMasterSongs();
+  const gcp      = ADB.getGCP(_currentClientId);
+  const prefs    = gcp.songs || {};
+  const reqs     = gcp.songRequests || [];
+  const inSetlist = new Set([..._setlistSets[0], ..._setlistSets[1]].map(s => s.id));
+
+  const q = query.toLowerCase().trim();
+
+  // Build list: client-selected songs first, then full catalog, then requests
+  const selected = catalog
+    .filter(s => (prefs[s.id] === 'Priority' || prefs[s.id] === 'Yes') && !inSetlist.has(s.id))
+    .map(s => ({ ...s, source:'catalog', priority: prefs[s.id] === 'Priority' }));
+
+  const unselected = catalog
+    .filter(s => !prefs[s.id] && !inSetlist.has(s.id))
+    .map(s => ({ ...s, source:'catalog', dim:true }));
+
+  const requestItems = reqs
+    .filter(r => !inSetlist.has(r.id))
+    .map(r => ({ ...r, source:'request' }));
+
+  const available = [...selected, ...requestItems, ...unselected].filter(s =>
+    !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q)
+  );
+
+  const list = document.getElementById('add-song-list');
+  if (!available.length) {
+    list.innerHTML = '<div style="padding:20px;font-family:var(--font-sans);font-size:13px;color:#aaa;text-align:center">No songs found</div>';
+    return;
+  }
+
+  list.innerHTML = available.map(s => `
+    <div class="add-song-item${s.dim ? ' dim' : ''}"
+         data-id="${escHtml(s.id)}"
+         data-title="${escHtml(s.title)}"
+         data-artist="${escHtml(s.artist)}"
+         data-source="${s.source}">
+      <div style="min-width:0;flex:1">
+        <div style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.title)}</div>
+        <div style="font-family:var(--font-sans);font-size:12px;color:#999">${escHtml(s.artist)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px">Request</span>` : ''}
+        ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px">Priority</span>` : ''}
+      </div>
+    </div>`).join('');
+
+  list.querySelectorAll('.add-song-item').forEach(item => {
+    item.addEventListener('click', function() {
+      const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
+      _setlistSets[setIndex].push({
+        id:     this.dataset.id,
+        title:  this.dataset.title,
+        artist: this.dataset.artist,
+        source: this.dataset.source,
+      });
+      document.getElementById('modal-add-song').classList.add('hidden');
+      _renderSetlistUI();
+      showToast(`Added to Set ${setIndex + 1}`);
+    });
+  });
+}
+
+/* ============================================
+   BOOTSTRAP
+   ============================================ */
+document.addEventListener('DOMContentLoaded', function() {
+
+  /* Check for active session */
+  if (getArtistSession()) {
+    document.getElementById('pnav-logout').classList.remove('hidden');
+    renderGigsDash();
+    showView('view-gigs');
+  } else {
+    showView('view-login');
+  }
+
+  /* Login */
+  document.getElementById('artist-login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const errEl  = document.getElementById('login-error');
+    const result = artistLogin(document.getElementById('artist-password').value);
+    if (!result.ok) {
+      errEl.textContent = result.error;
+      errEl.classList.remove('hidden');
+      return;
+    }
+    errEl.classList.add('hidden');
+    document.getElementById('pnav-logout').classList.remove('hidden');
+    renderGigsDash();
+    showView('view-gigs');
+  });
+
+  /* Logout */
+  document.getElementById('pnav-logout').addEventListener('click', artistLogout);
+
+  /* Back to gigs */
+  document.getElementById('btn-back-to-gigs').addEventListener('click', () => {
+    renderGigsDash();
+    showView('view-gigs');
+    window.scrollTo(0, 0);
+  });
+
+  /* Save setlist */
+  document.getElementById('btn-save-setlist').addEventListener('click', () => {
+    if (_currentClientId) saveSetlist(_currentClientId);
+  });
+
+  /* Regenerate setlist */
+  document.getElementById('btn-regenerate-setlist').addEventListener('click', () => {
+    if (!_currentClientId) return;
+    if (!confirm('Regenerate setlist from client song selections? Any manual edits will be lost.')) return;
+    const gen = generateSetlist(_currentClientId);
+    _setlistSets = gen.sets;
+    _renderSetlistUI();
+    showToast('Setlist regenerated from client selections.');
+  });
+
+  /* Add Song modal close */
+  document.getElementById('modal-add-song-close').addEventListener('click', () => {
+    document.getElementById('modal-add-song').classList.add('hidden');
+  });
+  document.getElementById('modal-add-song').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.add('hidden');
+  });
+
+  /* Add Song search */
+  document.getElementById('add-song-search').addEventListener('input', function() {
+    _renderAddSongList(this.value);
+  });
+});
