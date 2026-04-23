@@ -881,6 +881,8 @@ function renderClientContract(clientId) {
   document.getElementById('cc-total').textContent         = fmtMoney(total);
   document.getElementById('cc-deposit').textContent       = fmtMoney(deposit);
   document.getElementById('cc-final-balance').textContent = fmtMoney(balance);
+  const balDueDateEl = document.getElementById('cc-balance-due-date');
+  if (balDueDateEl) balDueDateEl.textContent = fmtDate(a.eventDate || client.eventDate) || '—';
 
   // Populate scope-services-list from admin's checkbox selections.
   // scope section is excluded from CONTRACT_SECTIONS so applyLangOverrides never touches it.
