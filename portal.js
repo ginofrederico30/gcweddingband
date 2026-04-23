@@ -1532,8 +1532,11 @@ const CEREMONY_FIELDS = [
   'cer-live-family-song','cer-live-family-link',
   'cer-live-bride-song','cer-live-bride-link',
   'cer-live-exit-song','cer-live-exit-link','cer-live-notes',
-  'cer-duties-seating-link','cer-duties-family-link',
-  'cer-duties-bride-link','cer-duties-exit-link','cer-duties-notes'
+  'cer-duties-seating-link',
+  'cer-duties-family-link','cer-duties-family-spotify',
+  'cer-duties-bride-link','cer-duties-bride-spotify',
+  'cer-duties-exit-link','cer-duties-exit-spotify',
+  'cer-duties-notes'
 ];
 
 function loadCeremony(clientId) {
