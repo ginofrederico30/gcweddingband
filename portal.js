@@ -853,6 +853,7 @@ function renderClientDash(clientId) {
    ============================================ */
 function renderClientContract(clientId) {
   const client   = DB.getClients().find(c => c.id === clientId);
+  if (!client) return;
   const contract = DB.getContract(clientId);
   const a  = contract.admin  || {};
   const cl = contract.client || {};
