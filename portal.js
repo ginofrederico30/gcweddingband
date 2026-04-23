@@ -305,8 +305,32 @@ function contractStatus(cid) {
 
 function checklistProgress(cid) {
   const cl = DB.getGCP(cid).checklist || {};
-  const filled = Object.values(cl).filter(v => v !== '' && v != null).length;
-  return Math.min(100, Math.round((filled / 20) * 100));
+
+  // Core fields always counted
+  const core = [
+    'cl-arrival-time','cl-guest-arrival','cl-loadinlocation','cl-parking',
+    'cl-parking-payment','cl-dressing-room',
+    'cl-cocktail-sep','cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
+    'cl-coordinator','cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor',
+    'cl-power','cl-reception-start','cl-dinner-time','cl-dinner-style',
+    'cl-table-announce','cl-meals','cl-band-eat','cl-speeches',
+    'cl-first-dance','cl-parent-dances','cl-dance-floor','cl-reception-end',
+    'cl-attendance','cl-loadout',
+    'cl-announce-party','cl-grand-entrance',
+    'cl-spotify-dinner','cl-spotify-break'
+  ];
+
+  // Conditional sub-fields only count when parent toggle is Yes
+  const required = [...core];
+  if (cl['cl-announce-party'] === 'Yes') {
+    required.push('cl-announce-party-how','cl-party-names','cl-spotify-party');
+  }
+  if (cl['cl-grand-entrance'] === 'Yes') {
+    required.push('cl-couple-announce','cl-spotify-couple');
+  }
+
+  const filled = required.filter(id => cl[id] !== '' && cl[id] != null).length;
+  return Math.min(100, Math.round((filled / required.length) * 100));
 }
 
 function ceremonyProgress(cid) {
