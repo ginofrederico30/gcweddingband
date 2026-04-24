@@ -1693,24 +1693,45 @@ async function extractPDFText(file) {
   lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const ab = await file.arrayBuffer();
   const pdf = await lib.getDocument({ data: ab }).promise;
-  let lines = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
+
+  var allItems = [];
+  for (var i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    // Group items by approximate Y position to reconstruct lines
-    const byY = {};
     content.items.forEach(function(item) {
-      if (!item.str.trim()) return;
-      const y = Math.round(item.transform[5]);
-      if (!byY[y]) byY[y] = [];
-      byY[y].push(item);
-    });
-    Object.keys(byY).sort((a, b) => b - a).forEach(function(y) {
-      const row = byY[y].sort((a, b) => a.transform[4] - b.transform[4]);
-      lines.push(row.map(function(item){ return item.str; }).join(' '));
+      if (item.str && item.str.trim()) allItems.push(item);
     });
   }
-  return lines.join('\n');
+  if (!allItems.length) return '';
+
+  // Cluster items into visual lines using a 3-unit Y tolerance
+  var TOLERANCE = 3;
+  var clusters = []; // each cluster: { y, items[] }
+  allItems.forEach(function(item) {
+    var y = item.transform[5];
+    var found = null;
+    for (var ci = 0; ci < clusters.length; ci++) {
+      if (Math.abs(clusters[ci].y - y) <= TOLERANCE) { found = clusters[ci]; break; }
+    }
+    if (found) {
+      found.items.push(item);
+      found.y = (found.y + y) / 2; // update running average
+    } else {
+      clusters.push({ y: y, items: [item] });
+    }
+  });
+
+  // Sort clusters top-to-bottom (PDF Y is bottom-up so sort descending)
+  clusters.sort(function(a, b) { return b.y - a.y; });
+
+  var lines = clusters.map(function(cl) {
+    cl.items.sort(function(a, b) { return a.transform[4] - b.transform[4]; });
+    return cl.items.map(function(it) { return it.str; }).join(' ').trim();
+  }).filter(function(l) { return l.length > 0; });
+
+  var text = lines.join('\n');
+  console.log('[PDF extract — first 1500 chars]\n', text.substring(0, 1500));
+  return text;
 }
 
 function parsePerformanceAgreement(rawText) {
@@ -1850,8 +1871,10 @@ async function processPerformanceAgreement(file) {
 
     if (!found.length) {
       resultEl.className = 'pdf-parse-result error';
-      resultEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> No recognizable fields found. The PDF will still be stored — fill in details manually after creating the client.';
-      // Still store the PDF even if no fields were parsed
+      var preview = text.substring(0, 600).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      resultEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> <strong>Could not auto-extract fields.</strong> The PDF is stored — fill in details manually below after creating the client.'
+        + '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:#888">Show extracted text (for debugging)</summary>'
+        + '<pre style="margin-top:6px;font-size:10px;white-space:pre-wrap;color:#555;background:#f5f4f2;padding:8px;border-radius:4px;max-height:160px;overflow:auto">' + (preview || '(no text found — PDF may be image-based)') + '</pre></details>';
       if (!_parsedContractData) _parsedContractData = parsed;
     } else {
       resultEl.className = 'pdf-parse-result success';
