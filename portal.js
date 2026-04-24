@@ -492,6 +492,48 @@ function renderAdminDash() {
    ============================================ */
 let currentAdminClientId = null;
 
+function renderPresignedEditFields(clientId) {
+  const contract = DB.getContract(clientId);
+  const a  = contract.admin  || {};
+  const cl = contract.client || {};
+  const g  = id => document.getElementById(id);
+  if (g('ps-event-date'))   g('ps-event-date').value   = a.eventDate    || '';
+  if (g('ps-venue'))        g('ps-venue').value         = cl.venue       || '';
+  if (g('ps-start-time'))   g('ps-start-time').value   = cl.startTime   || '';
+  if (g('ps-end-time'))     g('ps-end-time').value     = cl.endTime     || '';
+  if (g('ps-contact-name')) g('ps-contact-name').value = cl.contactName || '';
+  if (g('ps-phone'))        g('ps-phone').value         = cl.phone       || '';
+  if (g('ps-dress-code'))   g('ps-dress-code').value   = cl.dressCode   || '';
+  const saved = a.scopeOfServices || [];
+  document.querySelectorAll('input[name="ps-scope-service"]').forEach(cb => {
+    cb.checked = saved.includes(cb.value);
+  });
+}
+
+function savePresignedFields(clientId) {
+  const contract = DB.getContract(clientId);
+  if (!contract.admin)  contract.admin  = {};
+  if (!contract.client) contract.client = {};
+  const g = id => document.getElementById(id);
+  contract.admin.eventDate       = g('ps-event-date')   ? g('ps-event-date').value   : contract.admin.eventDate || '';
+  contract.admin.scopeOfServices = Array.from(document.querySelectorAll('input[name="ps-scope-service"]:checked')).map(cb => cb.value);
+  contract.client.venue        = g('ps-venue')        ? g('ps-venue').value.trim()        : contract.client.venue    || '';
+  contract.client.startTime    = g('ps-start-time')   ? g('ps-start-time').value           : contract.client.startTime  || '';
+  contract.client.endTime      = g('ps-end-time')     ? g('ps-end-time').value             : contract.client.endTime    || '';
+  contract.client.contactName  = g('ps-contact-name') ? g('ps-contact-name').value.trim()  : contract.client.contactName || '';
+  contract.client.phone        = g('ps-phone')        ? g('ps-phone').value.trim()          : contract.client.phone      || '';
+  contract.client.dressCode    = g('ps-dress-code')   ? g('ps-dress-code').value            : contract.client.dressCode  || '';
+  // Sync event date to client record
+  if (contract.admin.eventDate) {
+    const clients = DB.getClients();
+    const client  = clients.find(c => c.id === clientId);
+    if (client) { client.eventDate = contract.admin.eventDate; DB.setClients(clients); }
+  }
+  DB.setContract(clientId, contract);
+  showToast('Contract details saved.');
+  flashSaved('presigned-fields-saved');
+}
+
 function openClientDetail(clientId) {
   currentAdminClientId = clientId;
   const client   = DB.getClients().find(c => c.id === clientId);
@@ -550,6 +592,7 @@ function openClientDetail(clientId) {
       dlLink.download = contract.preSignedPdfName || 'performance-agreement.pdf';
     }
     if (fnEl) fnEl.textContent = contract.preSignedPdfName || '';
+    renderPresignedEditFields(clientId);
   } else {
     presignedCard.classList.add('hidden');
     contractFormCard.classList.remove('hidden');
@@ -1650,46 +1693,72 @@ async function extractPDFText(file) {
   lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const ab = await file.arrayBuffer();
   const pdf = await lib.getDocument({ data: ab }).promise;
-  let text = '';
+  let lines = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    text += content.items.map(function(item){ return item.str; }).join(' ') + '\n';
+    // Group items by approximate Y position to reconstruct lines
+    const byY = {};
+    content.items.forEach(function(item) {
+      if (!item.str.trim()) return;
+      const y = Math.round(item.transform[5]);
+      if (!byY[y]) byY[y] = [];
+      byY[y].push(item);
+    });
+    Object.keys(byY).sort((a, b) => b - a).forEach(function(y) {
+      const row = byY[y].sort((a, b) => a.transform[4] - b.transform[4]);
+      lines.push(row.map(function(item){ return item.str; }).join(' '));
+    });
   }
-  return text;
+  return lines.join('\n');
 }
 
 function parsePerformanceAgreement(rawText) {
+  // Keep line-based version for context-aware parsing
+  const lines = rawText.split('\n');
+  // Also a collapsed single-space version for broad matching
   const t = rawText.replace(/\s+/g, ' ').trim();
   const result = { name: '', eventDate: '', venue: '', startTime: '', endTime: '', dressCode: '', contactName: '', phone: '', scopeOfServices: [] };
 
   function after(patterns, maxLen) {
-    maxLen = maxLen || 80;
+    maxLen = maxLen || 120;
     const pats = Array.isArray(patterns) ? patterns : [patterns];
     for (var pi = 0; pi < pats.length; pi++) {
+      // Try line-by-line first (label on one line, value on next or same)
+      for (var li = 0; li < lines.length; li++) {
+        const re = new RegExp('^\\s*' + pats[pi] + '\\s*:?\\s*(.{1,' + maxLen + '})$', 'i');
+        const m = lines[li].match(re);
+        if (m && m[1].trim() && !/^:/.test(m[1].trim())) return m[1].trim().replace(/\s*:\s*$/, '');
+        // Label alone on line, value on next line
+        const reLabel = new RegExp('^\\s*' + pats[pi] + '\\s*:?\\s*$', 'i');
+        if (reLabel.test(lines[li]) && lines[li + 1] && lines[li + 1].trim()) return lines[li + 1].trim();
+      }
+      // Fall back to collapsed text
       const re = new RegExp(pats[pi] + '\\s*:?\\s*([^\\n]{1,' + maxLen + '})', 'i');
       const m = t.match(re);
-      if (m && m[1].trim() && m[1].trim()[0] !== ':') return m[1].trim().replace(/\s*[:\|]\s*$/, '');
+      if (m && m[1].trim() && !/^:/.test(m[1].trim())) return m[1].trim().replace(/\s*[:\|]\s*$/, '');
     }
     return '';
   }
 
   function toHHMM(raw) {
     if (!raw) return '';
-    const m = raw.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)?/i);
+    const m = raw.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)?/);
     if (!m) return '';
     var h = parseInt(m[1]), min = m[2] ? parseInt(m[2]) : 0, ap = m[3] ? m[3].toUpperCase() : '';
     if (ap === 'PM' && h < 12) h += 12;
     if (ap === 'AM' && h === 12) h = 0;
+    if (h > 23 || min > 59) return '';
     return (h < 10 ? '0' : '') + h + ':' + (min < 10 ? '0' : '') + min;
   }
-  function timeAfter(pats) { return toHHMM(after(pats, 20)); }
+  function timeAfter(pats) { return toHHMM(after(pats, 30)); }
 
   // Event date
   const datePats = [
-    /(?:event date|wedding date|date of event|date)\s*:?\s*((January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})/i,
-    /(?:event date|wedding date|date of event|date)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
-    /(?:event date|wedding date|date of event|date)\s*:?\s*(\w+\s+\d{1,2},?\s+\d{4})/i,
+    /(?:event date|wedding date|date of event|date of performance|date)\s*:?\s*((January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})/i,
+    /(?:event date|wedding date|date of event|date of performance|date)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+    /(?:event date|wedding date|date of event|date of performance|date)\s*:?\s*(\w+\s+\d{1,2},?\s+\d{4})/i,
+    /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2})\b/i,
   ];
   for (var di = 0; di < datePats.length; di++) {
     const dm = t.match(datePats[di]);
@@ -1697,30 +1766,49 @@ function parsePerformanceAgreement(rawText) {
   }
 
   // Start / end times
-  result.startTime = timeAfter(['Start Time','Performance Start','Begin(?:s)?(?:ning)?']);
-  result.endTime   = timeAfter(['End Time','Performance End','Ending']);
+  result.startTime = timeAfter(['Start Time','Performance Start','Begin(?:s)?(?:ning)?','Event Start','Band Starts?']);
+  result.endTime   = timeAfter(['End Time','Performance End','Ending','Event End','Band Ends?']);
 
   // Location / venue
-  result.venue = after(['Venue Name','Venue Location','Location','Venue']);
+  result.venue = after(['Venue Name','Venue Location','Venue','Location','Event Location','Place of Event','Event Venue']);
 
   // Dress code
-  result.dressCode = after(['Dress Code','Attire']);
+  const DRESS_CODES = ['Black Tie Optional','Black Tie','Semi-Formal','Semi Formal','Cocktail','Formal','Unknown'];
+  result.dressCode = after(['Dress Code','Attire','Dress']);
+  // If no explicit label, scan for known dress code values in text
+  if (!result.dressCode) {
+    for (var di2 = 0; di2 < DRESS_CODES.length; di2++) {
+      if (t.toLowerCase().indexOf(DRESS_CODES[di2].toLowerCase()) !== -1) { result.dressCode = DRESS_CODES[di2]; break; }
+    }
+  }
 
   // Client name
-  result.name = after(['Client Names?','Couple','Client']);
+  result.name = after(['Client(?:\'s)? Names?','Couple','Client(?:s)?']);
   if (!result.name) {
-    const nm = t.match(/\b([A-Z][a-z]+ (?:&|and) [A-Z][a-z]+(?: [A-Z][a-z]+)?)\b/);
+    const nm = t.match(/\b([A-Z][a-z]+(?: [A-Z][a-z]+)? (?:&|and) [A-Z][a-z]+(?: [A-Z][a-z]+)?)\b/);
     if (nm) result.name = nm[1];
   }
 
   // Contact
-  result.contactName = after(['Primary Contact','Contact Name','Contact']);
-  const phoneM = t.match(/(?:phone|cell|mobile|telephone)\s*:?\s*([\+\d][\d\s\(\)\-\.]{6,18})/i);
+  result.contactName = after(['Primary Contact','Contact Name','Point of Contact','Contact']);
+  const phoneM = t.match(/(?:phone|cell|mobile|telephone|tel)\s*:?\s*([\+\(]?[\d][\d\s\(\)\-\.]{6,18})/i);
   if (phoneM) result.phone = phoneM[1].trim();
 
-  // Scope of services
-  const SERVICES = ['8-Piece Reception Band','Sound & Lighting','Live Ceremony Music','Jazz Cocktail Band','Ceremony Duties','MC for Reception','DJ Services'];
-  result.scopeOfServices = SERVICES.filter(function(s){ return t.toLowerCase().indexOf(s.toLowerCase()) !== -1; });
+  // Scope of services — match against full service names as in the portal
+  const SERVICES = [
+    '8-Piece Reception Band','Sound & Lighting Production','Live Ceremony Music',
+    'Jazz Cocktail Band','Ceremony Duties','MC for Reception','DJ Services'
+  ];
+  // Also check shorter aliases that might appear in contracts
+  const ALIASES = {
+    'Sound & Lighting': 'Sound & Lighting Production',
+    'Sound and Lighting': 'Sound & Lighting Production',
+  };
+  const tLower = t.toLowerCase();
+  const found = new Set();
+  SERVICES.forEach(function(s){ if (tLower.indexOf(s.toLowerCase()) !== -1) found.add(s); });
+  Object.keys(ALIASES).forEach(function(k){ if (tLower.indexOf(k.toLowerCase()) !== -1) found.add(ALIASES[k]); });
+  result.scopeOfServices = Array.from(found);
 
   return result;
 }
@@ -2231,6 +2319,11 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ---- Admin: save language overrides ---- */
   document.getElementById('btn-save-lang').addEventListener('click', function() {
     if (currentAdminClientId) saveLangOverrides(currentAdminClientId);
+  });
+
+  /* ---- Admin: save presigned contract fields ---- */
+  document.getElementById('btn-save-presigned-fields').addEventListener('click', function() {
+    if (currentAdminClientId) savePresignedFields(currentAdminClientId);
   });
 
   /* ---- Admin: counter-sign ---- */

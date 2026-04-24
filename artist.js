@@ -300,6 +300,25 @@ function renderGigDetail(clientId) {
       </div>`;
   }
 
+  function linkRow(label, displayText, url) {
+    if (!url && displayText && /^https?:\/\//i.test(displayText)) { url = displayText; displayText = null; }
+    const empty = !displayText && !url;
+    let content;
+    if (empty) {
+      content = '—';
+    } else if (url) {
+      const t = escHtml(displayText || 'Open Playlist');
+      content = `<a href="${escHtml(url)}" target="_blank" rel="noopener" class="artist-spotify-link"><i class="fab fa-spotify"></i>${t}</a>`;
+    } else {
+      content = escHtml(displayText);
+    }
+    return `
+      <div class="artist-info-row">
+        <div class="artist-info-label">${label}</div>
+        <div class="artist-info-val${empty ? ' empty' : ''}">${content}</div>
+      </div>`;
+  }
+
   const logRows = [
     infoRow('Venue',            cl.venue || '—'),
     infoRow('Client Contact',   cl.contactName ? `${cl.contactName}${cl.phone ? '  ·  ' + cl.phone : ''}` : '—'),
@@ -342,26 +361,18 @@ function renderGigDetail(clientId) {
 
     if (isLive) {
       cerRows.push(
-        infoRow('Seating Genre',
-          cer['cer-seating-genre'] || '—'),
-        infoRow('Family / Wedding Party Processional',
-          [cer['cer-live-family-song'], cer['cer-live-family-link']].filter(Boolean).join('  ·  ') || '—'),
-        infoRow('Bride / Partner Entrance',
-          [cer['cer-live-bride-song'], cer['cer-live-bride-link']].filter(Boolean).join('  ·  ') || '—'),
-        infoRow('Couple Exit',
-          [cer['cer-live-exit-song'], cer['cer-live-exit-link']].filter(Boolean).join('  ·  ') || '—'),
+        infoRow('Seating Genre', cer['cer-seating-genre'] || '—'),
+        linkRow('Family / Wedding Party Processional', cer['cer-live-family-song'] || null, cer['cer-live-family-link'] || null),
+        linkRow('Bride / Partner Entrance', cer['cer-live-bride-song'] || null, cer['cer-live-bride-link'] || null),
+        linkRow('Couple Exit', cer['cer-live-exit-song'] || null, cer['cer-live-exit-link'] || null),
         infoRow('Notes', cer['cer-live-notes'] || '—'),
       );
     } else {
       cerRows.push(
-        infoRow('Seating Playlist',
-          cer['cer-duties-seating-link'] || '—'),
-        infoRow('Family / Wedding Party Processional',
-          [cer['cer-duties-family-link'], cer['cer-duties-family-spotify']].filter(Boolean).join('  ·  ') || '—'),
-        infoRow('Bride / Partner Entrance',
-          [cer['cer-duties-bride-link'], cer['cer-duties-bride-spotify']].filter(Boolean).join('  ·  ') || '—'),
-        infoRow('Couple Exit',
-          [cer['cer-duties-exit-link'], cer['cer-duties-exit-spotify']].filter(Boolean).join('  ·  ') || '—'),
+        linkRow('Seating Playlist', cer['cer-duties-seating-link'] || null, null),
+        linkRow('Family / Wedding Party Processional', cer['cer-duties-family-link'] || null, cer['cer-duties-family-spotify'] || null),
+        linkRow('Bride / Partner Entrance', cer['cer-duties-bride-link'] || null, cer['cer-duties-bride-spotify'] || null),
+        linkRow('Couple Exit', cer['cer-duties-exit-link'] || null, cer['cer-duties-exit-spotify'] || null),
         infoRow('Notes', cer['cer-duties-notes'] || '—'),
       );
     }
@@ -377,35 +388,44 @@ function renderGigDetail(clientId) {
   const fdArtist = chk['cl-first-dance-artist'];
   const fdLength = chk['cl-first-dance-length'];
   const fdSpot   = chk['cl-first-dance-spotify'];
-  const fdLabel  = [fdSong, fdArtist].filter(Boolean).join(' — ') || null;
-  musicRows.push(infoRow('First Dance', [fdTime, fdLabel, fdLength, fdSpot].filter(Boolean).join('  ·  ') || '—'));
+  const fdLabel  = [fdSong, fdArtist].filter(Boolean).join(' — ');
+  const fdMeta   = [fdTime, fdLength].filter(Boolean).join('  ·  ');
+  if (fdMeta || fdLabel || fdSpot) {
+    if (fdMeta) musicRows.push(infoRow('First Dance', fdMeta));
+    if (fdLabel || fdSpot) musicRows.push(linkRow(fdMeta ? '↳ Song' : 'First Dance', fdLabel || null, fdSpot || null));
+  } else {
+    musicRows.push(infoRow('First Dance', '—'));
+  }
 
   // Parent Dances
   const pdTime = fmtTime12(chk['cl-parent-dances']);
-  if (pdTime) musicRows.push(infoRow('Parent Dances Time', pdTime));
+  if (pdTime) musicRows.push(infoRow('Parent Dances', pdTime));
 
   if (chk['cl-fd'] === 'Yes') {
-    const parts = [chk['cl-fd-name'] ? 'Father: ' + chk['cl-fd-name'] : null,
-      [chk['cl-fd-song'], chk['cl-fd-artist']].filter(Boolean).join(' — ') || null,
-      chk['cl-fd-length'] || null, chk['cl-fd-spotify'] || null].filter(Boolean);
-    musicRows.push(infoRow('Father / Daughter', parts.join('  ·  ') || '—'));
+    const nameTag = chk['cl-fd-name'] ? 'Father: ' + chk['cl-fd-name'] : null;
+    const fdsMeta = [nameTag, chk['cl-fd-length']].filter(Boolean).join('  ·  ');
+    const fdsLabel = [chk['cl-fd-song'], chk['cl-fd-artist']].filter(Boolean).join(' — ');
+    if (fdsMeta) musicRows.push(infoRow('Father / Daughter', fdsMeta));
+    if (fdsLabel || chk['cl-fd-spotify']) musicRows.push(linkRow(fdsMeta ? '↳ Song' : 'Father / Daughter', fdsLabel || null, chk['cl-fd-spotify'] || null));
   }
   if (chk['cl-ms'] === 'Yes') {
-    const parts = [chk['cl-ms-name'] ? 'Mother: ' + chk['cl-ms-name'] : null,
-      [chk['cl-ms-song'], chk['cl-ms-artist']].filter(Boolean).join(' — ') || null,
-      chk['cl-ms-length'] || null, chk['cl-ms-spotify'] || null].filter(Boolean);
-    musicRows.push(infoRow('Mother / Son', parts.join('  ·  ') || '—'));
+    const nameTag = chk['cl-ms-name'] ? 'Mother: ' + chk['cl-ms-name'] : null;
+    const mssMeta = [nameTag, chk['cl-ms-length']].filter(Boolean).join('  ·  ');
+    const mssLabel = [chk['cl-ms-song'], chk['cl-ms-artist']].filter(Boolean).join(' — ');
+    if (mssMeta) musicRows.push(infoRow('Mother / Son', mssMeta));
+    if (mssLabel || chk['cl-ms-spotify']) musicRows.push(linkRow(mssMeta ? '↳ Song' : 'Mother / Son', mssLabel || null, chk['cl-ms-spotify'] || null));
   }
   if (chk['cl-other-dance'] === 'Yes') {
-    const parts = [chk['cl-other-dance-desc'] || null,
-      [chk['cl-other-dance-song'], chk['cl-other-dance-artist']].filter(Boolean).join(' — ') || null,
-      chk['cl-other-dance-length'] || null, chk['cl-other-dance-spotify'] || null].filter(Boolean);
-    musicRows.push(infoRow('Other Dance', parts.join('  ·  ') || '—'));
+    const desc = chk['cl-other-dance-desc'] || 'Other';
+    const odMeta = [desc, chk['cl-other-dance-length']].filter(Boolean).join('  ·  ');
+    const odLabel = [chk['cl-other-dance-song'], chk['cl-other-dance-artist']].filter(Boolean).join(' — ');
+    if (odMeta) musicRows.push(infoRow('Other Dance', odMeta));
+    if (odLabel || chk['cl-other-dance-spotify']) musicRows.push(linkRow(odMeta ? '↳ Song' : 'Other Dance', odLabel || null, chk['cl-other-dance-spotify'] || null));
   }
 
   // Background Music
-  if (chk['cl-spotify-dinner']) musicRows.push(infoRow('Dinner Music', chk['cl-spotify-dinner']));
-  if (chk['cl-spotify-break'])  musicRows.push(infoRow('Band Break Music', chk['cl-spotify-break']));
+  if (chk['cl-spotify-dinner']) musicRows.push(linkRow('Dinner Music', chk['cl-spotify-dinner'], null));
+  if (chk['cl-spotify-break'])  musicRows.push(linkRow('Band Break Music', chk['cl-spotify-break'], null));
 
   const musicCard = document.getElementById('gig-music-card');
   const hasMusic = musicRows.length > 0;

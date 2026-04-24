@@ -130,6 +130,44 @@
                 </a>
                 <span class="presigned-filename" id="admin-presigned-filename"></span>
             </div>
+            <hr class="form-divider" style="margin:0 28px">
+            <div style="padding:20px 28px 28px">
+                <h4 class="form-section-label" style="margin-bottom:8px">Contract Details <span class="admin-field-tag">Admin fills</span></h4>
+                <p style="font-family:var(--font-sans);font-size:12px;color:#888;margin:0 0 16px">Enter details from the signed agreement. Scope of services determines which planning modules are visible to the client (e.g. ceremony planner).</p>
+                <div class="contract-grid">
+                    <div class="field-group admin-field"><label>Event Date</label><input type="date" id="ps-event-date"></div>
+                    <div class="field-group admin-field"><label>Venue</label><input type="text" id="ps-venue" placeholder="Venue name"></div>
+                    <div class="field-group admin-field"><label>Performance Start Time</label><input type="time" id="ps-start-time"></div>
+                    <div class="field-group admin-field"><label>Performance End Time</label><input type="time" id="ps-end-time"></div>
+                    <div class="field-group admin-field"><label>Client Contact Name</label><input type="text" id="ps-contact-name" placeholder="Primary contact"></div>
+                    <div class="field-group admin-field"><label>Client Phone</label><input type="text" id="ps-phone" placeholder="Phone number"></div>
+                    <div class="field-group admin-field"><label>Dress Code</label>
+                        <select id="ps-dress-code">
+                            <option value="">Select…</option>
+                            <option>Black Tie</option>
+                            <option>Black Tie Optional</option>
+                            <option>Formal</option>
+                            <option>Cocktail</option>
+                            <option>Semi-Formal</option>
+                            <option>Unknown</option>
+                        </select>
+                    </div>
+                </div>
+                <h4 class="form-section-label" style="margin-top:20px;margin-bottom:8px">Scope of Services <span class="admin-field-tag">Admin fills</span></h4>
+                <div class="scope-checkboxes">
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="8-Piece Reception Band"> 8-Piece Reception Band</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Sound &amp; Lighting Production"> Sound &amp; Lighting Production</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Live Ceremony Music"> Live Ceremony Music</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Jazz Cocktail Band"> Jazz Cocktail Band</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Ceremony Duties"> Ceremony Duties</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="MC for Reception"> MC for Reception</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="DJ Services"> DJ Services</label>
+                </div>
+                <div class="form-actions" style="margin-top:20px">
+                    <button type="button" class="btn-primary" id="btn-save-presigned-fields"><i class="fas fa-save"></i> Save Contract Details</button>
+                    <span id="presigned-fields-saved" class="save-confirm hidden">Saved!</span>
+                </div>
+            </div>
         </div>
 
         <!-- Contract Admin Fields -->

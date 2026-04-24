@@ -137,6 +137,16 @@
 }
 .artist-info-val.empty { color: #ccc; }
 
+.artist-spotify-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #1DB954;
+    text-decoration: none;
+    font-weight: 500;
+}
+.artist-spotify-link:hover { text-decoration: underline; }
+
 /* ---- Setlist ---- */
 .setlist-set-block { padding: 0 24px 20px; }
 
