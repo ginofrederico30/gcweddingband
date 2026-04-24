@@ -7,6 +7,7 @@
     <link rel="icon" href="Insta-Profile.ico" type="image/x-icon">
     <link rel="stylesheet" href="portal.css">
     <script src="https://kit.fontawesome.com/9d7b870bec.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
       window._gmReady = false;
       window._gmQueue = [];
@@ -1032,6 +1033,22 @@
             <div class="field-group"><label>Login Email</label><input type="email" id="new-client-email" placeholder="client@email.com" required></div>
             <div class="field-group"><label>Temporary Password</label><input type="text" id="new-client-password" placeholder="Create a password" required></div>
             <div class="field-group"><label>Wedding Date</label><input type="date" id="new-client-event-date"></div>
+
+            <div class="presigned-divider"><span>Pre-existing contract</span></div>
+            <label class="presigned-check">
+                <input type="checkbox" id="contract-pre-signed">
+                <span>Contract was already signed outside the portal</span>
+            </label>
+            <div id="presigned-upload-wrap" class="hidden">
+                <div class="pdf-drop-zone" id="pdf-drop-zone">
+                    <i class="fas fa-file-pdf pdf-drop-icon"></i>
+                    <div class="pdf-drop-text">Click to upload or drag &amp; drop</div>
+                    <div class="pdf-drop-sub">Performance agreement · GCP planner sheet — one or both</div>
+                    <input type="file" id="contract-pdf-input" accept=".pdf" multiple>
+                </div>
+                <div id="pdf-parse-result" class="pdf-parse-result hidden"></div>
+            </div>
+
             <p id="add-client-error" class="form-error hidden"></p>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary modal-close" data-modal="modal-add-client">Cancel</button>

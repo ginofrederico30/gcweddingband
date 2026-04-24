@@ -1563,6 +1563,176 @@ function saveCeremony(clientId) {
 }
 
 /* ============================================
+   PDF CONTRACT PARSER
+   ============================================ */
+let _parsedContractData = null;
+
+async function extractPDFText(file) {
+  const lib = window.pdfjsLib;
+  if (!lib) throw new Error('PDF.js not loaded.');
+  lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const ab = await file.arrayBuffer();
+  const pdf = await lib.getDocument({ data: ab }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(function(item){ return item.str; }).join(' ') + '\n';
+  }
+  return text;
+}
+
+function parseGCContractText(rawText) {
+  const t = rawText.replace(/\s+/g, ' ').trim();
+  const result = {
+    name: '', eventDate: '', venue: '', address: '',
+    contactName: '', phone: '', dressCode: '',
+    scopeOfServices: [], checklist: {}, ceremony: {}
+  };
+
+  function after(patterns, maxLen) {
+    maxLen = maxLen || 80;
+    const pats = Array.isArray(patterns) ? patterns : [patterns];
+    for (var pi = 0; pi < pats.length; pi++) {
+      const re = new RegExp(pats[pi] + '\\s*:?\\s*([^\\n]{1,' + maxLen + '})', 'i');
+      const m = t.match(re);
+      if (m && m[1].trim() && m[1].trim()[0] !== ':') {
+        return m[1].trim().replace(/\s*[:\|]\s*$/, '');
+      }
+    }
+    return '';
+  }
+
+  // Event date
+  const datePats = [
+    /(?:event date|wedding date|date of event|date)\s*:?\s*((January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})/i,
+    /(?:event date|wedding date|date of event|date)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+    /(?:event date|wedding date|date of event|date)\s*:?\s*(\w+\s+\d{1,2},?\s+\d{4})/i,
+  ];
+  for (var di = 0; di < datePats.length; di++) {
+    const dm = t.match(datePats[di]);
+    if (dm) { const d = new Date(dm[1]); if (!isNaN(d)) { result.eventDate = d.toISOString().split('T')[0]; break; } }
+  }
+
+  result.venue       = after(['Venue Name', 'Venue Location', 'Venue']);
+  result.address     = after(['Venue Address', 'Location Address', 'Address']);
+  result.contactName = after(['Primary Contact', 'Contact Name', 'Contact']);
+  result.dressCode   = after(['Dress Code', 'Attire']);
+
+  const phoneM = t.match(/(?:phone|cell|mobile|telephone)\s*:?\s*([\+\d][\d\s\(\)\-\.]{6,18})/i);
+  if (phoneM) result.phone = phoneM[1].trim();
+
+  result.name = after(['Client Names?', 'Couple', 'Client']);
+  if (!result.name) {
+    const nm = t.match(/\b([A-Z][a-z]+ (?:&|and) [A-Z][a-z]+(?: [A-Z][a-z]+)?)\b/);
+    if (nm) result.name = nm[1];
+  }
+
+  const SERVICES = ['8-Piece Reception Band','Sound & Lighting','Live Ceremony Music','Jazz Cocktail Band','Ceremony Duties','MC for Reception','DJ Services'];
+  result.scopeOfServices = SERVICES.filter(function(s){ return t.toLowerCase().indexOf(s.toLowerCase()) !== -1; });
+
+  function toHHMM(raw) {
+    if (!raw) return '';
+    const m = raw.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)?/i);
+    if (!m) return '';
+    var h = parseInt(m[1]), min = m[2] ? parseInt(m[2]) : 0, ap = m[3] ? m[3].toUpperCase() : '';
+    if (ap === 'PM' && h < 12) h += 12;
+    if (ap === 'AM' && h === 12) h = 0;
+    return (h < 10 ? '0' : '') + h + ':' + (min < 10 ? '0' : '') + min;
+  }
+  function timeAfter(pats) { return toHHMM(after(pats, 20)); }
+
+  const ck = result.checklist;
+  ck['cl-arrival-time']    = timeAfter(['Arrival Time','Load.?in Time','Band Arrival']);
+  ck['cl-guest-arrival']   = timeAfter(['Guest Arrival','Doors Open']);
+  ck['cl-cocktail-start']  = timeAfter(['Cocktail Hour Start','Cocktail Start','Cocktail Begins?']);
+  ck['cl-cocktail-end']    = timeAfter(['Cocktail Hour End','Cocktail End','Cocktail Ends?']);
+  ck['cl-reception-start'] = timeAfter(['Reception Start','Reception Begins?']);
+  ck['cl-dinner-time']     = timeAfter(['Dinner Time','Dinner Begins?','Dinner']);
+  ck['cl-first-dance']     = timeAfter(['First Dance']);
+  ck['cl-parent-dances']   = timeAfter(['Parent Dances?','Parent Dance']);
+  ck['cl-dance-floor']     = timeAfter(['Dance Floor Open','Dance Floor']);
+  ck['cl-reception-end']   = timeAfter(['Reception End','Reception Ends?','Last Song']);
+  ck['cl-loadout']         = timeAfter(['Load.?out','Tear.?down']);
+  ck['cl-loadinlocation']  = after(['Load.?in Location','Load.?in Entrance']);
+  ck['cl-parking']         = after(['Parking Information','Parking']);
+  ck['cl-parking-payment'] = after(['Parking Payment','Paid Parking']);
+  ck['cl-dressing-room']   = after(['Dressing Room','Green Room']);
+  ck['cl-stage-size']      = after(['Stage Size','Stage Dimensions']);
+  ck['cl-outdoor']         = after(['Outdoor Event','Outdoor']);
+  ck['cl-power']           = after(['Power','Electrical','Outlets']);
+  ck['cl-wifi-name']       = after(['Wi.?Fi Name','Network Name','SSID']);
+  ck['cl-wifi-pass']       = after(['Wi.?Fi Password','Network Password','Wi.?Fi Pass']);
+  ck['cl-coordinator']     = after(['Coordinator','Wedding Coordinator']);
+  ck['cl-attendance']      = after(['Attendance','Guest Count','Number of Guests']);
+  ck['cl-meals']           = after(['Meals Provided','Vendor Meals']);
+  ck['cl-band-eat']        = after(['Where.*band.*eat','Band.*dining','Band.*meal']);
+  Object.keys(ck).forEach(function(k){ if (!ck[k]) delete ck[k]; });
+
+  const cer = result.ceremony;
+  cer['cer-start']                = timeAfter(['Ceremony Start','Ceremony Begins?']);
+  cer['cer-end']                  = timeAfter(['Ceremony End','Ceremony Ends?']);
+  cer['cer-officiant-mic']        = after(['Officiant Mic','Microphone for Officiant']);
+  cer['cer-outdoor']              = after(['Ceremony Outdoor','Ceremony Outside']);
+  cer['cer-duties-seating-link']  = after(['Seating Music','Pre.?Ceremony Music','Processional Style']);
+  cer['cer-duties-family-link']   = after(['Family Processional','Parent Processional']);
+  cer['cer-duties-bride-link']    = after(["Bride.?s? Processional",'Bridal Processional','Bride Entrance']);
+  cer['cer-duties-exit-link']     = after(['Recessional','Ceremony Exit','Exit Song']);
+  cer['cer-duties-notes']         = after(['Ceremony Notes','Additional Ceremony'], 200);
+  Object.keys(cer).forEach(function(k){ if (!cer[k]) delete cer[k]; });
+
+  return result;
+}
+
+async function processContractPDFs(files) {
+  const resultEl = document.getElementById('pdf-parse-result');
+  resultEl.className = 'pdf-parse-result parsing';
+  resultEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reading PDF' + (files.length > 1 ? 's' : '') + '…';
+  resultEl.classList.remove('hidden');
+
+  try {
+    var combinedText = '';
+    for (var fi = 0; fi < files.length; fi++) {
+      combinedText += await extractPDFText(files[fi]) + '\n\n';
+    }
+    const parsed = parseGCContractText(combinedText);
+    _parsedContractData = parsed;
+
+    if (parsed.name && !document.getElementById('new-client-name').value)
+      document.getElementById('new-client-name').value = parsed.name;
+    if (parsed.eventDate && !document.getElementById('new-client-event-date').value)
+      document.getElementById('new-client-event-date').value = parsed.eventDate;
+
+    const found = [];
+    if (parsed.name)                   found.push('Client name');
+    if (parsed.eventDate)              found.push('Event date');
+    if (parsed.venue)                  found.push('Venue');
+    if (parsed.address)                found.push('Address');
+    if (parsed.contactName)            found.push('Contact');
+    if (parsed.phone)                  found.push('Phone');
+    if (parsed.dressCode)              found.push('Dress code');
+    if (parsed.scopeOfServices.length) found.push(parsed.scopeOfServices.length + ' service' + (parsed.scopeOfServices.length > 1 ? 's' : ''));
+    const ckCount = Object.keys(parsed.checklist).length;
+    if (ckCount)                       found.push(ckCount + ' schedule/logistics field' + (ckCount > 1 ? 's' : ''));
+
+    if (!found.length) {
+      resultEl.className = 'pdf-parse-result error';
+      resultEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> No recognizable data found. You can still create the client and fill details manually.';
+    } else {
+      resultEl.className = 'pdf-parse-result success';
+      resultEl.innerHTML = '<strong><i class="fas fa-check-circle"></i> ' + found.length + ' field group' + (found.length > 1 ? 's' : '') + ' extracted</strong>'
+        + '<div class="pdf-found-tags">' + found.map(function(f){ return '<span class="pdf-found-tag">' + f + '</span>'; }).join('') + '</div>'
+        + '<p style="margin-top:8px;font-size:11px;opacity:0.75">Everything will be saved to the client record when you click Create Client.</p>';
+    }
+  } catch (err) {
+    _parsedContractData = null;
+    resultEl.className = 'pdf-parse-result error';
+    resultEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Could not read PDF — make sure it is not password-protected.';
+    console.error('PDF parse error:', err);
+  }
+}
+
+/* ============================================
    CLIENT MANAGEMENT
    ============================================ */
 function addClient(name, email, password, eventDate) {
@@ -1657,8 +1827,38 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-add-client').addEventListener('click', function() {
     document.getElementById('add-client-form').reset();
     document.getElementById('add-client-error').classList.add('hidden');
+    document.getElementById('contract-pre-signed').checked = false;
+    document.getElementById('presigned-upload-wrap').classList.add('hidden');
+    document.getElementById('pdf-parse-result').className = 'pdf-parse-result hidden';
+    _parsedContractData = null;
     openModal('modal-add-client');
   });
+
+  /* Pre-signed checkbox toggle */
+  document.getElementById('contract-pre-signed').addEventListener('change', function() {
+    document.getElementById('presigned-upload-wrap').classList.toggle('hidden', !this.checked);
+    if (!this.checked) {
+      _parsedContractData = null;
+      document.getElementById('contract-pdf-input').value = '';
+      document.getElementById('pdf-parse-result').className = 'pdf-parse-result hidden';
+    }
+  });
+
+  /* PDF drop zone */
+  (function() {
+    const zone = document.getElementById('pdf-drop-zone');
+    const input = document.getElementById('contract-pdf-input');
+    zone.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', function(){ zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function(e){
+      e.preventDefault(); zone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files).filter(function(f){ return f.type === 'application/pdf'; });
+      if (files.length) processContractPDFs(files);
+    });
+    input.addEventListener('change', function(){
+      if (this.files.length) processContractPDFs(Array.from(this.files));
+    });
+  })();
 
   document.getElementById('add-client-form').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -1670,6 +1870,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!name || !email || !pw) { errEl.textContent='Name, email, and password are required.'; errEl.classList.remove('hidden'); return; }
     const result = addClient(name, email, pw, date);
     if (!result.ok) { errEl.textContent=result.error; errEl.classList.remove('hidden'); return; }
+
+    if (_parsedContractData) {
+      const p   = _parsedContractData;
+      const cid = result.client.id;
+      const contracts = DB._get('gc_contracts') || {};
+      contracts[cid] = {
+        admin:  { eventDate: date || p.eventDate || '', venue: p.venue || '', scopeOfServices: p.scopeOfServices || [] },
+        client: { name: name, venue: p.venue || '', address: p.address || '', contactName: p.contactName || '', phone: p.phone || '', dressCode: p.dressCode || '' },
+        signedAt: Date.now(), adminSignedAt: Date.now()
+      };
+      DB._set('gc_contracts', contracts);
+      if (Object.keys(p.checklist).length || Object.keys(p.ceremony).length) {
+        const allGCP = DB._get('gc_gcp') || {};
+        allGCP[cid] = { songs: {}, songRequests: [], checklist: p.checklist, ceremony: p.ceremony };
+        DB._set('gc_gcp', allGCP);
+      }
+      _parsedContractData = null;
+    }
+
     closeModal('modal-add-client');
     renderAdminDash();
     showToast('Client added: ' + name);
