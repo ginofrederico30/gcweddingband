@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setting up Alli Hall…</title>
+  <style>
+    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f5f4f0; }
+    .box { text-align: center; color: #153147; }
+    .box h2 { font-size: 22px; margin-bottom: 8px; }
+    .box p  { font-size: 14px; color: #888; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <h2>Setting up Alli Hall…</h2>
+  <p>Redirecting to admin portal in a moment.</p>
+</div>
+<script>
+(function () {
+  var clientId = 'client_' + Date.now();
+  var tempPassword = 'AlliHall2026!';
+
+  /* ── 1. Client record ── */
+  var clients = JSON.parse(localStorage.getItem('gc_clients') || '[]');
+  // Remove any existing Alli Hall entry to avoid duplicates
+  clients = clients.filter(function(c){ return c.email !== 'alli.d.hall@gmail.com'; });
+  clients.push({
+    id: clientId,
+    name: 'Alli Hall',
+    email: 'alli.d.hall@gmail.com',
+    password: tempPassword,
+    eventDate: '2026-07-11',
+    createdAt: Date.now()
+  });
+  localStorage.setItem('gc_clients', JSON.stringify(clients));
+
+  /* ── 2. Contract ── */
+  var contracts = JSON.parse(localStorage.getItem('gc_contracts') || '{}');
+  contracts[clientId] = {
+    admin: {
+      eventDate: '2026-07-11',
+      venue: 'The Ellis',
+      scopeOfServices: ['8-Piece Reception Band', 'Sound & Lighting', 'Ceremony Duties', 'Jazz Cocktail Band', 'MC for Reception', 'DJ Services']
+    },
+    client: {
+      name: 'Simon & Alli Leadston',
+      venue: 'The Ellis',
+      address: '777 N Fourth St, Columbus, OH 43215',
+      contactName: 'Alli Hall',
+      phone: '614-507-9215',
+      dressCode: 'Formal — color encouraged!'
+    },
+    signedAt: new Date('2025-05-25').getTime(),
+    adminSignedAt: new Date('2025-05-26').getTime()
+  };
+  localStorage.setItem('gc_contracts', JSON.stringify(contracts));
+
+  /* ── 3. GCP ── */
+  var now = Date.now();
+  var gcp = JSON.parse(localStorage.getItem('gc_gcp') || '{}');
+  gcp[clientId] = {
+    songs: {
+      /* Priority */
+      seed_9:  'Priority',  // Brick House
+      seed_16: 'Priority',  // Crazy in Love
+      seed_24: 'Priority',  // Get Down On It
+      seed_28: 'Priority',  // Hips Don't Lie
+      seed_33: 'Priority',  // I Wanna Dance With Somebody
+      seed_37: 'Priority',  // Le Freak
+      seed_39: 'Priority',  // Lil Boo Thang
+      seed_41: 'Priority',  // Man! I Feel Like a Woman!
+      seed_43: 'Priority',  // Mr. Brightside
+      seed_48: 'Priority',  // Play That Funky Music
+      seed_51: 'Priority',  // Rich Girl
+      seed_52: 'Priority',  // Semi-Charmed Life
+      seed_53: 'Priority',  // September
+      seed_60: 'Priority',  // Superstition
+      seed_68: 'Priority',  // Valerie
+      seed_71: 'Priority',  // WHERE IS MY HUSBAND!
+      seed_74: 'Priority',  // You Make My Dreams (Come True)
+      /* Yes */
+      seed_76: 'Yes',  // 1999
+      seed_2:  'Yes',  // Ain't No Mountain High Enough
+      seed_4:  'Yes',  // All the Small Things
+      seed_5:  'Yes',  // Are You Gonna Be My Girl
+      seed_7:  'Yes',  // Blame It on the Boogie
+      seed_8:  'Yes',  // Boogie Shoes
+      seed_11: 'Yes',  // Cake By the Ocean
+      seed_12: 'Yes',  // Canned Heat
+      seed_13: 'Yes',  // Celebration
+      seed_14: 'Yes',  // Come and Get Your Love
+      seed_15: 'Yes',  // Come On Eileen
+      seed_17: 'Yes',  // Dancing in the Moonlight
+      seed_20: 'Yes',  // December 1963 (Oh, What a Night)
+      seed_21: 'Yes',  // Don't Start Now
+      seed_22: 'Yes',  // Dreams
+      seed_23: 'Yes',  // Funkytown
+      seed_26: 'Yes',  // Give It To Me Baby
+      seed_27: 'Yes',  // Heaven
+      seed_31: 'Yes',  // How Bizarre
+      seed_32: 'Yes',  // I Wanna Be Your Lover
+      seed_35: 'Yes',  // If I Ain't Got You
+      seed_38: 'Yes',  // Levitating
+      seed_42: 'Yes',  // Man I Need
+      seed_45: 'Yes',  // My Girl
+      seed_46: 'Yes',  // Pick Up the Pieces
+      seed_47: 'Yes',  // Pink Pony Club
+      seed_54: 'Yes',  // Shake Your Body (Down to the Ground)
+      seed_56: 'Yes',  // Signed, Sealed, Delivered (I'm Yours)
+      seed_58: 'Yes',  // Stayin' Alive
+      seed_59: 'Yes',  // Sunday Morning
+      seed_63: 'Yes',  // The Real Slim Shady
+      seed_64: 'Yes',  // This Will Be (An Everlasting Love)
+      seed_65: 'Yes',  // Treasure
+      seed_66: 'Yes',  // Unwritten
+      seed_67: 'Yes',  // Uptown Funk
+      seed_69: 'Yes',  // We Are Family
+      seed_72: 'Yes',  // You Are the Best Thing
+      seed_75: 'Yes',  // You Sexy Thing
+      /* Do Not Play */
+      seed_0:  'Do Not Play',  // All Your'n
+      seed_1:  'Do Not Play',  // Ain't It Fun
+      seed_3:  'Do Not Play',  // All Night Long
+      seed_6:  'Do Not Play',  // Birthday
+      seed_18: 'Do Not Play',  // Dancing on the Ceiling
+      seed_19: 'Do Not Play',  // Dancing Queen
+      seed_25: 'Do Not Play',  // Gimme! Gimme! Gimme!
+      seed_29: 'Do Not Play',  // Hot Stuff
+      seed_30: 'Do Not Play',  // HOT TO GO!
+      seed_34: 'Do Not Play',  // I Wish
+      seed_40: 'Do Not Play',  // Love Story
+      seed_44: 'Do Not Play',  // Music For a Sushi Restaurant
+      seed_49: 'Do Not Play',  // Red Wine Supernova
+      seed_50: 'Do Not Play',  // Reelin' In The Years
+      seed_55: 'Do Not Play',  // Shining Star
+      seed_57: 'Do Not Play',  // Sir Duke
+      seed_61: 'Do Not Play',  // Tennessee Whiskey
+      seed_62: 'Do Not Play',  // Tequila
+      seed_73: 'Do Not Play'   // You Make Me Feel Like Dancing
+    },
+    songRequests: [
+      { id: 'req_' + now + '_1', title: 'Give It Up',               artist: 'KC and the Sunshine Band',  type: 'Priority' },
+      { id: 'req_' + now + '_2', title: 'Super Freak',              artist: 'Rick James',                type: 'Priority' },
+      { id: 'req_' + now + '_3', title: 'Good as Hell',             artist: 'Lizzo',                     type: 'Priority' },
+      { id: 'req_' + now + '_4', title: 'Gold Digger (1950s soul cover)', artist: 'Kanye West / cover',  type: 'Priority' },
+      { id: 'req_' + now + '_5', title: "What's My Age Again?",     artist: 'Blink-182',                 type: 'Yes' },
+      { id: 'req_' + now + '_6', title: 'You Can Call Me Al',       artist: 'Paul Simon',                type: 'Yes' },
+      { id: 'req_' + now + '_7', title: '24K Magic',                artist: 'Bruno Mars',                type: 'Yes' },
+      { id: 'req_' + now + '_8', title: 'Hey Ya!',                  artist: 'Outkast',                   type: 'Yes' }
+    ],
+    checklist: {
+      'cl-arrival-time':    '13:30',
+      'cl-loadinlocation':  'Parking spot right outside the venue; load in through any door',
+      'cl-parking':         '1 spot right outside venue. Overflow: 677 N. 4th St (2 blocks, free)',
+      'cl-parking-payment': 'No',
+      'cl-dressing-room':   'No — mezzanine available for bridal party',
+      'cl-guest-arrival':   '16:00',
+      'cl-cocktail-start':  '17:00',
+      'cl-cocktail-end':    '18:30',
+      'cl-reception-start': '18:30',
+      'cl-dinner-time':     '18:45',
+      'cl-dinner-style':    'Served — family style',
+      'cl-first-dance':     '19:57',
+      'cl-parent-dances':   '19:55',
+      'cl-dance-floor':     '20:00',
+      'cl-reception-end':   '23:00',
+      'cl-loadout':         '00:00',
+      'cl-stage-size':      "27' x 18'",
+      'cl-outdoor':         'No',
+      'cl-power':           'Multiple outlets: storage room left of Better Together neon sign; near moss wall credenza; middle of wall',
+      'cl-wifi-name':       'Provided by venue day-of',
+      'cl-wifi-pass':       '',
+      'cl-coordinator':     '',
+      'cl-attendance':      '',
+      'cl-meals':           'Yes',
+      'cl-band-eat':        'Mezzanine'
+    },
+    ceremony: {
+      'cer-start':                 '16:30',
+      'cer-end':                   '17:00',
+      'cer-officiant-mic':         'Yes',
+      'cer-readers-mic':           'No',
+      'cer-sep-location':          'No',
+      'cer-distance':              'N/A',
+      'cer-outdoor':               'No',
+      'cer-power':                 '10–25 ft',
+      'cer-duties-seating-link':   'More modern style preferred',
+      'cer-duties-family-link':    'Big Black Car — Gregory Alan Isakov; Heart Beats Slow — Jose Gonzalez',
+      'cer-duties-family-spotify': '',
+      'cer-duties-bride-link':     'Better Together — Luke Combs; The Special Two — Missy Higgins; Yellow — Coldplay',
+      'cer-duties-bride-spotify':  '',
+      'cer-duties-exit-link':      'Better Together — Jack Johnson; Man I Need — Olivia Dean; You Make My Dreams — Hall & Oates',
+      'cer-duties-exit-spotify':   '',
+      'cer-duties-notes':          "Extended cocktail hour 5–6:30 PM with speeches. No grand entrance — S&A enter cocktail hour after brief photo session. Tim Hall welcome speech. Speeches ~6:15 (Best Man Lewis Rattray, MOH Elana Lynch, MOH Krista Stagg). Simon speaks at 6:40 once seated. Parent dances 7:55 (45–60 sec each). First dance 7:57 — Ian announces crowd circled around couple (90 sec). Grand exit for Alro (ring bearer) after Set 1 ~9:15. Special dances: Xavier Rudd - Soulless (Simon & Anne); Trace Adkins - Just Fishin' (Alli & Tim); Caamp - Lavender Girl. Announced as: Mr. and Mrs. Simon and Alli Leadston (LED-stin)."
+    }
+  };
+  localStorage.setItem('gc_gcp', JSON.stringify(gcp));
+
+  document.querySelector('h2').textContent = '✅ Alli Hall setup complete!';
+  document.querySelector('p').textContent  = 'Client ID: ' + clientId + ' — Temp password: ' + tempPassword + '. Redirecting…';
+
+  setTimeout(function(){ window.location.href = 'portal.html'; }, 2500);
+})();
+</script>
+</body>
+</html>
