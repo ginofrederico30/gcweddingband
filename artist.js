@@ -302,7 +302,6 @@ function renderGigDetail(clientId) {
 
   const logRows = [
     infoRow('Venue',            cl.venue || '—'),
-    infoRow('Address',          cl.address || '—'),
     infoRow('Client Contact',   cl.contactName ? `${cl.contactName}${cl.phone ? '  ·  ' + cl.phone : ''}` : '—'),
     infoRow('Coordinator',      chk['cl-coordinator'] || '—'),
     infoRow('Dress Code',       cl.dressCode || '—'),
