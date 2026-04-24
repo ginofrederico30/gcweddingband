@@ -1,3 +1,140 @@
 <!DOCTYPE html>
-<meta http-equiv="refresh" content="0; url=/artist">
-<script>window.location.replace("/artist");</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Artist Portal — Good Company Wedding Band</title>
+    <link rel="icon" href="Insta-Profile.ico" type="image/x-icon">
+    <link rel="stylesheet" href="portal.css">
+    <link rel="stylesheet" href="artist.css">
+    <script src="https://kit.fontawesome.com/9d7b870bec.js" crossorigin="anonymous" defer></script>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav id="portal-nav">
+    <a href="index.html" class="pnav-brand">
+        <img src="Circle GC Logo_White.png" alt="Good Company Wedding Band" class="pnav-logo">
+        <span>Good Company</span>
+    </a>
+    <span class="pnav-section">Artist Portal</span>
+    <div class="pnav-right">
+        <button id="pnav-logout" class="pnav-logout hidden"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+    </div>
+</nav>
+
+<!-- ============ VIEW: LOGIN ============ -->
+<div id="view-login" class="portal-view">
+    <div class="login-wrap">
+        <img src="Circle GC Logo_White.png" alt="Good Company Wedding Band" class="login-logo">
+        <h1 class="login-title">Artist Portal</h1>
+        <p class="login-sub">Band member access — enter the shared password</p>
+        <form id="artist-login-form" class="login-form" novalidate>
+            <div class="field-group">
+                <label for="artist-password">Password</label>
+                <input type="password" id="artist-password" placeholder="Band password" required autocomplete="current-password">
+            </div>
+            <p id="login-error" class="form-error hidden"></p>
+            <button type="submit" class="btn-primary btn-full" style="margin-top:12px">Sign In</button>
+        </form>
+        <p class="login-help">Need access? Contact <a href="mailto:gino@gcweddingband.com">gino@gcweddingband.com</a></p>
+    </div>
+</div>
+
+<!-- ============ VIEW: GIGS DASHBOARD ============ -->
+<div id="view-gigs" class="portal-view hidden">
+    <div class="portal-container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow-label">Band Member Portal</span>
+                <h2>Upcoming Gigs</h2>
+            </div>
+        </div>
+        <div id="gigs-list"></div>
+        <p id="no-gigs-msg" class="empty-state hidden">No gigs scheduled yet.</p>
+    </div>
+</div>
+
+<!-- ============ VIEW: GIG DETAIL ============ -->
+<div id="view-gig" class="portal-view hidden">
+    <div class="portal-container">
+        <div class="page-header">
+            <div>
+                <button class="btn-back" id="btn-back-to-gigs"><i class="fas fa-arrow-left"></i> All Gigs</button>
+                <h2 id="gig-client-name">—</h2>
+                <span class="page-subhead" id="gig-event-date"></span>
+            </div>
+        </div>
+
+        <!-- Scope of Services -->
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-clipboard-list"></i> Scope of Services</h3></div>
+            <div id="gig-scope" style="padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+
+        <!-- Day Schedule -->
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-clock"></i> Day Schedule</h3></div>
+            <div id="gig-schedule" class="artist-timeline"></div>
+        </div>
+
+        <!-- Logistics -->
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-map-marker-alt"></i> Logistics</h3></div>
+            <div id="gig-logistics" class="artist-info-grid"></div>
+        </div>
+
+        <!-- Ceremony (conditional) -->
+        <div class="card hidden" id="gig-ceremony-card">
+            <div class="card-header">
+                <h3><span style="display:inline-block;letter-spacing:-6px;margin-right:8px"><i class="fas fa-ring"></i><i class="fas fa-ring"></i></span> Ceremony Details</h3>
+            </div>
+            <div id="gig-ceremony" class="artist-info-grid"></div>
+        </div>
+
+        <!-- Reception Setlist -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-list-ol"></i> Reception Setlist</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <button class="btn-ghost" id="btn-regenerate-setlist"><i class="fas fa-sync-alt"></i> Regenerate</button>
+                    <button class="btn-primary" id="btn-save-setlist"><i class="fas fa-save"></i> Save Setlist</button>
+                </div>
+            </div>
+            <div class="card-note">Drag rows to reorder. Songs estimated at 4:15 each. Priority requests appear first.</div>
+            <div id="setlist-container"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ============ MODAL: Add Song ============ -->
+<div id="modal-add-song" class="modal-overlay hidden">
+    <div class="modal" style="max-width:540px">
+        <div class="modal-header">
+            <h3>Add Song to Setlist</h3>
+            <button class="modal-close" id="modal-add-song-close"><i class="fas fa-times"></i></button>
+        </div>
+        <input type="text" id="add-song-search" placeholder="Search by title or artist…"
+            style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:var(--font-sans);outline:none;margin-bottom:14px;display:block">
+        <div style="margin-bottom:14px">
+            <label style="font-family:var(--font-sans);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;display:block;margin-bottom:8px">Add to</label>
+            <div style="display:flex;gap:20px">
+                <label style="display:flex;align-items:center;gap:7px;font-family:var(--font-sans);font-size:13px;cursor:pointer;color:#444">
+                    <input type="radio" name="add-to-set" value="0" checked style="accent-color:var(--navy)"> Set 1
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;font-family:var(--font-sans);font-size:13px;cursor:pointer;color:#444">
+                    <input type="radio" name="add-to-set" value="1" style="accent-color:var(--navy)"> Set 2
+                </label>
+            </div>
+        </div>
+        <div id="add-song-list" style="max-height:320px;overflow-y:auto;border:1px solid #eee;border-radius:8px"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="artist-toast" class="toast"></div>
+
+<script src="artist.js"></script>
+</body>
+</html>
