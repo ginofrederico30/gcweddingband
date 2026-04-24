@@ -1726,7 +1726,21 @@ async function extractPDFText(file) {
 
   var lines = clusters.map(function(cl) {
     cl.items.sort(function(a, b) { return a.transform[4] - b.transform[4]; });
-    return cl.items.map(function(it) { return it.str; }).join(' ').trim();
+    // Join items intelligently: insert a space only when there's a meaningful
+    // X gap between items (handles PDFs where each character is a separate item)
+    var lineText = '';
+    for (var ii = 0; ii < cl.items.length; ii++) {
+      var item = cl.items[ii];
+      if (ii === 0) { lineText = item.str; continue; }
+      var prev = cl.items[ii - 1];
+      var prevEnd = prev.transform[4] + (prev.width || 0);
+      var gap = item.transform[4] - prevEnd;
+      // If gap is negative or very small, items are adjacent — no space.
+      // If gap is significant relative to the item width, insert a space.
+      var charWidth = item.width || (item.str.length > 0 ? Math.abs(item.transform[0]) || 6 : 6);
+      lineText += (gap > charWidth * 0.4 ? ' ' : '') + item.str;
+    }
+    return lineText.trim();
   }).filter(function(l) { return l.length > 0; });
 
   var text = lines.join('\n');
@@ -1871,10 +1885,16 @@ async function processPerformanceAgreement(file) {
 
     if (!found.length) {
       resultEl.className = 'pdf-parse-result error';
+      // Detect garbled/unreadable text (random single chars, no real words)
+      var words = text.split(/\s+/).filter(function(w){ return w.length > 3; });
+      var garbled = !text.trim() || words.length < 3;
       var preview = text.substring(0, 600).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      resultEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> <strong>Could not auto-extract fields.</strong> The PDF is stored — fill in details manually below after creating the client.'
-        + '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:#888">Show extracted text (for debugging)</summary>'
-        + '<pre style="margin-top:6px;font-size:10px;white-space:pre-wrap;color:#555;background:#f5f4f2;padding:8px;border-radius:4px;max-height:160px;overflow:auto">' + (preview || '(no text found — PDF may be image-based)') + '</pre></details>';
+      var msg = garbled
+        ? '<i class="fas fa-exclamation-circle"></i> <strong>PDF uses a custom font encoding</strong> that cannot be read in the browser. The PDF is stored for download. <strong>Use the form below to enter contract details manually after creating the client.</strong>'
+        : '<i class="fas fa-exclamation-circle"></i> <strong>Could not match contract fields.</strong> The PDF text was extracted but field labels didn\'t match expected patterns. The PDF is stored — fill in details manually after creating the client.';
+      resultEl.innerHTML = msg
+        + (preview ? '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:#888">Show extracted text</summary>'
+        + '<pre style="margin-top:6px;font-size:10px;white-space:pre-wrap;color:#555;background:#f5f4f2;padding:8px;border-radius:4px;max-height:160px;overflow:auto">' + preview + '</pre></details>' : '');
       if (!_parsedContractData) _parsedContractData = parsed;
     } else {
       resultEl.className = 'pdf-parse-result success';
@@ -2280,11 +2300,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el) el.addEventListener('change', _applyDanceVisibility);
   });
 
-  /* ---- Admin: ceremony service mutual exclusivity ---- */
-  const _liveCb   = document.querySelector('input[name="scope-service"][value="Live Ceremony Music"]');
-  const _dutiesCb = document.querySelector('input[name="scope-service"][value="Ceremony Duties"]');
-  if (_liveCb)   _liveCb.addEventListener('change',   function() { if (this.checked && _dutiesCb) _dutiesCb.checked = false; });
-  if (_dutiesCb) _dutiesCb.addEventListener('change', function() { if (this.checked && _liveCb)   _liveCb.checked   = false; });
+  /* ---- Admin: ceremony service mutual exclusivity (regular + presigned forms) ---- */
+  function wireCeremonyMutualExclusion(nameAttr) {
+    const liveCb   = document.querySelector('input[name="' + nameAttr + '"][value="Live Ceremony Music"]');
+    const dutiesCb = document.querySelector('input[name="' + nameAttr + '"][value="Ceremony Duties"]');
+    if (liveCb)   liveCb.addEventListener('change',   function() { if (this.checked && dutiesCb) dutiesCb.checked = false; });
+    if (dutiesCb) dutiesCb.addEventListener('change', function() { if (this.checked && liveCb)   liveCb.checked   = false; });
+  }
+  wireCeremonyMutualExclusion('scope-service');
+  wireCeremonyMutualExclusion('ps-scope-service');
 
   /* ---- Client: save ceremony ---- */
   function handleSaveCeremony() { const s=getSession(); if(s) saveCeremony(s.clientId); }
