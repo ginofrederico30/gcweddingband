@@ -1282,6 +1282,44 @@ textarea { resize: vertical; }
     font-weight: 600;
 }
 
+/* ---- Pre-signed contract notice ---- */
+.presigned-notice-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 28px 16px;
+}
+.presigned-notice-icon {
+    font-size: 22px;
+    color: #2d7a2d;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.presigned-notice-body strong {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: #222;
+    margin-bottom: 4px;
+}
+.presigned-notice-body p {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #777;
+    margin: 0;
+}
+.presigned-dl-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 28px 24px;
+}
+.presigned-filename {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: #aaa;
+}
+
 .modal-sm { max-width: 360px; }
 
 .modal-header {

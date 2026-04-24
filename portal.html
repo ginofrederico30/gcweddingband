@@ -111,8 +111,29 @@
             </div>
         </div>
 
+        <!-- Pre-signed contract notice (shown instead of contract form) -->
+        <div class="card hidden" id="admin-presigned-card">
+            <div class="card-header">
+                <h3><i class="fas fa-file-contract"></i> Performance Agreement</h3>
+                <span class="status-badge status-signed">On File</span>
+            </div>
+            <div class="presigned-notice-row">
+                <div class="presigned-notice-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="presigned-notice-body">
+                    <strong>Contract signed before the portal was built</strong>
+                    <p>This client's performance agreement was executed externally. Download the original document below.</p>
+                </div>
+            </div>
+            <div class="presigned-dl-row">
+                <a id="admin-presigned-dl-link" class="btn-secondary" download>
+                    <i class="fas fa-download"></i> Download Contract
+                </a>
+                <span class="presigned-filename" id="admin-presigned-filename"></span>
+            </div>
+        </div>
+
         <!-- Contract Admin Fields -->
-        <div class="card">
+        <div class="card" id="admin-contract-card">
             <div class="card-header">
                 <h3><i class="fas fa-file-contract"></i> Performance Agreement</h3>
                 <span id="admin-contract-badge" class="status-badge"></span>
@@ -372,6 +393,22 @@
                 <h2>Performance Agreement</h2>
             </div>
             <button class="btn-secondary no-print" id="btn-print-contract"><i class="fas fa-download"></i> Download PDF</button>
+        </div>
+
+        <!-- Pre-signed notice: shown instead of full contract when signed outside portal -->
+        <div id="contract-presigned-section" class="card hidden" style="margin-bottom:0">
+            <div class="presigned-notice-row">
+                <div class="presigned-notice-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="presigned-notice-body">
+                    <strong>Your performance agreement was signed before the client portal was created.</strong>
+                    <p>A copy of your signed contract is available to download below.</p>
+                </div>
+            </div>
+            <div class="presigned-dl-row">
+                <a id="client-presigned-dl-link" class="btn-secondary" download>
+                    <i class="fas fa-download"></i> Download Contract
+                </a>
+            </div>
         </div>
 
         <div class="card contract-card" id="contract-print-area">
@@ -1043,8 +1080,8 @@
                 <div class="pdf-drop-zone" id="pdf-drop-zone">
                     <i class="fas fa-file-pdf pdf-drop-icon"></i>
                     <div class="pdf-drop-text">Click to upload or drag &amp; drop</div>
-                    <div class="pdf-drop-sub">Performance agreement · GCP planner sheet — one or both</div>
-                    <input type="file" id="contract-pdf-input" accept=".pdf" multiple>
+                    <div class="pdf-drop-sub">Performance agreement (PDF)</div>
+                    <input type="file" id="contract-pdf-input" accept=".pdf">
                 </div>
                 <div id="pdf-parse-result" class="pdf-parse-result hidden"></div>
             </div>
