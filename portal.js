@@ -315,7 +315,8 @@ function checklistProgress(cid) {
     'cl-coordinator','cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor',
     'cl-power','cl-reception-start','cl-dinner-time','cl-dinner-style',
     'cl-table-announce','cl-meals','cl-band-eat','cl-speeches',
-    'cl-first-dance','cl-parent-dances','cl-dance-floor','cl-reception-end',
+    'cl-first-dance','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-length',
+    'cl-parent-dances','cl-dance-floor','cl-reception-end',
     'cl-attendance','cl-loadout',
     'cl-announce-party','cl-grand-entrance',
     'cl-spotify-dinner','cl-spotify-break'
@@ -328,6 +329,15 @@ function checklistProgress(cid) {
   }
   if (cl['cl-grand-entrance'] === 'Yes') {
     required.push('cl-couple-announce','cl-spotify-couple');
+  }
+  if (cl['cl-fd'] === 'Yes') {
+    required.push('cl-fd-song','cl-fd-artist','cl-fd-length');
+  }
+  if (cl['cl-ms'] === 'Yes') {
+    required.push('cl-ms-song','cl-ms-artist','cl-ms-length');
+  }
+  if (cl['cl-other-dance'] === 'Yes') {
+    required.push('cl-other-dance-desc','cl-other-dance-song','cl-other-dance-artist','cl-other-dance-length');
   }
 
   const filled = required.filter(id => cl[id] !== '' && cl[id] != null).length;
@@ -1524,12 +1534,26 @@ const CHECKLIST_FIELDS = [
   'cl-cocktail-start','cl-cocktail-end','cl-cocktail-spotify','cl-coordinator',
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
-  'cl-meals','cl-band-eat','cl-speeches','cl-first-dance','cl-parent-dances',
-  'cl-dance-floor','cl-reception-end','cl-attendance','cl-loadout',
+  'cl-meals','cl-band-eat','cl-speeches','cl-dance-floor','cl-reception-end',
+  'cl-attendance','cl-loadout',
   'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party',
   'cl-grand-entrance','cl-couple-announce','cl-spotify-couple',
+  'cl-first-dance','cl-first-dance-length','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-spotify',
+  'cl-parent-dances',
+  'cl-fd-name','cl-fd-length','cl-fd-song','cl-fd-artist','cl-fd-spotify',
+  'cl-ms-name','cl-ms-length','cl-ms-song','cl-ms-artist','cl-ms-spotify',
+  'cl-other-dance-desc','cl-other-dance-length','cl-other-dance-song','cl-other-dance-artist','cl-other-dance-spotify',
   'cl-spotify-dinner','cl-spotify-break'
 ];
+const DANCE_CHECKBOXES = ['cl-fd','cl-ms','cl-other-dance'];
+
+function _applyDanceVisibility() {
+  [['cl-fd','cl-fd-detail'],['cl-ms','cl-ms-detail'],['cl-other-dance','cl-other-dance-detail']].forEach(([cbId, detailId]) => {
+    const cb = document.getElementById(cbId);
+    const detail = document.getElementById(detailId);
+    if (cb && detail) detail.classList.toggle('hidden', !cb.checked);
+  });
+}
 
 function _applyChecklistVisibility(clientId) {
   // Cocktail Spotify: hide when Jazz Cocktail Band is in scope
@@ -1553,11 +1577,14 @@ function _applyChecklistVisibility(clientId) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !showCouple);
   });
+
+  _applyDanceVisibility();
 }
 
 function loadChecklist(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
+  DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
   _applyChecklistVisibility(clientId);
 }
 
@@ -1565,6 +1592,7 @@ function saveChecklist(clientId) {
   const gcp = DB.getGCP(clientId);
   const cl  = {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
+  DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.checked ? 'Yes' : ''; });
   gcp.checklist = cl;
   DB.setGCP(clientId, gcp);
   showToast('Checklist saved!');
@@ -2134,6 +2162,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap']);
   clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap']);
+
+  /* Dance checkboxes */
+  DANCE_CHECKBOXES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', _applyDanceVisibility);
+  });
 
   /* ---- Admin: ceremony service mutual exclusivity ---- */
   const _liveCb   = document.querySelector('input[name="scope-service"][value="Live Ceremony Music"]');

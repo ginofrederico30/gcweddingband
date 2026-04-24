@@ -1316,17 +1316,6 @@ img {
     border-color: var(--cream);
 }
 
-.social-artist-login {
-    border-color: rgba(173,184,187,0.2) !important;
-    color: rgba(173,184,187,0.35) !important;
-}
-
-.social-artist-login:hover {
-    background: rgba(173,184,187,0.12) !important;
-    color: rgba(173,184,187,0.7) !important;
-    border-color: rgba(173,184,187,0.35) !important;
-    transform: none !important;
-}
 
 .social-link {
     text-align: center;

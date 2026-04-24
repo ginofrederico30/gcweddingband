@@ -368,6 +368,50 @@ function renderGigDetail(clientId) {
     document.getElementById('gig-ceremony').innerHTML = cerRows.join('');
   }
 
+  /* ---- Music & Dances ---- */
+  const musicRows = [];
+
+  // First Dance
+  const fdTime   = fmtTime12(chk['cl-first-dance']);
+  const fdSong   = chk['cl-first-dance-song'];
+  const fdArtist = chk['cl-first-dance-artist'];
+  const fdLength = chk['cl-first-dance-length'];
+  const fdSpot   = chk['cl-first-dance-spotify'];
+  const fdLabel  = [fdSong, fdArtist].filter(Boolean).join(' — ') || null;
+  musicRows.push(infoRow('First Dance', [fdTime, fdLabel, fdLength, fdSpot].filter(Boolean).join('  ·  ') || '—'));
+
+  // Parent Dances
+  const pdTime = fmtTime12(chk['cl-parent-dances']);
+  if (pdTime) musicRows.push(infoRow('Parent Dances Time', pdTime));
+
+  if (chk['cl-fd'] === 'Yes') {
+    const parts = [chk['cl-fd-name'] ? 'Father: ' + chk['cl-fd-name'] : null,
+      [chk['cl-fd-song'], chk['cl-fd-artist']].filter(Boolean).join(' — ') || null,
+      chk['cl-fd-length'] || null, chk['cl-fd-spotify'] || null].filter(Boolean);
+    musicRows.push(infoRow('Father / Daughter', parts.join('  ·  ') || '—'));
+  }
+  if (chk['cl-ms'] === 'Yes') {
+    const parts = [chk['cl-ms-name'] ? 'Mother: ' + chk['cl-ms-name'] : null,
+      [chk['cl-ms-song'], chk['cl-ms-artist']].filter(Boolean).join(' — ') || null,
+      chk['cl-ms-length'] || null, chk['cl-ms-spotify'] || null].filter(Boolean);
+    musicRows.push(infoRow('Mother / Son', parts.join('  ·  ') || '—'));
+  }
+  if (chk['cl-other-dance'] === 'Yes') {
+    const parts = [chk['cl-other-dance-desc'] || null,
+      [chk['cl-other-dance-song'], chk['cl-other-dance-artist']].filter(Boolean).join(' — ') || null,
+      chk['cl-other-dance-length'] || null, chk['cl-other-dance-spotify'] || null].filter(Boolean);
+    musicRows.push(infoRow('Other Dance', parts.join('  ·  ') || '—'));
+  }
+
+  // Background Music
+  if (chk['cl-spotify-dinner']) musicRows.push(infoRow('Dinner Music', chk['cl-spotify-dinner']));
+  if (chk['cl-spotify-break'])  musicRows.push(infoRow('Band Break Music', chk['cl-spotify-break']));
+
+  const musicCard = document.getElementById('gig-music-card');
+  const hasMusic = musicRows.length > 0;
+  if (musicCard) musicCard.classList.toggle('hidden', !hasMusic);
+  if (hasMusic) document.getElementById('gig-music').innerHTML = musicRows.join('');
+
   /* ---- Setlist ---- */
   loadAndRenderSetlist(clientId);
 

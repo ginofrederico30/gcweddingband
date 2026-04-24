@@ -1106,6 +1106,48 @@ textarea { resize: vertical; }
 
 .checklist-grid .full-width { grid-column: 1 / -1; }
 
+.dance-section-label {
+    padding-top: 12px;
+    margin-top: 4px;
+    border-top: 1px solid #eceae5;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #444;
+}
+.dance-section-label:first-child { border-top: none; padding-top: 0; }
+
+.dance-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--navy);
+    font-weight: 500;
+    user-select: none;
+}
+.dance-cb {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--navy);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.dance-detail-wrap {
+    padding: 14px 16px 6px 20px;
+    border-left: 3px solid #dedad3;
+    margin-left: 4px;
+    border-radius: 0 6px 6px 0;
+    background: #fafaf8;
+}
+.dance-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.dance-detail-grid .full-width { grid-column: 1 / -1; }
+
 /* ============================================
    Save Bar (sticky bottom)
    ============================================ */
