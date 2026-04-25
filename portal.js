@@ -631,8 +631,10 @@ function openClientDetail(clientId) {
     executedCard.classList.add('hidden');
   }
 
-  // Language editor
-  renderLangEditor(clientId);
+  // Language editor — not applicable for pre-signed contracts
+  const langCard = document.getElementById('contract-lang-card');
+  if (langCard) langCard.classList.toggle('hidden', !!contract.preSignedOutsidePortal);
+  if (!contract.preSignedOutsidePortal) renderLangEditor(clientId);
 
   // GCP overview
   const gcp    = DB.getGCP(clientId);
@@ -1683,231 +1685,27 @@ function saveCeremony(clientId) {
 }
 
 /* ============================================
-   PDF PERFORMANCE AGREEMENT PARSER
+   PRE-SIGNED PDF STORAGE (no parsing)
    ============================================ */
-let _parsedContractData = null;
+let _pendingPdfData = null; // { dataUrl, name }
 
-async function extractPDFText(file) {
-  const lib = window.pdfjsLib;
-  if (!lib) throw new Error('PDF.js not loaded.');
-  lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const ab = await file.arrayBuffer();
-  const pdf = await lib.getDocument({ data: ab }).promise;
-
-  var allItems = [];
-  for (var i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    content.items.forEach(function(item) {
-      if (item.str && item.str.trim()) allItems.push(item);
-    });
-  }
-  if (!allItems.length) return '';
-
-  // Cluster items into visual lines using a 3-unit Y tolerance
-  var TOLERANCE = 3;
-  var clusters = []; // each cluster: { y, items[] }
-  allItems.forEach(function(item) {
-    var y = item.transform[5];
-    var found = null;
-    for (var ci = 0; ci < clusters.length; ci++) {
-      if (Math.abs(clusters[ci].y - y) <= TOLERANCE) { found = clusters[ci]; break; }
-    }
-    if (found) {
-      found.items.push(item);
-      found.y = (found.y + y) / 2; // update running average
-    } else {
-      clusters.push({ y: y, items: [item] });
-    }
-  });
-
-  // Sort clusters top-to-bottom (PDF Y is bottom-up so sort descending)
-  clusters.sort(function(a, b) { return b.y - a.y; });
-
-  var lines = clusters.map(function(cl) {
-    cl.items.sort(function(a, b) { return a.transform[4] - b.transform[4]; });
-    // Join items intelligently: insert a space only when there's a meaningful
-    // X gap between items (handles PDFs where each character is a separate item)
-    var lineText = '';
-    for (var ii = 0; ii < cl.items.length; ii++) {
-      var item = cl.items[ii];
-      if (ii === 0) { lineText = item.str; continue; }
-      var prev = cl.items[ii - 1];
-      var prevEnd = prev.transform[4] + (prev.width || 0);
-      var gap = item.transform[4] - prevEnd;
-      // If gap is negative or very small, items are adjacent — no space.
-      // If gap is significant relative to the item width, insert a space.
-      var charWidth = item.width || (item.str.length > 0 ? Math.abs(item.transform[0]) || 6 : 6);
-      lineText += (gap > charWidth * 0.4 ? ' ' : '') + item.str;
-    }
-    return lineText.trim();
-  }).filter(function(l) { return l.length > 0; });
-
-  var text = lines.join('\n');
-  console.log('[PDF extract — first 1500 chars]\n', text.substring(0, 1500));
-  return text;
-}
-
-function parsePerformanceAgreement(rawText) {
-  // Keep line-based version for context-aware parsing
-  const lines = rawText.split('\n');
-  // Also a collapsed single-space version for broad matching
-  const t = rawText.replace(/\s+/g, ' ').trim();
-  const result = { name: '', eventDate: '', venue: '', startTime: '', endTime: '', dressCode: '', contactName: '', phone: '', scopeOfServices: [] };
-
-  function after(patterns, maxLen) {
-    maxLen = maxLen || 120;
-    const pats = Array.isArray(patterns) ? patterns : [patterns];
-    for (var pi = 0; pi < pats.length; pi++) {
-      // Try line-by-line first (label on one line, value on next or same)
-      for (var li = 0; li < lines.length; li++) {
-        const re = new RegExp('^\\s*' + pats[pi] + '\\s*:?\\s*(.{1,' + maxLen + '})$', 'i');
-        const m = lines[li].match(re);
-        if (m && m[1].trim() && !/^:/.test(m[1].trim())) return m[1].trim().replace(/\s*:\s*$/, '');
-        // Label alone on line, value on next line
-        const reLabel = new RegExp('^\\s*' + pats[pi] + '\\s*:?\\s*$', 'i');
-        if (reLabel.test(lines[li]) && lines[li + 1] && lines[li + 1].trim()) return lines[li + 1].trim();
-      }
-      // Fall back to collapsed text
-      const re = new RegExp(pats[pi] + '\\s*:?\\s*([^\\n]{1,' + maxLen + '})', 'i');
-      const m = t.match(re);
-      if (m && m[1].trim() && !/^:/.test(m[1].trim())) return m[1].trim().replace(/\s*[:\|]\s*$/, '');
-    }
-    return '';
-  }
-
-  function toHHMM(raw) {
-    if (!raw) return '';
-    const m = raw.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)?/);
-    if (!m) return '';
-    var h = parseInt(m[1]), min = m[2] ? parseInt(m[2]) : 0, ap = m[3] ? m[3].toUpperCase() : '';
-    if (ap === 'PM' && h < 12) h += 12;
-    if (ap === 'AM' && h === 12) h = 0;
-    if (h > 23 || min > 59) return '';
-    return (h < 10 ? '0' : '') + h + ':' + (min < 10 ? '0' : '') + min;
-  }
-  function timeAfter(pats) { return toHHMM(after(pats, 30)); }
-
-  // Event date
-  const datePats = [
-    /(?:event date|wedding date|date of event|date of performance|date)\s*:?\s*((January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})/i,
-    /(?:event date|wedding date|date of event|date of performance|date)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
-    /(?:event date|wedding date|date of event|date of performance|date)\s*:?\s*(\w+\s+\d{1,2},?\s+\d{4})/i,
-    /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2})\b/i,
-  ];
-  for (var di = 0; di < datePats.length; di++) {
-    const dm = t.match(datePats[di]);
-    if (dm) { const d = new Date(dm[1]); if (!isNaN(d)) { result.eventDate = d.toISOString().split('T')[0]; break; } }
-  }
-
-  // Start / end times
-  result.startTime = timeAfter(['Start Time','Performance Start','Begin(?:s)?(?:ning)?','Event Start','Band Starts?']);
-  result.endTime   = timeAfter(['End Time','Performance End','Ending','Event End','Band Ends?']);
-
-  // Location / venue
-  result.venue = after(['Venue Name','Venue Location','Venue','Location','Event Location','Place of Event','Event Venue']);
-
-  // Dress code
-  const DRESS_CODES = ['Black Tie Optional','Black Tie','Semi-Formal','Semi Formal','Cocktail','Formal','Unknown'];
-  result.dressCode = after(['Dress Code','Attire','Dress']);
-  // If no explicit label, scan for known dress code values in text
-  if (!result.dressCode) {
-    for (var di2 = 0; di2 < DRESS_CODES.length; di2++) {
-      if (t.toLowerCase().indexOf(DRESS_CODES[di2].toLowerCase()) !== -1) { result.dressCode = DRESS_CODES[di2]; break; }
-    }
-  }
-
-  // Client name
-  result.name = after(['Client(?:\'s)? Names?','Couple','Client(?:s)?']);
-  if (!result.name) {
-    const nm = t.match(/\b([A-Z][a-z]+(?: [A-Z][a-z]+)? (?:&|and) [A-Z][a-z]+(?: [A-Z][a-z]+)?)\b/);
-    if (nm) result.name = nm[1];
-  }
-
-  // Contact
-  result.contactName = after(['Primary Contact','Contact Name','Point of Contact','Contact']);
-  const phoneM = t.match(/(?:phone|cell|mobile|telephone|tel)\s*:?\s*([\+\(]?[\d][\d\s\(\)\-\.]{6,18})/i);
-  if (phoneM) result.phone = phoneM[1].trim();
-
-  // Scope of services — match against full service names as in the portal
-  const SERVICES = [
-    '8-Piece Reception Band','Sound & Lighting Production','Live Ceremony Music',
-    'Jazz Cocktail Band','Ceremony Duties','MC for Reception','DJ Services'
-  ];
-  // Also check shorter aliases that might appear in contracts
-  const ALIASES = {
-    'Sound & Lighting': 'Sound & Lighting Production',
-    'Sound and Lighting': 'Sound & Lighting Production',
+function storePDFFile(file) {
+  const confirmEl = document.getElementById('pdf-upload-confirm');
+  confirmEl.className = 'pdf-parse-result parsing';
+  confirmEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Storing PDF…';
+  confirmEl.classList.remove('hidden');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _pendingPdfData = { dataUrl: e.target.result, name: file.name };
+    confirmEl.className = 'pdf-parse-result success';
+    confirmEl.innerHTML = '<i class="fas fa-check-circle"></i> <strong>' + escHtml(file.name) + '</strong> ready. Fill in contract details manually after creating the client.';
   };
-  const tLower = t.toLowerCase();
-  const found = new Set();
-  SERVICES.forEach(function(s){ if (tLower.indexOf(s.toLowerCase()) !== -1) found.add(s); });
-  Object.keys(ALIASES).forEach(function(k){ if (tLower.indexOf(k.toLowerCase()) !== -1) found.add(ALIASES[k]); });
-  result.scopeOfServices = Array.from(found);
-
-  return result;
-}
-
-async function processPerformanceAgreement(file) {
-  const resultEl = document.getElementById('pdf-parse-result');
-  resultEl.className = 'pdf-parse-result parsing';
-  resultEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reading contract…';
-  resultEl.classList.remove('hidden');
-
-  try {
-    const text = await extractPDFText(file);
-    const parsed = parsePerformanceAgreement(text);
-
-    // Store PDF as data URL for later download
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      parsed.pdfDataUrl = e.target.result;
-      parsed.pdfName    = file.name;
-      _parsedContractData = parsed;
-    };
-    reader.readAsDataURL(file);
-
-    // Auto-fill basic form fields if empty
-    if (parsed.name && !document.getElementById('new-client-name').value)
-      document.getElementById('new-client-name').value = parsed.name;
-    if (parsed.eventDate && !document.getElementById('new-client-event-date').value)
-      document.getElementById('new-client-event-date').value = parsed.eventDate;
-
-    const found = [];
-    if (parsed.name)                   found.push('Client name');
-    if (parsed.eventDate)              found.push('Event date');
-    if (parsed.venue)                  found.push('Location');
-    if (parsed.startTime)              found.push('Start time');
-    if (parsed.endTime)                found.push('End time');
-    if (parsed.dressCode)              found.push('Dress code');
-    if (parsed.contactName || parsed.phone) found.push('Contact');
-    if (parsed.scopeOfServices.length) found.push(parsed.scopeOfServices.length + ' service' + (parsed.scopeOfServices.length > 1 ? 's' : ''));
-
-    if (!found.length) {
-      resultEl.className = 'pdf-parse-result error';
-      // Detect garbled/unreadable text (random single chars, no real words)
-      var words = text.split(/\s+/).filter(function(w){ return w.length > 3; });
-      var garbled = !text.trim() || words.length < 3;
-      var preview = text.substring(0, 600).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var msg = garbled
-        ? '<i class="fas fa-exclamation-circle"></i> <strong>PDF uses a custom font encoding</strong> that cannot be read in the browser. The PDF is stored for download. <strong>Use the form below to enter contract details manually after creating the client.</strong>'
-        : '<i class="fas fa-exclamation-circle"></i> <strong>Could not match contract fields.</strong> The PDF text was extracted but field labels didn\'t match expected patterns. The PDF is stored — fill in details manually after creating the client.';
-      resultEl.innerHTML = msg
-        + (preview ? '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:#888">Show extracted text</summary>'
-        + '<pre style="margin-top:6px;font-size:10px;white-space:pre-wrap;color:#555;background:#f5f4f2;padding:8px;border-radius:4px;max-height:160px;overflow:auto">' + preview + '</pre></details>' : '');
-      if (!_parsedContractData) _parsedContractData = parsed;
-    } else {
-      resultEl.className = 'pdf-parse-result success';
-      resultEl.innerHTML = '<strong><i class="fas fa-check-circle"></i> ' + found.length + ' field' + (found.length > 1 ? 's' : '') + ' extracted</strong>'
-        + '<div class="pdf-found-tags">' + found.map(function(f){ return '<span class="pdf-found-tag">' + f + '</span>'; }).join('') + '</div>'
-        + '<p style="margin-top:8px;font-size:11px;opacity:0.75">Contract PDF stored. Artist portal will be pre-populated when you click Create Client.</p>';
-    }
-  } catch (err) {
-    _parsedContractData = null;
-    resultEl.className = 'pdf-parse-result error';
-    resultEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Could not read PDF — make sure it is not password-protected.';
-    console.error('PDF parse error:', err);
-  }
+  reader.onerror = function() {
+    _pendingPdfData = null;
+    confirmEl.className = 'pdf-parse-result error';
+    confirmEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Could not read file.';
+  };
+  reader.readAsDataURL(file);
 }
 
 /* ============================================
@@ -2007,8 +1805,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('add-client-error').classList.add('hidden');
     document.getElementById('contract-pre-signed').checked = false;
     document.getElementById('presigned-upload-wrap').classList.add('hidden');
-    document.getElementById('pdf-parse-result').className = 'pdf-parse-result hidden';
-    _parsedContractData = null;
+    document.getElementById('pdf-upload-confirm').className = 'pdf-parse-result hidden';
+    _pendingPdfData = null;
     openModal('modal-add-client');
   });
 
@@ -2016,13 +1814,13 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('contract-pre-signed').addEventListener('change', function() {
     document.getElementById('presigned-upload-wrap').classList.toggle('hidden', !this.checked);
     if (!this.checked) {
-      _parsedContractData = null;
+      _pendingPdfData = null;
       document.getElementById('contract-pdf-input').value = '';
-      document.getElementById('pdf-parse-result').className = 'pdf-parse-result hidden';
+      document.getElementById('pdf-upload-confirm').className = 'pdf-parse-result hidden';
     }
   });
 
-  /* PDF drop zone */
+  /* PDF drop zone — store only, no parsing */
   (function() {
     const zone = document.getElementById('pdf-drop-zone');
     const input = document.getElementById('contract-pdf-input');
@@ -2031,10 +1829,10 @@ document.addEventListener('DOMContentLoaded', function() {
     zone.addEventListener('drop', function(e){
       e.preventDefault(); zone.classList.remove('drag-over');
       const files = Array.from(e.dataTransfer.files).filter(function(f){ return f.type === 'application/pdf'; });
-      if (files.length) processPerformanceAgreement(files[0]);
+      if (files.length) storePDFFile(files[0]);
     });
     input.addEventListener('change', function(){
-      if (this.files.length) processPerformanceAgreement(this.files[0]);
+      if (this.files.length) storePDFFile(this.files[0]);
     });
   })();
 
@@ -2049,26 +1847,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const result = addClient(name, email, pw, date);
     if (!result.ok) { errEl.textContent=result.error; errEl.classList.remove('hidden'); return; }
 
-    if (_parsedContractData) {
-      const p   = _parsedContractData;
+    if (document.getElementById('contract-pre-signed').checked) {
       const cid = result.client.id;
       const contracts = DB._get('gc_contracts') || {};
       contracts[cid] = {
         preSignedOutsidePortal: true,
-        preSignedPdfData: p.pdfDataUrl || '',
-        preSignedPdfName: p.pdfName    || 'performance-agreement.pdf',
-        admin:  { eventDate: date || p.eventDate || '', scopeOfServices: p.scopeOfServices || [] },
-        client: { name: name, venue: p.venue || '', startTime: p.startTime || '', endTime: p.endTime || '', dressCode: p.dressCode || '', contactName: p.contactName || '', phone: p.phone || '' }
+        preSignedPdfData: _pendingPdfData ? _pendingPdfData.dataUrl : '',
+        preSignedPdfName: _pendingPdfData ? _pendingPdfData.name : 'performance-agreement.pdf',
+        admin:  { eventDate: date || '', scopeOfServices: [] },
+        client: { name: name, venue: '', startTime: '', endTime: '', dressCode: '', contactName: '', phone: '' }
       };
       DB._set('gc_contracts', contracts);
-      // Populate GCP checklist with start/end for artist portal timeline
-      const ck = {};
-      if (p.startTime) ck['cl-reception-start'] = p.startTime;
-      if (p.endTime)   ck['cl-reception-end']   = p.endTime;
-      const allGCP = DB._get('gc_gcp') || {};
-      allGCP[cid] = { songs: {}, songRequests: [], checklist: ck, ceremony: {} };
-      DB._set('gc_gcp', allGCP);
-      _parsedContractData = null;
+      _pendingPdfData = null;
     }
 
     closeModal('modal-add-client');
