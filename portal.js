@@ -1791,6 +1791,49 @@ document.addEventListener('DOMContentLoaded', function() {
     showToast('Artist password saved.');
   });
 
+  /* ---- Data Backup: Export ---- */
+  const _exportBtn = document.getElementById('btn-export-data');
+  if (_exportBtn) _exportBtn.addEventListener('click', function() {
+    const DATA_KEYS = ['gc_clients','gc_contracts','gc_gcp','gc_master_songs','gc_master_contract','gc_artist_password','gc_setlists'];
+    const backup = { exportedAt: new Date().toISOString(), version: 1, data: {} };
+    DATA_KEYS.forEach(k => {
+      const v = localStorage.getItem(k);
+      if (v !== null) backup.data[k] = JSON.parse(v);
+    });
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'gcportal-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Backup downloaded.');
+  });
+
+  /* ---- Data Backup: Import ---- */
+  const _importInput = document.getElementById('import-data-input');
+  if (_importInput) _importInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const backup = JSON.parse(e.target.result);
+        if (!backup.data) throw new Error('Invalid backup file.');
+        Object.entries(backup.data).forEach(([k, v]) => {
+          localStorage.setItem(k, JSON.stringify(v));
+        });
+        flashSaved('import-confirm');
+        showToast('Backup restored. Reloading…');
+        setTimeout(() => location.reload(), 1200);
+      } catch(err) {
+        showToast('Import failed: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
+
   /* ---- Login ---- */
   document.getElementById('login-form').addEventListener('submit', function(e) {
     e.preventDefault();
