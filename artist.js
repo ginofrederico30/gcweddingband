@@ -60,6 +60,12 @@ function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function refLinkIcon(url) {
+  if (/spotify\.com/i.test(url))        return '<i class="fab fa-spotify"></i>';
+  if (/youtu(be\.com|\.be)/i.test(url)) return '<i class="fab fa-youtube" style="color:#FF0000"></i>';
+  return '<i class="fas fa-link" style="color:#888"></i>';
+}
+
 function fmtDate(d) {
   if (!d) return '—';
   const parts = d.split('-');
@@ -307,8 +313,8 @@ function renderGigDetail(clientId) {
     if (empty) {
       content = '—';
     } else if (url) {
-      const t = escHtml(displayText || 'Open Playlist');
-      content = `<a href="${escHtml(url)}" target="_blank" rel="noopener" class="artist-spotify-link"><i class="fab fa-spotify"></i>${t}</a>`;
+      const t = escHtml(displayText || 'Open Link');
+      content = `<a href="${escHtml(url)}" target="_blank" rel="noopener" class="artist-spotify-link">${refLinkIcon(url)}${t}</a>`;
     } else {
       content = escHtml(displayText);
     }
@@ -479,7 +485,7 @@ function _renderSetlistUI() {
         <div class="setlist-drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
-          <div class="setlist-title">${escHtml(s.title)}${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-spotify-link" title="Open on Spotify"><i class="fab fa-spotify"></i></a>` : ''}</div>
+          <div class="setlist-title">${escHtml(s.title)}${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-spotify-link" title="Open link">${refLinkIcon(s.spotify)}</a>` : ''}</div>
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}

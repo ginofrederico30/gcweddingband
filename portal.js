@@ -1462,6 +1462,12 @@ function updateSongPref(clientId, songId, pref, checked) {
   renderSongSelector(clientId);
 }
 
+function refLinkIcon(url) {
+  if (/spotify\.com/i.test(url))  return '<i class="fab fa-spotify"></i>';
+  if (/youtu(be\.com|\.be)/i.test(url)) return '<i class="fab fa-youtube"></i>';
+  return '<i class="fas fa-link"></i>';
+}
+
 function renderSongRequests(clientId) {
   const gcp      = DB.getGCP(clientId);
   const requests = gcp.songRequests || [];
@@ -1488,7 +1494,7 @@ function renderSongRequests(clientId) {
       ? '<span class="req-type-badge req-badge-priority"><i class="fas fa-star"></i> Priority</span>'
       : '<span class="req-type-badge req-badge-other"><i class="fas fa-music"></i> Other</span>';
     const spotifyHTML = r.spotify
-      ? `<a href="${escHtml(r.spotify)}" target="_blank" rel="noopener" class="req-spotify-link" title="Open on Spotify"><i class="fab fa-spotify"></i></a>`
+      ? `<a href="${escHtml(r.spotify)}" target="_blank" rel="noopener" class="req-spotify-link" title="Open link">${refLinkIcon(r.spotify)}</a>`
       : '';
     return `<div class="song-request-item ${cls}">
       <div class="song-info">

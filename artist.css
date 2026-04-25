@@ -158,6 +158,9 @@
 }
 .setlist-spotify-link:hover { opacity: .75; }
 
+.artist-spotify-link .fa-youtube { color: #FF0000; }
+.artist-spotify-link .fa-link    { color: #888; }
+
 /* ---- Setlist ---- */
 .setlist-set-block { padding: 0 24px 20px; }
 

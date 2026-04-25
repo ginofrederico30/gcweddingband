@@ -2263,6 +2263,8 @@ textarea { resize: vertical; }
     text-decoration: none;
     vertical-align: middle;
 }
+.req-spotify-link .fa-youtube { color: #FF0000; }
+.req-spotify-link .fa-link    { color: #888; }
 .req-spotify-link:hover { opacity: .75; }
 
 .req-empty-msg {
