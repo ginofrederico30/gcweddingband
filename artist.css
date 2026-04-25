@@ -147,6 +147,17 @@
 }
 .artist-spotify-link:hover { text-decoration: underline; }
 
+.setlist-spotify-link {
+    display: inline-flex;
+    align-items: center;
+    color: #1DB954;
+    margin-left: 6px;
+    font-size: 12px;
+    text-decoration: none;
+    vertical-align: middle;
+}
+.setlist-spotify-link:hover { opacity: .75; }
+
 /* ---- Setlist ---- */
 .setlist-set-block { padding: 0 24px 20px; }
 

@@ -2254,6 +2254,17 @@ textarea { resize: vertical; }
 .req-badge-priority { background: #fde8e8; color: #b91c1c; }
 .req-badge-other    { background: #e6f4ea; color: #155724; }
 
+.req-spotify-link {
+    display: inline-flex;
+    align-items: center;
+    color: #1DB954;
+    margin-left: 6px;
+    font-size: 13px;
+    text-decoration: none;
+    vertical-align: middle;
+}
+.req-spotify-link:hover { opacity: .75; }
+
 .req-empty-msg {
     font-family: var(--font-sans);
     font-size: 13px;

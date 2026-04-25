@@ -109,11 +109,11 @@ function generateSetlist(clientId) {
     ...catalog.filter(s => prefs[s.id] === 'Priority')
               .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' })),
     ...reqs.filter(r => r.type === 'Priority')
-           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' })),
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request' })),
     ...catalog.filter(s => prefs[s.id] === 'Yes')
               .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' })),
     ...reqs.filter(r => r.type !== 'Priority')
-           .map(r => ({ id:r.id, title:r.title, artist:r.artist, source:'request' })),
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request' })),
   ];
 
   // Remove the first matching song from pool by title (case-insensitive exact, then partial)
@@ -362,17 +362,17 @@ function renderGigDetail(clientId) {
     if (isLive) {
       cerRows.push(
         infoRow('Seating Genre', cer['cer-seating-genre'] || '—'),
-        linkRow('Family / Wedding Party Processional', cer['cer-live-family-song'] || null, cer['cer-live-family-link'] || null),
-        linkRow('Bride / Partner Entrance', cer['cer-live-bride-song'] || null, cer['cer-live-bride-link'] || null),
-        linkRow('Couple Exit', cer['cer-live-exit-song'] || null, cer['cer-live-exit-link'] || null),
+        linkRow('Family / Wedding Party Processional', [cer['cer-live-family-song'], cer['cer-live-family-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-family-link'] || null),
+        linkRow('Bride / Partner Entrance', [cer['cer-live-bride-song'], cer['cer-live-bride-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-bride-link'] || null),
+        linkRow('Couple Exit', [cer['cer-live-exit-song'], cer['cer-live-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-exit-link'] || null),
         infoRow('Notes', cer['cer-live-notes'] || '—'),
       );
     } else {
       cerRows.push(
         linkRow('Seating Playlist', cer['cer-duties-seating-link'] || null, null),
-        linkRow('Family / Wedding Party Processional', cer['cer-duties-family-link'] || null, cer['cer-duties-family-spotify'] || null),
-        linkRow('Bride / Partner Entrance', cer['cer-duties-bride-link'] || null, cer['cer-duties-bride-spotify'] || null),
-        linkRow('Couple Exit', cer['cer-duties-exit-link'] || null, cer['cer-duties-exit-spotify'] || null),
+        linkRow('Family / Wedding Party Processional', [cer['cer-duties-family-link'], cer['cer-duties-family-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-family-spotify'] || null),
+        linkRow('Bride / Partner Entrance', [cer['cer-duties-bride-link'], cer['cer-duties-bride-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-bride-spotify'] || null),
+        linkRow('Couple Exit', [cer['cer-duties-exit-link'], cer['cer-duties-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-exit-spotify'] || null),
         infoRow('Notes', cer['cer-duties-notes'] || '—'),
       );
     }
@@ -432,6 +432,15 @@ function renderGigDetail(clientId) {
   if (musicCard) musicCard.classList.toggle('hidden', !hasMusic);
   if (hasMusic) document.getElementById('gig-music').innerHTML = musicRows.join('');
 
+  /* ---- Notes ---- */
+  const notesCard = document.getElementById('gig-notes-card');
+  const notesEl   = document.getElementById('gig-notes');
+  if (notesCard && notesEl) {
+    const notes = chk['cl-notes'] || '';
+    notesCard.classList.toggle('hidden', !notes);
+    if (notes) notesEl.innerHTML = infoRow('Notes', notes);
+  }
+
   /* ---- Setlist ---- */
   loadAndRenderSetlist(clientId);
 
@@ -470,7 +479,7 @@ function _renderSetlistUI() {
         <div class="setlist-drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
-          <div class="setlist-title">${escHtml(s.title)}</div>
+          <div class="setlist-title">${escHtml(s.title)}${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-spotify-link" title="Open on Spotify"><i class="fab fa-spotify"></i></a>` : ''}</div>
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
@@ -651,7 +660,8 @@ function _renderAddSongList(query) {
          data-id="${escHtml(s.id)}"
          data-title="${escHtml(s.title)}"
          data-artist="${escHtml(s.artist)}"
-         data-source="${s.source}">
+         data-source="${s.source}"
+         data-spotify="${escHtml(s.spotify||'')}"
       <div style="min-width:0;flex:1">
         <div style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.title)}</div>
         <div style="font-family:var(--font-sans);font-size:12px;color:#999">${escHtml(s.artist)}</div>
@@ -670,6 +680,7 @@ function _renderAddSongList(query) {
         title:  this.dataset.title,
         artist: this.dataset.artist,
         source: this.dataset.source,
+        spotify: this.dataset.spotify || '',
       });
       document.getElementById('modal-add-song').classList.add('hidden');
       _renderSetlistUI();

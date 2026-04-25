@@ -941,6 +941,10 @@
                             <label class="req-type-opt"><input type="radio" name="req-type" value="Other" checked> Other</label>
                         </div>
                     </div>
+                    <div class="field-group req-field">
+                        <label>Spotify Link <small style="font-weight:400;opacity:.7">(optional)</small></label>
+                        <input type="text" id="req-spotify" placeholder="Paste a Spotify link for reference" autocomplete="off">
+                    </div>
                     <div class="req-add-col">
                         <button type="button" class="btn-primary" id="btn-add-request"><i class="fas fa-plus"></i> Add</button>
                     </div>
@@ -1097,6 +1101,12 @@
                     <div class="field-group full-width"><label>Spotify — Band Break Music</label><input type="text" id="cl-spotify-break" placeholder="Playlist name or link"></div>
                 </div>
             </div>
+            <div class="card checklist-card">
+                <div class="card-header"><h3><i class="fas fa-sticky-note"></i> Additional Notes</h3></div>
+                <div class="checklist-grid">
+                    <div class="field-group full-width"><label>Notes for the Band</label><textarea id="cl-notes" rows="4" placeholder="Anything else the band should know — special requests, timeline notes, do-not-plays, etc."></textarea></div>
+                </div>
+            </div>
         </form>
         <div class="form-actions sticky-actions">
             <button class="btn-primary" id="btn-save-checklist-bottom">Save Checklist</button>
@@ -1134,11 +1144,14 @@
                 <div class="card-header"><h3><i class="fas fa-music"></i> Ceremony Music — Live Performance</h3></div>
                 <div class="checklist-grid">
                     <div class="field-group full-width"><label>Seating / Prelude — Genre Preference</label><input type="text" id="cer-seating-genre" placeholder="e.g. Classical, Modern Pop, Jazz, Acoustic"></div>
-                    <div class="field-group full-width"><label>Family / Wedding Party Processional — Song Title</label><input type="text" id="cer-live-family-song" placeholder="Song title and artist"></div>
+                    <div class="field-group"><label>Family / Wedding Party Processional — Song Title</label><input type="text" id="cer-live-family-song" placeholder="Song title"></div>
+                    <div class="field-group"><label>Family / Wedding Party Processional — Artist</label><input type="text" id="cer-live-family-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Family / Wedding Party Processional — Spotify Link <span style="font-weight:400;color:#999;font-size:11px">(for reference only)</span></label><input type="text" id="cer-live-family-link" placeholder="Paste a Spotify link so we can reference the song"></div>
-                    <div class="field-group full-width"><label>Bride / Partner Entrance — Song Title</label><input type="text" id="cer-live-bride-song" placeholder="Song title and artist"></div>
+                    <div class="field-group"><label>Bride / Partner Entrance — Song Title</label><input type="text" id="cer-live-bride-song" placeholder="Song title"></div>
+                    <div class="field-group"><label>Bride / Partner Entrance — Artist</label><input type="text" id="cer-live-bride-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Bride / Partner Entrance — Spotify Link <span style="font-weight:400;color:#999;font-size:11px">(for reference only)</span></label><input type="text" id="cer-live-bride-link" placeholder="Paste a Spotify link so we can reference the song"></div>
-                    <div class="field-group full-width"><label>Couple Exit — Song Title</label><input type="text" id="cer-live-exit-song" placeholder="Song title and artist"></div>
+                    <div class="field-group"><label>Couple Exit — Song Title</label><input type="text" id="cer-live-exit-song" placeholder="Song title"></div>
+                    <div class="field-group"><label>Couple Exit — Artist</label><input type="text" id="cer-live-exit-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Couple Exit — Spotify Link <span style="font-weight:400;color:#999;font-size:11px">(for reference only)</span></label><input type="text" id="cer-live-exit-link" placeholder="Paste a Spotify link so we can reference the song"></div>
                     <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-live-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
                 </div>
@@ -1148,11 +1161,14 @@
                 <div class="card-header"><h3><i class="fas fa-music"></i> Ceremony Music</h3></div>
                 <div class="checklist-grid">
                     <div class="field-group full-width"><label>Seating / Prelude Playlist</label><input type="text" id="cer-duties-seating-link" placeholder="Spotify playlist link"></div>
-                    <div class="field-group full-width"><label>Family / Wedding Party Processional Song</label><input type="text" id="cer-duties-family-link" placeholder="Song title and artist"></div>
+                    <div class="field-group"><label>Family / Wedding Party Processional — Song Title</label><input type="text" id="cer-duties-family-link" placeholder="Song title"></div>
+                    <div class="field-group"><label>Family / Wedding Party Processional — Artist</label><input type="text" id="cer-duties-family-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Family / Wedding Party Processional — Spotify Link</label><input type="text" id="cer-duties-family-spotify" placeholder="Paste a Spotify link so we can reference the song"></div>
-                    <div class="field-group full-width"><label>Bride / Partner Entrance Song</label><input type="text" id="cer-duties-bride-link" placeholder="Song title and artist"></div>
+                    <div class="field-group"><label>Bride / Partner Entrance — Song Title</label><input type="text" id="cer-duties-bride-link" placeholder="Song title"></div>
+                    <div class="field-group"><label>Bride / Partner Entrance — Artist</label><input type="text" id="cer-duties-bride-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Bride / Partner Entrance — Spotify Link</label><input type="text" id="cer-duties-bride-spotify" placeholder="Paste a Spotify link so we can reference the song"></div>
-                    <div class="field-group full-width"><label>Couple Exit Song</label><input type="text" id="cer-duties-exit-link" placeholder="Song title and artist"></div>
+                    <div class="field-group"><label>Couple Exit — Song Title</label><input type="text" id="cer-duties-exit-link" placeholder="Song title"></div>
+                    <div class="field-group"><label>Couple Exit — Artist</label><input type="text" id="cer-duties-exit-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Couple Exit — Spotify Link</label><input type="text" id="cer-duties-exit-spotify" placeholder="Paste a Spotify link so we can reference the song"></div>
                     <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-duties-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
                 </div>

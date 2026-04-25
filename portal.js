@@ -1487,9 +1487,12 @@ function renderSongRequests(clientId) {
     const badge = r.type === 'Priority'
       ? '<span class="req-type-badge req-badge-priority"><i class="fas fa-star"></i> Priority</span>'
       : '<span class="req-type-badge req-badge-other"><i class="fas fa-music"></i> Other</span>';
+    const spotifyHTML = r.spotify
+      ? `<a href="${escHtml(r.spotify)}" target="_blank" rel="noopener" class="req-spotify-link" title="Open on Spotify"><i class="fab fa-spotify"></i></a>`
+      : '';
     return `<div class="song-request-item ${cls}">
       <div class="song-info">
-        <div class="song-title">${escHtml(r.title)}</div>
+        <div class="song-title">${escHtml(r.title)}${spotifyHTML}</div>
         <div class="song-artist">${escHtml(r.artist)}</div>
       </div>
       ${badge}
@@ -1505,13 +1508,15 @@ function renderSongRequests(clientId) {
 }
 
 function addSongRequest(clientId) {
-  const titleEl  = document.getElementById('req-title');
-  const artistEl = document.getElementById('req-artist');
-  const typeEl   = document.querySelector('input[name="req-type"]:checked');
+  const titleEl   = document.getElementById('req-title');
+  const artistEl  = document.getElementById('req-artist');
+  const spotifyEl = document.getElementById('req-spotify');
+  const typeEl    = document.querySelector('input[name="req-type"]:checked');
 
-  const title  = (titleEl  ? titleEl.value.trim()  : '');
-  const artist = (artistEl ? artistEl.value.trim() : '');
-  const type   = typeEl ? typeEl.value : 'Other';
+  const title   = (titleEl   ? titleEl.value.trim()   : '');
+  const artist  = (artistEl  ? artistEl.value.trim()  : '');
+  const spotify = (spotifyEl ? spotifyEl.value.trim() : '');
+  const type    = typeEl ? typeEl.value : 'Other';
 
   if (!title || !artist) { showToast('Please enter both a song title and artist.'); return; }
 
@@ -1529,12 +1534,13 @@ function addSongRequest(clientId) {
   const total = requests.length;
   if (total >= 20) { showToast('Maximum 20 song requests reached.'); return; }
 
-  requests.push({ id: uid(), title, artist, type, addedAt: Date.now() });
+  requests.push({ id: uid(), title, artist, type, spotify: spotify || '', addedAt: Date.now() });
   gcp.songRequests = requests;
   DB.setGCP(clientId, gcp);
 
-  if (titleEl)  titleEl.value  = '';
-  if (artistEl) artistEl.value = '';
+  if (titleEl)   titleEl.value   = '';
+  if (artistEl)  artistEl.value  = '';
+  if (spotifyEl) spotifyEl.value = '';
   // Reset type to Other
   const otherRadio = document.querySelector('input[name="req-type"][value="Other"]');
   if (otherRadio) otherRadio.checked = true;
@@ -1588,7 +1594,8 @@ const CHECKLIST_FIELDS = [
   'cl-fd-name','cl-fd-length','cl-fd-song','cl-fd-artist','cl-fd-spotify',
   'cl-ms-name','cl-ms-length','cl-ms-song','cl-ms-artist','cl-ms-spotify',
   'cl-other-dance-desc','cl-other-dance-length','cl-other-dance-song','cl-other-dance-artist','cl-other-dance-spotify',
-  'cl-spotify-dinner','cl-spotify-break'
+  'cl-spotify-dinner','cl-spotify-break',
+  'cl-notes'
 ];
 const DANCE_CHECKBOXES = ['cl-fd','cl-ms','cl-other-dance'];
 
@@ -1651,13 +1658,13 @@ const CEREMONY_FIELDS = [
   'cer-start','cer-end','cer-officiant-mic','cer-readers-mic',
   'cer-sep-location','cer-distance','cer-outdoor','cer-power',
   'cer-seating-genre',
-  'cer-live-family-song','cer-live-family-link',
-  'cer-live-bride-song','cer-live-bride-link',
-  'cer-live-exit-song','cer-live-exit-link','cer-live-notes',
+  'cer-live-family-song','cer-live-family-artist','cer-live-family-link',
+  'cer-live-bride-song','cer-live-bride-artist','cer-live-bride-link',
+  'cer-live-exit-song','cer-live-exit-artist','cer-live-exit-link','cer-live-notes',
   'cer-duties-seating-link',
-  'cer-duties-family-link','cer-duties-family-spotify',
-  'cer-duties-bride-link','cer-duties-bride-spotify',
-  'cer-duties-exit-link','cer-duties-exit-spotify',
+  'cer-duties-family-link','cer-duties-family-artist','cer-duties-family-spotify',
+  'cer-duties-bride-link','cer-duties-bride-artist','cer-duties-bride-spotify',
+  'cer-duties-exit-link','cer-duties-exit-artist','cer-duties-exit-spotify',
   'cer-duties-notes'
 ];
 
