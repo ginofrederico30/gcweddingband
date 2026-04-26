@@ -1689,7 +1689,6 @@ async function deleteClient(clientId) {
    BOOTSTRAP
    ============================================ */
 function bootstrap() {
-  showView('view-login'); // show login immediately while auth state resolves
   _auth.onAuthStateChanged(async function(user) {
     if (!user) { showView('view-login'); updateNav(null); return; }
     const isAdmin = user.email === ADMIN_EMAIL;
