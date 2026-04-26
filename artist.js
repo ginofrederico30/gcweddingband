@@ -4,9 +4,11 @@
    ============================================ */
 
 /* ---- Auth ---- */
+let _gigsDashLoaded = false;
+
 function artistLogout() {
+  _gigsDashLoaded = false;
   _auth.signOut();
-  // onAuthStateChanged handles routing back to login
 }
 
 /* ---- View management ---- */
@@ -672,18 +674,24 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Firebase auth state drives all routing */
   _auth.onAuthStateChanged(async function(user) {
     if (!user || user.email !== ARTIST_EMAIL) {
-      document.getElementById('pnav-logout').classList.add('hidden');
-      showView('view-login');
+      // Only redirect to login if we haven't already successfully loaded the dashboard.
+      // This prevents a spurious null-state callback from bouncing the user out.
+      if (!_gigsDashLoaded) {
+        document.getElementById('pnav-logout').classList.add('hidden');
+        showView('view-login');
+      }
       return;
     }
+    if (_gigsDashLoaded) return; // already showing gigs — ignore token-refresh re-fires
     try {
       await ADB.loadAll();
+      _gigsDashLoaded = true;
       document.getElementById('pnav-logout').classList.remove('hidden');
       renderGigsDash();
       showView('view-gigs');
     } catch(err) {
-      console.error('Artist portal init error:', err);
-      showView('view-login');
+      console.error('Artist portal load error:', err);
+      showToast('Error loading data. Please refresh the page.');
     }
   });
 
