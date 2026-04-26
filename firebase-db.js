@@ -4,17 +4,13 @@
    Loaded before portal.js and artist.js
    ============================================ */
 
-/* ---- FIREBASE CONFIG
-   Replace every REPLACE_ME value with your project's config.
-   Get it from: Firebase Console → Project Settings → Your apps → SDK setup
-   ---- */
 const FIREBASE_CONFIG = {
-  apiKey:            "REPLACE_ME",
-  authDomain:        "REPLACE_ME.firebaseapp.com",
-  projectId:         "REPLACE_ME",
-  storageBucket:     "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId:             "REPLACE_ME"
+  apiKey:            "AIzaSyDFkQNlGSE3-TIj7w4hEng4WgO8CbcTFng",
+  authDomain:        "gc-wedding-band.firebaseapp.com",
+  projectId:         "gc-wedding-band",
+  storageBucket:     "gc-wedding-band.firebasestorage.app",
+  messagingSenderId: "437545406811",
+  appId:             "1:437545406811:web:84379e2bcb3357b31a8a7e"
 };
 
 const ADMIN_EMAIL  = 'gino@gcweddingband.com';
