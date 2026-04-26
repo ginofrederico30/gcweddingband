@@ -1,43 +1,12 @@
 /* ============================================
    ARTIST PORTAL — artist.js
-   Reads from the same localStorage as portal.js
+   ADB, ARTIST_EMAIL, _auth defined in firebase-db.js
    ============================================ */
 
-/* ---- localStorage helpers ---- */
-function _get(key) {
-  try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; }
-}
-function _set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-
-/* ---- Data access (same keys as portal.js) ---- */
-const ADB = {
-  getClients()     { return _get('gc_clients') || []; },
-  getContract(cid) { return ((_get('gc_contracts') || {})[cid]) || { admin:{}, client:{}, signedAt:null }; },
-  getGCP(cid)      { return ((_get('gc_gcp') || {})[cid]) || { songs:{}, songRequests:[], checklist:{}, ceremony:{} }; },
-  getMasterSongs() { return _get('gc_master_songs') || []; },
-  getSetlists()    { return _get('gc_setlists') || {}; },
-  setSetlists(d)   { _set('gc_setlists', d); },
-};
-
 /* ---- Auth ---- */
-function getArtistSession() {
-  const s = _get('gc_artist_session');
-  if (!s || Date.now() > s.expiresAt) { localStorage.removeItem('gc_artist_session'); return null; }
-  return s;
-}
-
-function artistLogin(password) {
-  const stored = localStorage.getItem('gc_artist_password');
-  if (!stored) return { ok:false, error:'Artist portal not yet configured. Contact the admin.' };
-  if (password !== stored) return { ok:false, error:'Incorrect password. Please try again.' };
-  _set('gc_artist_session', { expiresAt: Date.now() + 86400000 }); // 24 hours
-  return { ok:true };
-}
-
 function artistLogout() {
-  localStorage.removeItem('gc_artist_session');
-  document.getElementById('pnav-logout').classList.add('hidden');
-  showView('view-login');
+  _auth.signOut();
+  // onAuthStateChanged handles routing back to login
 }
 
 /* ---- View management ---- */
@@ -700,34 +669,38 @@ function _renderAddSongList(query) {
    ============================================ */
 document.addEventListener('DOMContentLoaded', function() {
 
-  /* Check for active session — #view-login is visible by default (no 'hidden' class in HTML),
-     so the else branch is intentionally omitted. */
-  if (getArtistSession()) {
+  /* Firebase auth state drives all routing */
+  _auth.onAuthStateChanged(async function(user) {
+    if (!user || user.email !== ARTIST_EMAIL) {
+      document.getElementById('pnav-logout').classList.add('hidden');
+      showView('view-login');
+      return;
+    }
     try {
+      await ADB.loadAll();
       document.getElementById('pnav-logout').classList.remove('hidden');
       renderGigsDash();
       showView('view-gigs');
-    } catch (err) {
+    } catch(err) {
       console.error('Artist portal init error:', err);
-      localStorage.removeItem('gc_artist_session');
-      /* view-login remains visible — no action needed */
+      showView('view-login');
     }
-  }
+  });
 
-  /* Login */
-  document.getElementById('artist-login-form').addEventListener('submit', function(e) {
+  /* Login — password-only form, email is fixed to ARTIST_EMAIL */
+  document.getElementById('artist-login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const errEl  = document.getElementById('login-error');
-    const result = artistLogin(document.getElementById('artist-password').value);
-    if (!result.ok) {
-      errEl.textContent = result.error;
-      errEl.classList.remove('hidden');
-      return;
-    }
+    const errEl = document.getElementById('login-error');
     errEl.classList.add('hidden');
-    document.getElementById('pnav-logout').classList.remove('hidden');
-    renderGigsDash();
-    showView('view-gigs');
+    const pw = document.getElementById('artist-password').value;
+    try {
+      await _auth.signInWithEmailAndPassword(ARTIST_EMAIL, pw);
+      // onAuthStateChanged handles routing
+    } catch(err) {
+      const badCodes = ['auth/wrong-password','auth/invalid-credential','auth/user-not-found'];
+      errEl.textContent = badCodes.includes(err.code) ? 'Incorrect password. Please try again.' : err.message;
+      errEl.classList.remove('hidden');
+    }
   });
 
   /* Logout */

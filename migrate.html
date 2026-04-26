@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>One-Time Data Migration — GC Portal</title>
+  <style>
+    body { font-family: monospace; padding: 32px; background: #111; color: #eee; max-width: 860px; margin: 0 auto; }
+    h1 { color: #4fc; margin-bottom: 4px; }
+    p.sub { color: #aaa; margin-top: 0; margin-bottom: 24px; }
+    .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+    input[type=text], input[type=password], textarea {
+      width: 100%; padding: 8px 10px; background: #111; border: 1px solid #444;
+      border-radius: 4px; color: #eee; font-family: monospace; font-size: 13px;
+      box-sizing: border-box; margin-bottom: 12px;
+    }
+    textarea { height: 120px; resize: vertical; }
+    button { padding: 10px 20px; background: #4fc; color: #111; font-weight: bold;
+      border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 10px; }
+    button:disabled { opacity: .4; cursor: default; }
+    #log { background: #0a0a0a; border: 1px solid #333; border-radius: 6px; padding: 16px;
+      height: 400px; overflow-y: auto; font-size: 12px; line-height: 1.7; white-space: pre-wrap; }
+    .ok   { color: #4fc; }
+    .warn { color: #fa0; }
+    .err  { color: #f55; }
+    .info { color: #88f; }
+  </style>
+</head>
+<body>
+
+<h1>⚡ One-Time Data Migration</h1>
+<p class="sub">Run this ONCE in the browser that has your existing portal data. It will move everything from localStorage to Firebase.</p>
+
+<div class="card">
+  <label>Firebase Config JSON — paste the object from Firebase Console → Project Settings</label>
+  <textarea id="fb-config" placeholder='{
+  "apiKey": "...",
+  "authDomain": "....firebaseapp.com",
+  "projectId": "...",
+  "storageBucket": "....appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+
+  <label>Your Admin Email</label>
+  <input type="text" id="admin-email" value="gino@gcweddingband.com">
+
+  <label>Your Firebase Admin Password (the one you created in the Firebase console)</label>
+  <input type="password" id="admin-password" placeholder="Firebase admin password">
+
+  <button id="btn-start" onclick="runMigration()">Run Migration</button>
+  <button id="btn-clear" onclick="document.getElementById('log').textContent=''" style="background:#555;color:#eee">Clear Log</button>
+</div>
+
+<div id="log">Migration log will appear here…</div>
+
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+const logEl = document.getElementById('log');
+function log(msg, cls) {
+  const line = document.createElement('div');
+  line.className = cls || '';
+  line.textContent = msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+async function runMigration() {
+  const btn = document.getElementById('btn-start');
+  btn.disabled = true;
+  logEl.textContent = '';
+
+  /* ---- Parse config ---- */
+  let config;
+  try {
+    config = JSON.parse(document.getElementById('fb-config').value.trim());
+    if (!config.apiKey) throw new Error('Missing apiKey');
+  } catch(e) {
+    log('❌ Invalid Firebase config JSON: ' + e.message, 'err');
+    btn.disabled = false;
+    return;
+  }
+
+  const adminEmail = document.getElementById('admin-email').value.trim();
+  const adminPw    = document.getElementById('admin-password').value;
+  if (!adminEmail || !adminPw) {
+    log('❌ Enter your admin email and Firebase password.', 'err');
+    btn.disabled = false;
+    return;
+  }
+
+  /* ---- Check localStorage data ---- */
+  const rawClients  = localStorage.getItem('gc_clients');
+  const rawContracts= localStorage.getItem('gc_contracts');
+  const rawGcp      = localStorage.getItem('gc_gcp');
+  const rawSongs    = localStorage.getItem('gc_master_songs');
+  const rawContract = localStorage.getItem('gc_master_contract');
+  const rawSetlists = localStorage.getItem('gc_setlists');
+
+  if (!rawClients) {
+    log('⚠️  No gc_clients found in localStorage. Nothing to migrate.', 'warn');
+    btn.disabled = false;
+    return;
+  }
+
+  const clients   = JSON.parse(rawClients)   || [];
+  const contracts = JSON.parse(rawContracts) || {};
+  const gcp       = JSON.parse(rawGcp)       || {};
+  const masterSongs    = JSON.parse(rawSongs)    || [];
+  const masterContract = JSON.parse(rawContract) || {};
+  const setlists  = JSON.parse(rawSetlists)  || {};
+
+  log('📦 Found in localStorage:', 'info');
+  log('   Clients:       ' + clients.length);
+  log('   Contracts:     ' + Object.keys(contracts).length);
+  log('   GCP records:   ' + Object.keys(gcp).length);
+  log('   Master songs:  ' + masterSongs.length);
+  log('   Setlists:      ' + Object.keys(setlists).length);
+  log('');
+
+  /* ---- Init Firebase (main app + secondary for creating users) ---- */
+  let app, db, auth, storage, secondaryApp, secondaryAuth;
+  try {
+    app     = firebase.initializeApp(config, 'migration');
+    db      = app.firestore();
+    auth    = app.auth();
+    storage = app.storage();
+    secondaryApp  = firebase.initializeApp(config, 'migration-secondary');
+    secondaryAuth = secondaryApp.auth();
+    log('✅ Firebase initialized', 'ok');
+  } catch(e) {
+    log('❌ Firebase init error: ' + e.message, 'err');
+    btn.disabled = false;
+    return;
+  }
+
+  /* ---- Sign in as admin ---- */
+  try {
+    await auth.signInWithEmailAndPassword(adminEmail, adminPw);
+    log('✅ Signed in as admin: ' + adminEmail, 'ok');
+  } catch(e) {
+    log('❌ Admin sign-in failed: ' + e.message, 'err');
+    log('   Make sure you created the admin user in Firebase Console → Authentication.', 'warn');
+    btn.disabled = false;
+    return;
+  }
+
+  /* ---- Write config docs (master songs + contract) ---- */
+  if (masterSongs.length) {
+    await db.doc('config/masterSongs').set({ songs: masterSongs });
+    log('✅ Master songs written (' + masterSongs.length + ' songs)', 'ok');
+  }
+  if (Object.keys(masterContract).length) {
+    await db.doc('config/masterContract').set(masterContract);
+    log('✅ Master contract language written', 'ok');
+  }
+
+  /* ---- Build old-ID → Firebase UID map ---- */
+  const idMap = {}; // { oldId: newUid }
+
+  /* ---- Create Firebase Auth users for each client ---- */
+  log('');
+  log('── Creating client accounts ──────────────────', 'info');
+  for (const client of clients) {
+    if (!client.email || !client.password) {
+      log('⚠️  Skipping client with missing email/password: ' + (client.name || client.id), 'warn');
+      continue;
+    }
+    try {
+      const cred = await secondaryAuth.createUserWithEmailAndPassword(
+        client.email.trim().toLowerCase(), client.password
+      );
+      const newUid = cred.user.uid;
+      await secondaryAuth.signOut();
+      idMap[client.id] = newUid;
+      log('✅ Created auth for ' + client.name + ' → UID: ' + newUid, 'ok');
+    } catch(e) {
+      if (e.code === 'auth/email-already-in-use') {
+        /* Look up existing UID */
+        try {
+          const tmp = await secondaryAuth.signInWithEmailAndPassword(client.email, client.password);
+          idMap[client.id] = tmp.user.uid;
+          await secondaryAuth.signOut();
+          log('⚠️  ' + client.name + ' already exists, mapped to existing UID: ' + idMap[client.id], 'warn');
+        } catch(e2) {
+          log('❌ Could not map ' + client.name + ': ' + e2.message, 'err');
+        }
+      } else {
+        log('❌ ' + client.name + ': ' + e.message, 'err');
+      }
+    }
+  }
+
+  /* ---- Write client documents ---- */
+  log('');
+  log('── Writing client documents ──────────────────', 'info');
+  for (const client of clients) {
+    const newId = idMap[client.id];
+    if (!newId) { log('⚠️  Skipping ' + (client.name||client.id) + ' (no UID mapped)', 'warn'); continue; }
+    const { password: _pw, ...safeClient } = client; // drop plaintext password
+    const doc = { ...safeClient, id: newId };
+    await db.doc('clients/' + newId).set(doc);
+    log('✅ Client: ' + client.name, 'ok');
+  }
+
+  /* ---- Write contracts ---- */
+  log('');
+  log('── Writing contracts ─────────────────────────', 'info');
+  for (const [oldId, contractData] of Object.entries(contracts)) {
+    const newId = idMap[oldId];
+    if (!newId) { log('⚠️  No UID for contract ' + oldId + ', skipping', 'warn'); continue; }
+
+    let data = { ...contractData };
+
+    /* Migrate base64 signature → Firebase Storage */
+    if (data.signatureData && data.signatureData.startsWith('data:image')) {
+      try {
+        const blob = await (await fetch(data.signatureData)).blob();
+        const ref = storage.ref('signatures/' + newId + '/client.png');
+        await ref.put(blob, { contentType: 'image/png' });
+        data.signatureData = await ref.getDownloadURL();
+        log('   📸 Client signature uploaded for ' + oldId, 'ok');
+      } catch(e) { log('   ⚠️  Client sig upload failed: ' + e.message, 'warn'); }
+    }
+
+    if (data.adminSignatureData && data.adminSignatureData.startsWith('data:image')) {
+      try {
+        const blob = await (await fetch(data.adminSignatureData)).blob();
+        const ref = storage.ref('signatures/' + newId + '/admin.png');
+        await ref.put(blob, { contentType: 'image/png' });
+        data.adminSignatureData = await ref.getDownloadURL();
+        log('   📸 Admin signature uploaded for ' + oldId, 'ok');
+      } catch(e) { log('   ⚠️  Admin sig upload failed: ' + e.message, 'warn'); }
+    }
+
+    /* Migrate base64 PDF → Firebase Storage */
+    if (data.preSignedPdfData && data.preSignedPdfData.startsWith('data:')) {
+      try {
+        const blob = await (await fetch(data.preSignedPdfData)).blob();
+        const ref = storage.ref('pdfs/' + newId + '/presigned.pdf');
+        await ref.put(blob, { contentType: 'application/pdf' });
+        data.preSignedPdfData = await ref.getDownloadURL();
+        log('   📄 PDF uploaded for ' + oldId, 'ok');
+      } catch(e) { log('   ⚠️  PDF upload failed: ' + e.message, 'warn'); }
+    }
+
+    await db.doc('contracts/' + newId).set(data);
+    log('✅ Contract: ' + oldId + ' → ' + newId, 'ok');
+  }
+
+  /* ---- Write GCP ---- */
+  log('');
+  log('── Writing GCP records ───────────────────────', 'info');
+  for (const [oldId, gcpData] of Object.entries(gcp)) {
+    const newId = idMap[oldId];
+    if (!newId) { log('⚠️  No UID for GCP ' + oldId + ', skipping', 'warn'); continue; }
+    await db.doc('gcp/' + newId).set(gcpData);
+    log('✅ GCP: ' + oldId + ' → ' + newId, 'ok');
+  }
+
+  /* ---- Write setlists ---- */
+  log('');
+  log('── Writing setlists ──────────────────────────', 'info');
+  for (const [oldId, slData] of Object.entries(setlists)) {
+    const newId = idMap[oldId];
+    if (!newId) { log('⚠️  No UID for setlist ' + oldId + ', skipping', 'warn'); continue; }
+    await db.doc('setlists/' + newId).set(slData);
+    log('✅ Setlist: ' + oldId + ' → ' + newId, 'ok');
+  }
+
+  log('');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+  log('✅ Migration complete!', 'ok');
+  log('');
+  log('Next steps:', 'info');
+  log('1. Open your portal and verify all clients appear correctly.');
+  log('2. Delete this migrate.html file from the repo — it is no longer needed.');
+  log('3. Clear localStorage in this browser (DevTools → Application → Storage → Clear).');
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>

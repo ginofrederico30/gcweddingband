@@ -2,10 +2,7 @@
    Good Company Wedding Band — Client Portal
    ============================================ */
 
-/* ---- ADMIN CREDENTIALS ---- */
-const ADMIN_EMAIL    = 'gino@gcweddingband.com';
-const ADMIN_PASSWORD = 'GCBand2024!';
-const SESSION_TTL    = 8 * 60 * 60 * 1000; // 8 hours
+/* ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_TTL, and DB are defined in firebase-db.js */
 
 /* ---- SEED SONG LIST ---- */
 const SEED_SONGS = [
@@ -88,46 +85,7 @@ const SEED_SONGS = [
   { title: "1999",                                       artist: "Prince" }
 ];
 
-/* ============================================
-   DATA STORE
-   ============================================ */
-const DB = {
-  _get(key)      { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } },
-  _set(key, val) { localStorage.setItem(key, JSON.stringify(val)); },
-
-  getSession()   { return this._get('gc_session'); },
-  setSession(v)  { this._set('gc_session', v); },
-  clearSession() { localStorage.removeItem('gc_session'); },
-
-  getClients()   { return this._get('gc_clients') || []; },
-  setClients(v)  { this._set('gc_clients', v); },
-
-  getMasterSongs()     { return this._get('gc_master_songs') || []; },
-  setMasterSongs(v)    { this._set('gc_master_songs', v); },
-
-  getMasterContract()  { return this._get('gc_master_contract') || {}; },
-  setMasterContract(v) { this._set('gc_master_contract', v); },
-
-  getContract(cid) {
-    return (this._get('gc_contracts') || {})[cid] || { admin: {}, client: {}, signedAt: null, signatureData: null };
-  },
-  setContract(cid, data) {
-    const all = this._get('gc_contracts') || {};
-    all[cid] = data;
-    this._set('gc_contracts', all);
-  },
-
-  getGCP(cid) {
-    const all = this._get('gc_gcp') || {};
-    const d = all[cid] || {};
-    return { songs: {}, songRequests: [], checklist: {}, ceremony: {}, ...d };
-  },
-  setGCP(cid, data) {
-    const all = this._get('gc_gcp') || {};
-    all[cid] = data;
-    this._set('gc_gcp', all);
-  }
-};
+/* DB is defined in firebase-db.js (Firestore-backed cache layer) */
 
 /* ============================================
    INIT — seed songs on first load
@@ -145,37 +103,14 @@ function initSeedData() {
 }
 
 /* ============================================
-   AUTH
+   AUTH — Firebase-backed
    ============================================ */
-function login(email, password) {
-  const em = (email || '').trim().toLowerCase();
-  const pw = (password || '').trim();
-
-  if (em === ADMIN_EMAIL.toLowerCase() && pw === ADMIN_PASSWORD) {
-    DB.setSession({ role: 'admin', clientId: null, email: em, expiresAt: Date.now() + SESSION_TTL });
-    return { ok: true, role: 'admin' };
-  }
-
-  const client = DB.getClients().find(c => c.email.toLowerCase() === em && c.password === pw);
-  if (client) {
-    DB.setSession({ role: 'client', clientId: client.id, email: em, expiresAt: Date.now() + SESSION_TTL });
-    return { ok: true, role: 'client', clientId: client.id };
-  }
-
-  return { ok: false, error: 'Invalid email or password.' };
-}
-
-function getSession() {
-  const s = DB.getSession();
-  if (!s) return null;
-  if (s.expiresAt && Date.now() > s.expiresAt) { DB.clearSession(); return null; }
-  return s;
-}
+let _currentSession = null; // { role, email, clientId }
+function getSession() { return _currentSession; }
 
 function logout() {
-  DB.clearSession();
-  showView('view-login');
-  updateNav(null);
+  _currentSession = null;
+  _auth.signOut().then(() => { showView('view-login'); updateNav(null); });
 }
 
 /* ============================================
@@ -1218,14 +1153,18 @@ function isAdminSigEmpty() {
   return !Array.from(d).some((v, i) => i % 4 === 3 && v > 0);
 }
 
-function adminCounterSign(clientId) {
+async function adminCounterSign(clientId) {
   if (isAdminSigEmpty()) { showToast('Please provide your signature.'); return; }
   const sigDate = document.getElementById('admin-sig-date').value;
   if (!sigDate) { showToast('Please enter the date.'); return; }
 
-  const contract             = DB.getContract(clientId);
-  contract.adminSignatureData = _adminSigCanvas.toDataURL('image/png');
-  contract.adminSignedAt     = new Date(sigDate).getTime() || Date.now();
+  const blob = await new Promise(res => _adminSigCanvas.toBlob(res, 'image/png'));
+  let sigUrl = _adminSigCanvas.toDataURL('image/png'); // fallback
+  try { sigUrl = await uploadSignature(clientId, 'admin', blob); } catch(e) { console.error('Sig upload failed:', e); }
+
+  const contract              = DB.getContract(clientId);
+  contract.adminSignatureData = sigUrl;
+  contract.adminSignedAt      = new Date(sigDate).getTime() || Date.now();
   DB.setContract(clientId, contract);
 
   showToast('Agreement fully executed!');
@@ -1700,38 +1639,31 @@ function saveCeremony(clientId) {
 /* ============================================
    PRE-SIGNED PDF STORAGE (no parsing)
    ============================================ */
-let _pendingPdfData = null; // { dataUrl, name }
+let _pendingPdfData = null; // { file, name }
 
 function storePDFFile(file) {
+  _pendingPdfData = { file, name: file.name };
   const confirmEl = document.getElementById('pdf-upload-confirm');
-  confirmEl.className = 'pdf-parse-result parsing';
-  confirmEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Storing PDF…';
+  confirmEl.className = 'pdf-parse-result success';
+  confirmEl.innerHTML = '<i class="fas fa-check-circle"></i> <strong>' + escHtml(file.name) + '</strong> ready. Fill in contract details manually after creating the client.';
   confirmEl.classList.remove('hidden');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    _pendingPdfData = { dataUrl: e.target.result, name: file.name };
-    confirmEl.className = 'pdf-parse-result success';
-    confirmEl.innerHTML = '<i class="fas fa-check-circle"></i> <strong>' + escHtml(file.name) + '</strong> ready. Fill in contract details manually after creating the client.';
-  };
-  reader.onerror = function() {
-    _pendingPdfData = null;
-    confirmEl.className = 'pdf-parse-result error';
-    confirmEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Could not read file.';
-  };
-  reader.readAsDataURL(file);
 }
 
 /* ============================================
    CLIENT MANAGEMENT
    ============================================ */
-function addClient(name, email, password, eventDate) {
-  const clients = DB.getClients();
-  if (clients.find(c => c.email.toLowerCase() === email.toLowerCase()))
+async function addClient(name, email, password, eventDate) {
+  if (DB.getClients().find(c => c.email.toLowerCase() === email.toLowerCase()))
     return { ok: false, error: 'A client with this email already exists.' };
-  const client = { id: uid(), name: name.trim(), email: email.trim().toLowerCase(), password, eventDate: eventDate || '', createdAt: Date.now() };
-  clients.push(client);
-  DB.setClients(clients);
-  return { ok: true, client };
+  try {
+    const authUid = await createClientAuth(email.trim().toLowerCase(), password);
+    const client  = { id: authUid, name: name.trim(), email: email.trim().toLowerCase(), eventDate: eventDate || '', createdAt: Date.now() };
+    DB.setClients([...DB.getClients(), client]);
+    return { ok: true, client };
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') return { ok: false, error: 'A client with this email already exists.' };
+    return { ok: false, error: e.message };
+  }
 }
 
 let _deleteClientId = null;
@@ -1744,13 +1676,8 @@ function confirmDeleteClient(clientId) {
   openModal('modal-confirm');
 }
 
-function deleteClient(clientId) {
-  DB.setClients(DB.getClients().filter(c => c.id !== clientId));
-  ['gc_contracts','gc_gcp'].forEach(key => {
-    const all = DB._get(key) || {};
-    delete all[clientId];
-    DB._set(key, all);
-  });
+async function deleteClient(clientId) {
+  await DB.deleteClientData(clientId);
   showToast('Client deleted.');
   renderAdminDash();
   showView('view-admin-dash');
@@ -1760,12 +1687,22 @@ function deleteClient(clientId) {
    BOOTSTRAP
    ============================================ */
 function bootstrap() {
-  initSeedData();
-  const session = getSession();
-  if (!session) { showView('view-login'); updateNav(null); return; }
-  updateNav(session);
-  if (session.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
-  else { renderClientDash(session.clientId); showView('view-client-dash'); }
+  showView('view-login'); // show login immediately while auth state resolves
+  _auth.onAuthStateChanged(async function(user) {
+    if (!user) { showView('view-login'); updateNav(null); return; }
+    const isAdmin = user.email === ADMIN_EMAIL;
+    if (isAdmin) {
+      await DB.loadAll();
+      _currentSession = { role: 'admin', email: user.email, clientId: null };
+    } else {
+      await DB.loadClientData(user.uid);
+      _currentSession = { role: 'client', email: user.email, clientId: user.uid };
+    }
+    initSeedData();
+    updateNav(_currentSession);
+    if (isAdmin) { renderAdminDash(); showView('view-admin-dash'); }
+    else { renderClientDash(user.uid); showView('view-client-dash'); }
+  });
 }
 
 /* ============================================
@@ -1780,73 +1717,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   bootstrap();
 
-  /* ---- Artist portal password ---- */
-  const _artistPwEl  = document.getElementById('artist-password-input');
-  const _artistSaveBtn = document.getElementById('btn-save-artist-password');
-  if (_artistPwEl) _artistPwEl.value = localStorage.getItem('gc_artist_password') || '';
-  if (_artistSaveBtn) _artistSaveBtn.addEventListener('click', function() {
-    const pw = _artistPwEl ? _artistPwEl.value.trim() : '';
-    if (!pw) { showToast('Enter a password first.'); return; }
-    localStorage.setItem('gc_artist_password', pw);
-    showToast('Artist password saved.');
-  });
-
-  /* ---- Data Backup: Export ---- */
-  const _exportBtn = document.getElementById('btn-export-data');
-  if (_exportBtn) _exportBtn.addEventListener('click', function() {
-    const DATA_KEYS = ['gc_clients','gc_contracts','gc_gcp','gc_master_songs','gc_master_contract','gc_artist_password','gc_setlists'];
-    const backup = { exportedAt: new Date().toISOString(), version: 1, data: {} };
-    DATA_KEYS.forEach(k => {
-      const v = localStorage.getItem(k);
-      if (v !== null) backup.data[k] = JSON.parse(v);
-    });
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'gcportal-backup-' + new Date().toISOString().slice(0,10) + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Backup downloaded.');
-  });
-
-  /* ---- Data Backup: Import ---- */
-  const _importInput = document.getElementById('import-data-input');
-  if (_importInput) _importInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const backup = JSON.parse(e.target.result);
-        if (!backup.data) throw new Error('Invalid backup file.');
-        Object.entries(backup.data).forEach(([k, v]) => {
-          localStorage.setItem(k, JSON.stringify(v));
-        });
-        flashSaved('import-confirm');
-        showToast('Backup restored. Reloading…');
-        setTimeout(() => location.reload(), 1200);
-      } catch(err) {
-        showToast('Import failed: ' + err.message);
-      }
-    };
-    reader.readAsText(file);
-    this.value = '';
-  });
-
   /* ---- Login ---- */
-  document.getElementById('login-form').addEventListener('submit', function(e) {
+  document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const errEl  = document.getElementById('login-error');
-    const result = login(
-      document.getElementById('login-email').value,
-      document.getElementById('login-password').value
-    );
-    if (!result.ok) { errEl.textContent = result.error; errEl.classList.remove('hidden'); return; }
+    const errEl = document.getElementById('login-error');
     errEl.classList.add('hidden');
-    updateNav(getSession());
-    if (result.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
-    else { renderClientDash(result.clientId); showView('view-client-dash'); }
+    const email = document.getElementById('login-email').value.trim();
+    const pw    = document.getElementById('login-password').value;
+    try {
+      await _auth.signInWithEmailAndPassword(email, pw);
+      // onAuthStateChanged in bootstrap() handles routing
+    } catch(err) {
+      const bad = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-email'];
+      errEl.textContent = bad.includes(err.code) ? 'Invalid email or password.' : err.message;
+      errEl.classList.remove('hidden');
+    }
   });
 
   /* ---- Logout ---- */
@@ -1892,7 +1777,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   })();
 
-  document.getElementById('add-client-form').addEventListener('submit', function(e) {
+  document.getElementById('add-client-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const name  = document.getElementById('new-client-name').value.trim();
     const email = document.getElementById('new-client-email').value.trim();
@@ -1900,23 +1785,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const date  = document.getElementById('new-client-event-date').value;
     const errEl = document.getElementById('add-client-error');
     if (!name || !email || !pw) { errEl.textContent='Name, email, and password are required.'; errEl.classList.remove('hidden'); return; }
-    const result = addClient(name, email, pw, date);
-    if (!result.ok) { errEl.textContent=result.error; errEl.classList.remove('hidden'); return; }
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
+    const result = await addClient(name, email, pw, date);
+    if (!result.ok) {
+      errEl.textContent = result.error; errEl.classList.remove('hidden');
+      if (submitBtn) submitBtn.disabled = false;
+      return;
+    }
 
     if (document.getElementById('contract-pre-signed').checked) {
       const cid = result.client.id;
-      const contracts = DB._get('gc_contracts') || {};
-      contracts[cid] = {
+      let pdfUrl = '';
+      if (_pendingPdfData && _pendingPdfData.file) {
+        try { pdfUrl = await uploadPDF(cid, _pendingPdfData.file); } catch(_) {}
+      }
+      DB.setContract(cid, {
         preSignedOutsidePortal: true,
-        preSignedPdfData: _pendingPdfData ? _pendingPdfData.dataUrl : '',
+        preSignedPdfData: pdfUrl,
         preSignedPdfName: _pendingPdfData ? _pendingPdfData.name : 'performance-agreement.pdf',
         admin:  { eventDate: date || '', scopeOfServices: [] },
         client: { name: name, venue: '', startTime: '', endTime: '', dressCode: '', contactName: '', phone: '' }
-      };
-      DB._set('gc_contracts', contracts);
+      });
       _pendingPdfData = null;
     }
 
+    if (submitBtn) submitBtn.disabled = false;
     closeModal('modal-add-client');
     renderAdminDash();
     showToast('Client added: ' + name);
@@ -2050,7 +1946,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   /* ---- Client: contract sign ---- */
-  document.getElementById('client-contract-form').addEventListener('submit', function(e) {
+  document.getElementById('client-contract-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const s = getSession();
     if (!s) return;
@@ -2075,7 +1971,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!consent)          { showToast('Please select a photo/video consent option (Section 12).'); return; }
     if (isSignatureEmpty()) { showToast('Please provide your signature (Section 23).'); return; }
 
-    const sigData  = _sigCanvas.toDataURL('image/png');
+    const blob = await new Promise(res => _sigCanvas.toBlob(res, 'image/png'));
+    let sigUrl = _sigCanvas.toDataURL('image/png'); // fallback
+    try { sigUrl = await uploadSignature(s.clientId, 'client', blob); } catch(e) { console.error('Sig upload failed:', e); }
+
     const contract = DB.getContract(s.clientId);
     contract.client = {
       contactName, startTime: start, endTime: end, venue,
@@ -2086,7 +1985,7 @@ document.addEventListener('DOMContentLoaded', function() {
       sigDate
     };
     contract.signedAt      = Date.now();
-    contract.signatureData = sigData;
+    contract.signatureData = sigUrl;
     DB.setContract(s.clientId, contract);
 
     showToast('Agreement signed! Awaiting counter-signature from Good Company.');
