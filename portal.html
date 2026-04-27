@@ -418,6 +418,15 @@
                 <i class="fas fa-chevron-right module-arrow"></i>
             </div>
         </div>
+
+        <!-- Band Schedule (built from checklist data) -->
+        <div class="card hidden" id="client-band-schedule-card" style="margin-top:24px">
+            <div class="card-header">
+                <h3><i class="fas fa-clock"></i> Your Band Schedule</h3>
+            </div>
+            <div class="card-note">This reflects band services only — for the full event timeline, refer to your coordinator.</div>
+            <div id="client-band-schedule"></div>
+        </div>
     </div>
 </div>
 
@@ -992,11 +1001,12 @@
                 <div class="card-header"><h3><i class="fas fa-glass-cheers"></i> Cocktail Hour</h3></div>
                 <div class="checklist-grid">
                     <div class="field-group"><label>Separate Location from Reception?</label><select id="cl-cocktail-sep"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group full-width hidden" id="cl-cocktail-sep-location-wrap"><label>Cocktail Hour Location</label><input type="text" id="cl-cocktail-sep-location" placeholder="e.g. Garden Terrace, Foyer, Rooftop…"></div>
                     <div class="field-group"><label>Cocktail Hour Outside?</label><select id="cl-cocktail-outdoor"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group"><label>Cocktail Hour Start</label><input type="time" id="cl-cocktail-start"></div>
                     <div class="field-group"><label>Cocktail Hour End</label><input type="time" id="cl-cocktail-end"></div>
-                    <div class="field-group full-width"><label>Where do you want the band during cocktail hour?</label><input type="text" id="cl-cocktail-location" placeholder="e.g. Foyer, garden terrace, near the bar…"></div>
-                    <div class="field-group"><label>Is there electricity at that location? <span style="font-weight:400;color:#888">(required for piano)</span></label><select id="cl-cocktail-electric"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group full-width hidden cl-cocktail-band-field"><label>Where do you want the band during cocktail hour?</label><input type="text" id="cl-cocktail-location" placeholder="e.g. Foyer, garden terrace, near the bar…"></div>
+                    <div class="field-group hidden cl-cocktail-band-field"><label>Is there electricity at that location?</label><select id="cl-cocktail-electric"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group full-width hidden" id="cl-cocktail-spotify-wrap"><label>Cocktail Hour Spotify Playlist</label><input type="text" id="cl-cocktail-spotify" placeholder="Playlist name or link"></div>
                 </div>
             </div>
@@ -1189,7 +1199,9 @@
     <div class="modal">
         <div class="modal-header"><h3>Add New Client</h3><button class="modal-close" data-modal="modal-add-client"><i class="fas fa-times"></i></button></div>
         <form id="add-client-form" novalidate>
-            <div class="field-group"><label>Client Name(s)</label><input type="text" id="new-client-name" placeholder="e.g. Jane &amp; John Smith" required></div>
+            <div class="field-group"><label>Main Contact Name</label><input type="text" id="new-client-name" placeholder="e.g. Jane Smith" required></div>
+            <div class="field-group"><label>Spouse-to-be Name</label><input type="text" id="new-client-spouse" placeholder="e.g. John Smith"></div>
+            <div class="field-group"><label>Main Contact Phone</label><input type="tel" id="new-client-phone" placeholder="(555) 555-5555" maxlength="14"></div>
             <div class="field-group"><label>Login Email</label><input type="email" id="new-client-email" placeholder="client@email.com" required></div>
             <div class="field-group"><label>Temporary Password</label><input type="text" id="new-client-password" placeholder="Create a password" required></div>
             <div class="field-group"><label>Wedding Date</label><input type="date" id="new-client-event-date"></div>

@@ -242,12 +242,14 @@ function contractStatus(cid) {
 function checklistProgress(cid) {
   const cl = DB.getGCP(cid).checklist || {};
 
+  const contract = DB.getContract(cid);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+
   // Core fields always counted
   const core = [
     'cl-arrival-time','cl-guest-arrival','cl-loadinlocation','cl-parking',
     'cl-parking-payment','cl-dressing-room',
     'cl-cocktail-sep','cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
-    'cl-cocktail-location','cl-cocktail-electric',
     'cl-coordinator','cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor',
     'cl-power','cl-reception-start','cl-dinner-time','cl-dinner-style',
     'cl-table-announce','cl-meals','cl-band-eat','cl-speeches',
@@ -260,6 +262,12 @@ function checklistProgress(cid) {
 
   // Conditional sub-fields only count when parent toggle is Yes
   const required = [...core];
+  if (cl['cl-cocktail-sep'] === 'Yes') {
+    required.push('cl-cocktail-sep-location');
+  }
+  if (scope.includes('Jazz Cocktail Band')) {
+    required.push('cl-cocktail-location','cl-cocktail-electric');
+  }
   if (cl['cl-announce-party'] === 'Yes') {
     required.push('cl-announce-party-how','cl-party-names','cl-spotify-party');
   }
@@ -731,7 +739,10 @@ function renderClientDash(clientId) {
   const client = DB.getClients().find(c => c.id === clientId);
   if (!client) return logout();
 
-  document.getElementById('client-welcome-name').textContent = client.name + "'s Portal";
+  const displayName = client.spouseName
+    ? client.name + ' & ' + client.spouseName
+    : client.name;
+  document.getElementById('client-welcome-name').textContent = displayName + "'s Portal";
   document.getElementById('client-welcome-date').textContent = client.eventDate
     ? 'Wedding Date: ' + fmtDate(client.eventDate) : '';
 
@@ -796,6 +807,71 @@ function renderClientDash(clientId) {
     cerb.className   = 'module-status status-badge ' + (cerProg === 100 ? 'status-signed' : cerProg > 0 ? 'status-ready' : 'status-none');
     cerb.textContent = cerProg === 100 ? 'Complete' : cerProg > 0 ? cerProg + '% done' : 'Not started';
   }
+
+  renderClientBandSchedule(clientId);
+}
+
+/* ============================================
+   CLIENT BAND SCHEDULE
+   ============================================ */
+function renderClientBandSchedule(clientId) {
+  const card = document.getElementById('client-band-schedule-card');
+  const container = document.getElementById('client-band-schedule');
+  if (!card || !container) return;
+
+  const cl = DB.getGCP(clientId).checklist || {};
+  const contract = DB.getContract(clientId);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCocktailBand = scope.includes('Jazz Cocktail Band');
+
+  const rows = [];
+
+  function addRow(icon, label, val) {
+    if (val) rows.push({ icon, label, val });
+  }
+
+  addRow('fa-truck', 'Band Arrival / Load-in', cl['cl-arrival-time'] ? fmtTime12(cl['cl-arrival-time']) : '');
+  addRow('fa-users', 'Guest Arrival', cl['cl-guest-arrival'] ? fmtTime12(cl['cl-guest-arrival']) : '');
+
+  if (hasCeremony) {
+    const cer = DB.getGCP(clientId).ceremony || {};
+    addRow('fa-ring', 'Ceremony Begins', cer['cer-start'] ? fmtTime12(cer['cer-start']) : '');
+    addRow('fa-door-open', 'Ceremony Ends', cer['cer-end'] ? fmtTime12(cer['cer-end']) : '');
+  }
+
+  if (hasCocktailBand) {
+    const loc = cl['cl-cocktail-sep-location'] || '';
+    const cocktailLabel = 'Cocktail Hour' + (loc ? ' — ' + loc : '');
+    const cocktailStart = cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '';
+    const cocktailEnd   = cl['cl-cocktail-end']   ? fmtTime12(cl['cl-cocktail-end'])   : '';
+    if (cocktailStart || cocktailEnd) {
+      addRow('fa-glass-cheers', cocktailLabel, [cocktailStart, cocktailEnd].filter(Boolean).join(' – '));
+    }
+  }
+
+  addRow('fa-door-open', 'Reception Begins', cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '');
+  if (cl['cl-first-dance'] === 'Yes') {
+    const fdSong = cl['cl-first-dance-song'] ? ' — ' + cl['cl-first-dance-song'] : '';
+    addRow('fa-heart', 'First Dance' + fdSong, cl['cl-first-dance-length'] || '');
+  }
+  addRow('fa-utensils', 'Dinner', cl['cl-dinner-time'] ? fmtTime12(cl['cl-dinner-time']) : '');
+  addRow('fa-music', 'Dance Floor Opens', cl['cl-dance-floor'] ? fmtTime12(cl['cl-dance-floor']) : '');
+  addRow('fa-flag-checkered', 'Reception Ends', cl['cl-reception-end'] ? fmtTime12(cl['cl-reception-end']) : '');
+  addRow('fa-box', 'Load-out', cl['cl-loadout'] ? fmtTime12(cl['cl-loadout']) : '');
+
+  if (!rows.length) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  card.classList.remove('hidden');
+  container.innerHTML = rows.map(r => `
+    <div class="artist-timeline-row">
+      <div class="artist-timeline-icon"><i class="fas ${escHtml(r.icon)}"></i></div>
+      <div class="artist-timeline-label">${escHtml(r.label)}</div>
+      <div class="artist-timeline-val">${escHtml(r.val)}</div>
+    </div>`).join('');
 }
 
 /* ============================================
@@ -1527,9 +1603,9 @@ function saveSongSelections(clientId) {
    ============================================ */
 const CHECKLIST_FIELDS = [
   'cl-arrival-time','cl-loadinlocation','cl-parking','cl-parking-payment',
-  'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-outdoor',
-  'cl-cocktail-start','cl-cocktail-end','cl-cocktail-location','cl-cocktail-electric',
-  'cl-cocktail-spotify','cl-coordinator',
+  'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-sep-location',
+  'cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
+  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify','cl-coordinator',
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-speeches','cl-dance-floor','cl-reception-end',
@@ -1555,11 +1631,23 @@ function _applyDanceVisibility() {
 }
 
 function _applyChecklistVisibility(clientId) {
-  // Cocktail Spotify: hide when Jazz Cocktail Band is in scope
   const contract = DB.getContract(clientId);
   const scope = (contract.admin && contract.admin.scopeOfServices) || [];
-  const wrap = document.getElementById('cl-cocktail-spotify-wrap');
-  if (wrap) wrap.classList.toggle('hidden', scope.includes('Jazz Cocktail Band'));
+  const hasJazzBand = scope.includes('Jazz Cocktail Band');
+
+  // Cocktail: separate location text field when "Separate Location" = Yes
+  const sepSel = document.getElementById('cl-cocktail-sep');
+  const sepLocWrap = document.getElementById('cl-cocktail-sep-location-wrap');
+  if (sepLocWrap) sepLocWrap.classList.toggle('hidden', !(sepSel && sepSel.value === 'Yes'));
+
+  // Cocktail band fields: only show when Jazz Cocktail Band is in scope
+  document.querySelectorAll('.cl-cocktail-band-field').forEach(el => {
+    el.classList.toggle('hidden', !hasJazzBand);
+  });
+
+  // Cocktail Spotify: hide when Jazz Cocktail Band is in scope (live band replaces playlist)
+  const spotifyWrap = document.getElementById('cl-cocktail-spotify-wrap');
+  if (spotifyWrap) spotifyWrap.classList.toggle('hidden', hasJazzBand);
 
   // Wedding party entrance
   const announceParty = document.getElementById('cl-announce-party');
@@ -1654,12 +1742,14 @@ function storePDFFile(file) {
 /* ============================================
    CLIENT MANAGEMENT
    ============================================ */
-async function addClient(name, email, password, eventDate) {
+async function addClient(name, email, password, eventDate, spouseName, phone) {
   if (DB.getClients().find(c => c.email.toLowerCase() === email.toLowerCase()))
     return { ok: false, error: 'A client with this email already exists.' };
   try {
     const authUid = await createClientAuth(email.trim().toLowerCase(), password);
     const client  = { id: authUid, name: name.trim(), email: email.trim().toLowerCase(), eventDate: eventDate || '', createdAt: Date.now() };
+    if (spouseName && spouseName.trim()) client.spouseName = spouseName.trim();
+    if (phone && phone.trim()) client.phone = phone.trim();
     DB.setClients([...DB.getClients(), client]);
     return { ok: true, client };
   } catch(e) {
@@ -1780,17 +1870,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('add-client-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const name  = document.getElementById('new-client-name').value.trim();
-    const email = document.getElementById('new-client-email').value.trim();
-    const pw    = document.getElementById('new-client-password').value;
-    const date  = document.getElementById('new-client-event-date').value;
-    const errEl = document.getElementById('add-client-error');
+    const name   = document.getElementById('new-client-name').value.trim();
+    const spouse = document.getElementById('new-client-spouse').value.trim();
+    const phone  = document.getElementById('new-client-phone').value.trim();
+    const email  = document.getElementById('new-client-email').value.trim();
+    const pw     = document.getElementById('new-client-password').value;
+    const date   = document.getElementById('new-client-event-date').value;
+    const errEl  = document.getElementById('add-client-error');
     if (!name || !email || !pw) { errEl.textContent='Name, email, and password are required.'; errEl.classList.remove('hidden'); return; }
 
     const submitBtn = this.querySelector('button[type="submit"]');
     if (submitBtn) submitBtn.disabled = true;
 
-    const result = await addClient(name, email, pw, date);
+    const result = await addClient(name, email, pw, date, spouse, phone);
     if (!result.ok) {
       errEl.textContent = result.error; errEl.classList.remove('hidden');
       if (submitBtn) submitBtn.disabled = false;
@@ -1997,11 +2089,11 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ---- Client: print contract ---- */
   document.getElementById('btn-print-contract').addEventListener('click', () => window.print());
 
-  /* ---- Client: phone format ---- */
+  /* ---- Phone auto-format on all phone fields ---- */
+  const PHONE_FIELD_IDS = new Set(['cc-phone','ps-phone','new-client-phone']);
   document.addEventListener('input', function(e) {
-    if (e.target && e.target.id === 'cc-phone') {
-      const cur = e.target.value;
-      e.target.value = formatPhone(cur);
+    if (e.target && (PHONE_FIELD_IDS.has(e.target.id) || e.target.type === 'tel')) {
+      e.target.value = formatPhone(e.target.value);
     }
   });
 
@@ -2039,6 +2131,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap']);
   clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap']);
+  // Cocktail separate location: show text field when Yes
+  const cocktailSepSel = document.getElementById('cl-cocktail-sep');
+  if (cocktailSepSel) {
+    cocktailSepSel.addEventListener('change', function() {
+      const wrap = document.getElementById('cl-cocktail-sep-location-wrap');
+      if (wrap) wrap.classList.toggle('hidden', this.value !== 'Yes');
+    });
+  }
 
   /* Dance checkboxes */
   DANCE_CHECKBOXES.forEach(id => {
