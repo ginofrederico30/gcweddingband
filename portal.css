@@ -2332,9 +2332,11 @@ textarea { resize: vertical; }
 
 @media (max-width: 768px) {
     .portal-container { padding: 24px 16px 80px; }
-    #portal-nav { padding: 0 20px; }
+    #portal-nav { padding: 0 16px; height: 56px; }
     .pnav-section { display: none; }
-    .pnav-brand span { font-size: 10px; }
+    .pnav-brand span { display: none; }
+    .pnav-logo { width: 30px; height: 30px; }
+    .pnav-user { display: none; }
 
     .contract-grid { grid-template-columns: 1fr; }
     .agreement-body { padding: 24px 20px 36px; }
@@ -2346,7 +2348,11 @@ textarea { resize: vertical; }
     .checklist-grid { grid-template-columns: 1fr; }
     .module-grid { grid-template-columns: 1fr; }
     .stats-row { grid-template-columns: 1fr 1fr; }
-    .page-header { flex-direction: column; align-items: flex-start; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+    .page-header h2 { font-size: 26px; }
+    .page-header-actions { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+    .page-header-actions .btn-primary,
+    .page-header-actions .btn-secondary { flex: 1; min-width: 0; justify-content: center; text-align: center; font-size: 11px; padding: 9px 12px; }
 
     .login-wrap { padding: 36px 24px; }
 
@@ -2356,10 +2362,12 @@ textarea { resize: vertical; }
     #signature-canvas { height: 120px; }
 
     .gcp-overview-grid { grid-template-columns: 1fr; }
+
+    /* Prevent iOS from zooming in on focused inputs (requires font-size >= 16px) */
+    input, select, textarea { font-size: 16px !important; }
 }
 
 @media (max-width: 480px) {
-    .stats-row { grid-template-columns: 1fr; }
-    .page-header-actions { width: 100%; }
-    .btn-primary, .btn-secondary, .btn-danger { font-size: 11px; padding: 9px 16px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .portal-container { padding: 20px 12px 80px; }
 }
