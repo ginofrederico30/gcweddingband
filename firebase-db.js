@@ -18,9 +18,10 @@ const ARTIST_EMAIL = 'artist@gcweddingband.com';
 
 /* ---- Init Firebase (compat SDK) ---- */
 firebase.initializeApp(FIREBASE_CONFIG);
-const _db      = firebase.firestore();
-const _auth    = firebase.auth();
-const _storage = firebase.storage();
+const _db        = firebase.firestore();
+const _auth      = firebase.auth();
+const _storage   = firebase.storage();
+const _functions = firebase.functions();
 
 /* ---- Firestore write error handler ---- */
 function _fsErr(e) { console.error('Firestore sync error:', e); }
@@ -159,6 +160,13 @@ const DB = {
       _db.doc('gcp/'       + cid).delete(),
       _db.doc('setlists/'  + cid).delete()
     ]);
+    // Also delete the Firebase Auth account so the email can be reused
+    try {
+      const fn = _functions.httpsCallable('deleteAuthUser');
+      await fn({ uid: cid });
+    } catch(e) {
+      console.warn('deleteAuthUser Cloud Function error (auth account may still exist):', e);
+    }
   }
 };
 
