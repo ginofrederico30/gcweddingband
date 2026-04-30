@@ -1753,7 +1753,22 @@ async function addClient(name, email, password, eventDate, spouseName, phone) {
     DB.setClients([...DB.getClients(), client]);
     return { ok: true, client };
   } catch(e) {
-    if (e.code === 'auth/email-already-in-use') return { ok: false, error: 'A client with this email already exists.' };
+    if (e.code === 'auth/email-already-in-use') {
+      // Orphaned Auth account (Firestore doc was deleted but Auth account wasn't).
+      // Auto-delete the orphaned account and retry once.
+      try {
+        const deleteFn = _functions.httpsCallable('deleteAuthUserByEmail');
+        await deleteFn({ email: email.trim().toLowerCase() });
+        const authUid = await createClientAuth(email.trim().toLowerCase(), password);
+        const client  = { id: authUid, name: name.trim(), email: email.trim().toLowerCase(), eventDate: eventDate || '', createdAt: Date.now() };
+        if (spouseName && spouseName.trim()) client.spouseName = spouseName.trim();
+        if (phone && phone.trim()) client.phone = phone.trim();
+        DB.setClients([...DB.getClients(), client]);
+        return { ok: true, client };
+      } catch(retryErr) {
+        return { ok: false, error: 'A client with this email already exists.' };
+      }
+    }
     return { ok: false, error: e.message };
   }
 }
