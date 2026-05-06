@@ -94,13 +94,13 @@ function generateSetlist(clientId) {
   // Build priority-ordered pool of all selected songs
   const pool = [
     ...catalog.filter(s => prefs[s.id] === 'Priority')
-              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' })),
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog', priority:true })),
     ...reqs.filter(r => r.type === 'Priority')
-           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request' })),
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:true })),
     ...catalog.filter(s => prefs[s.id] === 'Yes')
-              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog' })),
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog', priority:false })),
     ...reqs.filter(r => r.type !== 'Priority')
-           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request' })),
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:false })),
   ];
 
   // Remove the first matching song from pool by title (case-insensitive exact, then partial)
@@ -471,6 +471,7 @@ function _renderSetlistUI() {
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
+        ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
           <i class="fas fa-times"></i>
         </button>
@@ -594,11 +595,20 @@ function _attachSetlistEvents() {
 }
 
 /* ---- Save setlist ---- */
-function saveSetlist(clientId) {
+async function saveSetlist(clientId) {
+  const btn = document.getElementById('btn-save-setlist');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…'; }
   const setlists = ADB.getSetlists();
   setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
-  ADB.setSetlists(setlists);
-  showToast('Setlist saved!');
+  try {
+    await ADB.setSetlist(clientId, setlists[clientId]);
+    showToast('Setlist saved!');
+  } catch(e) {
+    console.error('Save setlist error:', e);
+    showToast('Save failed — please try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Setlist'; }
+  }
 }
 
 /* ============================================
@@ -650,6 +660,7 @@ function _renderAddSongList(query) {
          data-artist="${escHtml(s.artist)}"
          data-source="${s.source}"
          data-spotify="${escHtml(s.spotify||'')}"
+         data-priority="${s.priority ? '1' : ''}">
       <div style="min-width:0;flex:1">
         <div style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.title)}</div>
         <div style="font-family:var(--font-sans);font-size:12px;color:#999">${escHtml(s.artist)}</div>
@@ -664,11 +675,12 @@ function _renderAddSongList(query) {
     item.addEventListener('click', function() {
       const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
       _setlistSets[setIndex].push({
-        id:     this.dataset.id,
-        title:  this.dataset.title,
-        artist: this.dataset.artist,
-        source: this.dataset.source,
-        spotify: this.dataset.spotify || '',
+        id:       this.dataset.id,
+        title:    this.dataset.title,
+        artist:   this.dataset.artist,
+        source:   this.dataset.source,
+        spotify:  this.dataset.spotify || '',
+        priority: this.dataset.priority === '1',
       });
       document.getElementById('modal-add-song').classList.add('hidden');
       _renderSetlistUI();
@@ -735,16 +747,6 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Save setlist */
   document.getElementById('btn-save-setlist').addEventListener('click', () => {
     if (_currentClientId) saveSetlist(_currentClientId);
-  });
-
-  /* Regenerate setlist */
-  document.getElementById('btn-regenerate-setlist').addEventListener('click', () => {
-    if (!_currentClientId) return;
-    if (!confirm('Regenerate setlist from client song selections? Any manual edits will be lost.')) return;
-    const gen = generateSetlist(_currentClientId);
-    _setlistSets = gen.sets;
-    _renderSetlistUI();
-    showToast('Setlist regenerated from client selections.');
   });
 
   /* Add Song modal close */

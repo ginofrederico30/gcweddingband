@@ -208,7 +208,13 @@ const ADB = {
     return { songs:{}, songRequests:[], checklist:{}, ceremony:{}, ...d };
   },
 
-  /* Write all setlist entries back to Firestore */
+  /* Write a single client's setlist to Firestore and update cache */
+  setSetlist(cid, data) {
+    this._cache.setlists[cid] = data;
+    return _db.doc('setlists/' + cid).set(data);
+  },
+
+  /* Write all setlist entries back to Firestore (legacy bulk) */
   setSetlists(d) {
     this._cache.setlists = d;
     Object.entries(d).forEach(([cid, sl]) => {

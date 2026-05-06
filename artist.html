@@ -110,12 +110,8 @@
         <div class="card">
             <div class="card-header">
                 <h3><i class="fas fa-list-ol"></i> Reception Setlist</h3>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                    <button class="btn-ghost" id="btn-regenerate-setlist"><i class="fas fa-sync-alt"></i> Regenerate</button>
-                    <button class="btn-primary" id="btn-save-setlist"><i class="fas fa-save"></i> Save Setlist</button>
-                </div>
+                <button class="btn-primary" id="btn-save-setlist"><i class="fas fa-save"></i> Save Setlist</button>
             </div>
-            <div class="card-note">Drag rows to reorder. Songs estimated at 4:15 each. Priority requests appear first.</div>
             <div id="setlist-container"></div>
         </div>
 
@@ -153,7 +149,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="firebase-db.js"></script>
 <script src="artist.js"></script>
 </body>
