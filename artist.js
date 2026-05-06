@@ -257,7 +257,7 @@ function renderGigDetail(clientId) {
   /* ---- Day Schedule ---- */
   const scheduleItems = [
     { icon:'fa-truck-loading',  label:'Load-in',           val: fmtTime12(chk['cl-arrival-time']) },
-    { icon:'fa-microphone',     label:'Sound Check',       val: fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)) },
+    { icon:'fa-microphone',     label:'Soundcheck',       val: fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)) },
     { icon:'fa-users',          label:'Guest Arrival',     val: fmtTime12(chk['cl-guest-arrival']) },
     { icon:'fa-cocktail',       label:'Cocktail Hour',     val: (fmtTime12(chk['cl-cocktail-start']) && fmtTime12(chk['cl-cocktail-end']))
                                                                  ? `${fmtTime12(chk['cl-cocktail-start'])} – ${fmtTime12(chk['cl-cocktail-end'])}`
