@@ -384,9 +384,9 @@ function renderAdminDash() {
   `;
 
   const query    = (document.getElementById('client-search').value || '').toLowerCase();
-  const filtered = clients.filter(c =>
-    c.name.toLowerCase().includes(query) || c.email.toLowerCase().includes(query)
-  );
+  const filtered = clients
+    .filter(c => c.name.toLowerCase().includes(query) || c.email.toLowerCase().includes(query))
+    .sort((a, b) => (a.eventDate || '9999') < (b.eventDate || '9999') ? -1 : 1);
 
   const tbody = document.getElementById('clients-tbody');
   const noMsg = document.getElementById('no-clients-msg');
