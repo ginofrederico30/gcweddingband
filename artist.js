@@ -467,7 +467,7 @@ function _renderSetlistUI() {
         <div class="setlist-drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
-          <div class="setlist-title">${escHtml(s.title)}${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-spotify-link" title="Open link">${refLinkIcon(s.spotify)}</a>` : ''}</div>
+          <div class="setlist-title">${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(s.title)} ${refLinkIcon(s.spotify)}</a>` : escHtml(s.title)}</div>
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}

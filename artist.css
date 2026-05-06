@@ -158,6 +158,12 @@
 }
 .setlist-spotify-link:hover { opacity: .75; }
 
+.setlist-title-link {
+    color: inherit;
+    text-decoration: none;
+}
+.setlist-title-link:hover { text-decoration: underline; }
+
 .artist-spotify-link .fa-youtube { color: #FF0000; }
 .artist-spotify-link .fa-link    { color: #888; }
 
