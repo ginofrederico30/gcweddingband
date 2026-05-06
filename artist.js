@@ -62,6 +62,16 @@ function fmtTime12(t) {
   return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
 }
 
+function subtractMinutes(t, mins) {
+  if (!t) return null;
+  const [h, m] = t.split(':').map(Number);
+  if (isNaN(h)) return null;
+  const total = h * 60 + m - mins;
+  const rh = Math.floor(((total % 1440) + 1440) % 1440 / 60);
+  const rm = ((total % 1440) + 1440) % 1440 % 60;
+  return String(rh).padStart(2,'0') + ':' + String(rm).padStart(2,'0');
+}
+
 function fmtSetDuration(count) {
   const totalMin = count * 4.25;
   const h = Math.floor(totalMin / 60);
@@ -247,6 +257,7 @@ function renderGigDetail(clientId) {
   /* ---- Day Schedule ---- */
   const scheduleItems = [
     { icon:'fa-truck-loading',  label:'Load-in',           val: fmtTime12(chk['cl-arrival-time']) },
+    { icon:'fa-microphone',     label:'Sound Check',       val: fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)) },
     { icon:'fa-users',          label:'Guest Arrival',     val: fmtTime12(chk['cl-guest-arrival']) },
     { icon:'fa-cocktail',       label:'Cocktail Hour',     val: (fmtTime12(chk['cl-cocktail-start']) && fmtTime12(chk['cl-cocktail-end']))
                                                                  ? `${fmtTime12(chk['cl-cocktail-start'])} – ${fmtTime12(chk['cl-cocktail-end'])}`
