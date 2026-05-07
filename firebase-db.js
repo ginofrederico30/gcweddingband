@@ -211,7 +211,9 @@ const ADB = {
   /* Write a single client's setlist to Firestore and update cache */
   setSetlist(cid, data) {
     this._cache.setlists[cid] = data;
-    return _db.doc('setlists/' + cid).set(data);
+    // JSON round-trip strips undefined values which Firestore rejects
+    const clean = JSON.parse(JSON.stringify(data));
+    return _db.doc('setlists/' + cid).set(clean);
   },
 
   /* Write all setlist entries back to Firestore (legacy bulk) */

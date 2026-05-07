@@ -609,7 +609,7 @@ async function saveSetlist(clientId) {
     showToast('Setlist saved!');
   } catch(e) {
     console.error('Save setlist error:', e);
-    showToast('Save failed — please try again.');
+    showToast('Save failed: ' + (e.code || e.message || e));
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Setlist'; }
   }
