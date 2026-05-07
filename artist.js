@@ -549,6 +549,7 @@ function _renderSetlistUI() {
 
   _attachSetlistEvents();
   _renderLeadCounts();
+  _renderUnplacedRequests();
 }
 
 function _attachSetlistEvents() {
@@ -747,6 +748,47 @@ function _renderLeadCounts() {
           </tr>`).join('')}
         </tbody>
       </table>
+    </div>`;
+}
+
+/* ---- Unplaced client requests ---- */
+function _renderUnplacedRequests() {
+  const el = document.getElementById('setlist-unplaced-requests');
+  if (!el || !_currentClientId) return;
+
+  const gcp  = ADB.getGCP(_currentClientId);
+  const reqs = gcp.songRequests || [];
+  if (!reqs.length) { el.innerHTML = ''; return; }
+
+  const inSetlist = new Set([..._setlistSets[0], ..._setlistSets[1]].map(s => s.id));
+  const unplaced  = reqs.filter(r => !inSetlist.has(r.id));
+  if (!unplaced.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+    <div class="unplaced-requests-wrap">
+      <div class="lead-count-title" style="margin-bottom:12px">
+        <i class="fas fa-inbox" style="margin-right:6px;color:#bbb"></i>
+        Client Requests Not in Setlist (${unplaced.length})
+      </div>
+      ${unplaced.map(r => {
+        const lead = ARTIST_LEAD_BY_TITLE[r.title.toLowerCase()] || '';
+        const titleHtml = r.spotify
+          ? `<a href="${escHtml(r.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(r.title)} ${refLinkIcon(r.spotify)}</a>`
+          : escHtml(r.title);
+        return `
+          <div class="unplaced-request-row">
+            <div class="setlist-info">
+              <div class="setlist-title">${titleHtml}</div>
+              <div class="setlist-artist">${escHtml(r.artist || '')}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+              ${lead ? `<span class="status-badge setlist-lead-badge" style="font-size:9px">${escHtml(lead)}</span>` : ''}
+              ${r.type === 'Priority'
+                ? `<span class="status-badge status-alert" style="font-size:9px">Priority</span>`
+                : `<span class="status-badge status-pending" style="font-size:9px">Request</span>`}
+            </div>
+          </div>`;
+      }).join('')}
     </div>`;
 }
 

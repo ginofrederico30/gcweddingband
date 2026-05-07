@@ -365,3 +365,17 @@
     margin-left: 6px;
     vertical-align: middle;
 }
+
+/* ---- Unplaced client requests section ---- */
+.unplaced-requests-wrap {
+    padding: 16px 24px 20px;
+    border-top: 1px solid #f0ede8;
+}
+.unplaced-request-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 4px;
+    border-bottom: 1px solid #f4f3f0;
+}
+.unplaced-request-row:last-child { border-bottom: none; }
