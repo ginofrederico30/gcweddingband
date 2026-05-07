@@ -6,84 +6,88 @@
 
 /* ---- SEED SONG LIST ---- */
 const SEED_SONGS = [
-  { title: "All Your'n",                                 artist: "Tyler Childers" },
-  { title: "Ain't It Fun",                               artist: "Paramore" },
-  { title: "Ain't No Mountain High Enough",              artist: "Marvin Gaye" },
-  { title: "All Night Long",                             artist: "Lionel Richie" },
-  { title: "All the Small Things",                       artist: "blink-182" },
-  { title: "Are You Gonna Be My Girl",                   artist: "Jet" },
-  { title: "Birthday",                                   artist: "Katy Perry" },
-  { title: "Blame It on the Boogie",                     artist: "The Jacksons" },
-  { title: "Boogie Shoes",                               artist: "KC & The Sunshine Band" },
-  { title: "Brick House",                                artist: "Commodores" },
-  { title: "Bust a Move",                                artist: "Young MC" },
-  { title: "Cake By the Ocean",                          artist: "DNCE" },
-  { title: "Canned Heat",                                artist: "Jamiroquai" },
-  { title: "Celebration",                                artist: "Kool & The Gang" },
-  { title: "Come and Get Your Love",                     artist: "Redbone" },
-  { title: "Come On Eileen",                             artist: "Dexys Midnight Runners" },
-  { title: "Crazy in Love",                              artist: "Beyoncé" },
-  { title: "Dancing in the Moonlight",                   artist: "King Harvest" },
-  { title: "Dancing on the Ceiling",                     artist: "Lionel Richie" },
-  { title: "Dancing Queen",                              artist: "ABBA" },
-  { title: "December 1963 (Oh, What a Night)",           artist: "Frankie Valli & The Four Seasons" },
-  { title: "Don't Start Now",                            artist: "Dua Lipa" },
-  { title: "Dreams",                                     artist: "Fleetwood Mac" },
-  { title: "Funkytown",                                  artist: "Lipps Inc." },
-  { title: "Get Down On It",                             artist: "Kool & The Gang" },
-  { title: "Gimme! Gimme! Gimme!",                       artist: "ABBA" },
-  { title: "Give It To Me Baby",                         artist: "Rick James" },
-  { title: "Heaven",                                     artist: "Los Lonely Boys" },
-  { title: "Hips Don't Lie",                             artist: "Shakira" },
-  { title: "Hot Stuff",                                  artist: "Donna Summer" },
-  { title: "HOT TO GO!",                                 artist: "Chappell Roan" },
-  { title: "How Bizarre",                                artist: "OMC" },
-  { title: "I Wanna Be Your Lover",                      artist: "Prince" },
-  { title: "I Wanna Dance With Somebody",                artist: "Whitney Houston" },
-  { title: "I Wish",                                     artist: "Stevie Wonder" },
-  { title: "If I Ain't Got You",                         artist: "Alicia Keys" },
-  { title: "Is This Love",                               artist: "Bob Marley & The Wailers" },
-  { title: "Le Freak",                                   artist: "CHIC" },
-  { title: "Levitating",                                 artist: "Dua Lipa" },
-  { title: "Lil Boo Thang",                              artist: "Paul Russell" },
-  { title: "Love Story",                                 artist: "Taylor Swift" },
-  { title: "Man! I Feel Like a Woman!",                  artist: "Shania Twain" },
-  { title: "Man I Need",                                 artist: "Olivia Dean" },
-  { title: "Mr. Brightside",                             artist: "The Killers" },
-  { title: "Music For a Sushi Restaurant",               artist: "Harry Styles" },
-  { title: "My Girl",                                    artist: "The Temptations" },
-  { title: "Pick Up the Pieces",                         artist: "Average White Band" },
-  { title: "Pink Pony Club",                             artist: "Chappell Roan" },
-  { title: "Play That Funky Music",                      artist: "Wild Cherry" },
-  { title: "Red Wine Supernova",                         artist: "Chappell Roan" },
-  { title: "Reelin' In The Years",                       artist: "Steely Dan" },
-  { title: "Rich Girl",                                  artist: "Daryl Hall & John Oates" },
-  { title: "Semi-Charmed Life",                          artist: "Third Eye Blind" },
-  { title: "September",                                  artist: "Earth, Wind & Fire" },
-  { title: "Shake Your Body (Down to the Ground)",       artist: "The Jacksons" },
-  { title: "Shining Star",                               artist: "Earth, Wind & Fire" },
-  { title: "Signed, Sealed, Delivered (I'm Yours)",      artist: "Stevie Wonder" },
-  { title: "Sir Duke",                                   artist: "Stevie Wonder" },
-  { title: "Stayin' Alive",                              artist: "Bee Gees" },
-  { title: "Sunday Morning",                             artist: "Maroon 5" },
-  { title: "Superstition",                               artist: "Stevie Wonder" },
-  { title: "Tennessee Whiskey",                          artist: "Chris Stapleton" },
-  { title: "Tequila",                                    artist: "The Champs" },
-  { title: "The Real Slim Shady",                        artist: "Eminem" },
-  { title: "This Will Be (An Everlasting Love)",         artist: "Natalie Cole" },
-  { title: "Treasure",                                   artist: "Bruno Mars" },
-  { title: "Unwritten",                                  artist: "Natasha Bedingfield" },
-  { title: "Uptown Funk",                                artist: "Mark Ronson ft. Bruno Mars" },
-  { title: "Valerie",                                    artist: "Mark Ronson ft. Amy Winehouse" },
-  { title: "We Are Family",                              artist: "Sister Sledge" },
-  { title: "What a Wonderful World",                     artist: "Louis Armstrong" },
-  { title: "WHERE IS MY HUSBAND!",                       artist: "RAYE" },
-  { title: "You Are the Best Thing",                     artist: "Ray LaMontagne" },
-  { title: "You Make Me Feel Like Dancing",              artist: "Leo Sayer" },
-  { title: "You Make My Dreams (Come True)",             artist: "Daryl Hall & John Oates" },
-  { title: "You Sexy Thing",                             artist: "Hot Chocolate" },
-  { title: "1999",                                       artist: "Prince" }
+  { title: "All Your'n",                                 artist: "Tyler Childers",                  lead: "Matt" },
+  { title: "Ain't It Fun",                               artist: "Paramore",                        lead: "Savannah" },
+  { title: "Ain't No Mountain High Enough",              artist: "Marvin Gaye",                     lead: "Ian/Savannah" },
+  { title: "All Night Long",                             artist: "Lionel Richie",                   lead: "Ian" },
+  { title: "All the Small Things",                       artist: "blink-182",                       lead: "Matt" },
+  { title: "Are You Gonna Be My Girl",                   artist: "Jet",                             lead: "Ian/Savannah" },
+  { title: "Birthday",                                   artist: "Katy Perry",                      lead: "Savannah" },
+  { title: "Blame It on the Boogie",                     artist: "The Jacksons",                    lead: "Ian" },
+  { title: "Boogie Shoes",                               artist: "KC & The Sunshine Band",          lead: "Matt" },
+  { title: "Brick House",                                artist: "Commodores",                      lead: "Ian" },
+  { title: "Bust a Move",                                artist: "Young MC",                        lead: "Ian" },
+  { title: "Cake By the Ocean",                          artist: "DNCE",                            lead: "Savannah" },
+  { title: "Canned Heat",                                artist: "Jamiroquai",                      lead: "Ian" },
+  { title: "Celebration",                                artist: "Kool & The Gang",                 lead: "Gino" },
+  { title: "Come and Get Your Love",                     artist: "Redbone",                         lead: "Ian" },
+  { title: "Come On Eileen",                             artist: "Dexys Midnight Runners",          lead: "Matt" },
+  { title: "Crazy in Love",                              artist: "Beyoncé",                         lead: "Savannah" },
+  { title: "Dancing in the Moonlight",                   artist: "King Harvest",                    lead: "Ian" },
+  { title: "Dancing on the Ceiling",                     artist: "Lionel Richie",                   lead: "Ian" },
+  { title: "Dancing Queen",                              artist: "ABBA",                            lead: "Savannah" },
+  { title: "December 1963 (Oh, What a Night)",           artist: "Frankie Valli & The Four Seasons",lead: "Matt" },
+  { title: "Don't Start Now",                            artist: "Dua Lipa",                        lead: "Savannah" },
+  { title: "Dreams",                                     artist: "Fleetwood Mac",                   lead: "Lee" },
+  { title: "Funkytown",                                  artist: "Lipps Inc.",                      lead: "Savannah" },
+  { title: "Get Down On It",                             artist: "Kool & The Gang",                 lead: "Gino" },
+  { title: "Gimme! Gimme! Gimme!",                       artist: "ABBA",                            lead: "Savannah" },
+  { title: "Give It To Me Baby",                         artist: "Rick James",                      lead: "Matt" },
+  { title: "Heaven",                                     artist: "Los Lonely Boys",                 lead: "Lee" },
+  { title: "Hips Don't Lie",                             artist: "Shakira",                         lead: "Ian/Savannah" },
+  { title: "Hot Stuff",                                  artist: "Donna Summer",                    lead: "Savannah" },
+  { title: "HOT TO GO!",                                 artist: "Chappell Roan",                   lead: "Savannah" },
+  { title: "How Bizarre",                                artist: "OMC",                             lead: "Lee" },
+  { title: "I Wanna Be Your Lover",                      artist: "Prince",                          lead: "Matt" },
+  { title: "I Wanna Dance With Somebody",                artist: "Whitney Houston",                 lead: "Savannah" },
+  { title: "I Wish",                                     artist: "Stevie Wonder",                   lead: "Ian" },
+  { title: "If I Ain't Got You",                         artist: "Alicia Keys",                     lead: "Savannah" },
+  { title: "Is This Love",                               artist: "Bob Marley & The Wailers",        lead: "Ian" },
+  { title: "Le Freak",                                   artist: "CHIC",                            lead: "Ian" },
+  { title: "Levitating",                                 artist: "Dua Lipa",                        lead: "Savannah" },
+  { title: "Lil Boo Thang",                              artist: "Paul Russell",                    lead: "Matt" },
+  { title: "Love Story",                                 artist: "Taylor Swift",                    lead: "Savannah" },
+  { title: "Man! I Feel Like a Woman!",                  artist: "Shania Twain",                    lead: "Savannah" },
+  { title: "Man I Need",                                 artist: "Olivia Dean",                     lead: "Savannah" },
+  { title: "Mr. Brightside",                             artist: "The Killers",                     lead: "Nick" },
+  { title: "Music For a Sushi Restaurant",               artist: "Harry Styles",                    lead: "Matt" },
+  { title: "My Girl",                                    artist: "The Temptations",                 lead: "Ian" },
+  { title: "Pick Up the Pieces",                         artist: "Average White Band",              lead: "N/A" },
+  { title: "Pink Pony Club",                             artist: "Chappell Roan",                   lead: "Savannah" },
+  { title: "Play That Funky Music",                      artist: "Wild Cherry",                     lead: "Ian" },
+  { title: "Red Wine Supernova",                         artist: "Chappell Roan",                   lead: "Savannah" },
+  { title: "Reelin' In The Years",                       artist: "Steely Dan",                      lead: "Savannah" },
+  { title: "Rich Girl",                                  artist: "Daryl Hall & John Oates",         lead: "Savannah" },
+  { title: "Semi-Charmed Life",                          artist: "Third Eye Blind",                 lead: "Matt" },
+  { title: "September",                                  artist: "Earth, Wind & Fire",              lead: "Matt" },
+  { title: "Shake Your Body (Down to the Ground)",       artist: "The Jacksons",                    lead: "Matt" },
+  { title: "Shining Star",                               artist: "Earth, Wind & Fire",              lead: "Ian" },
+  { title: "Signed, Sealed, Delivered (I'm Yours)",      artist: "Stevie Wonder",                   lead: "Ian" },
+  { title: "Sir Duke",                                   artist: "Stevie Wonder",                   lead: "Ian" },
+  { title: "Stayin' Alive",                              artist: "Bee Gees",                        lead: "Ian" },
+  { title: "Sunday Morning",                             artist: "Maroon 5",                        lead: "Ian" },
+  { title: "Superstition",                               artist: "Stevie Wonder",                   lead: "Ian" },
+  { title: "Tennessee Whiskey",                          artist: "Chris Stapleton",                 lead: "Savannah" },
+  { title: "Tequila",                                    artist: "The Champs",                      lead: "N/A" },
+  { title: "The Real Slim Shady",                        artist: "Eminem",                          lead: "Matt" },
+  { title: "This Will Be (An Everlasting Love)",         artist: "Natalie Cole",                    lead: "Savannah" },
+  { title: "Treasure",                                   artist: "Bruno Mars",                      lead: "Matt" },
+  { title: "Unwritten",                                  artist: "Natasha Bedingfield",             lead: "Savannah" },
+  { title: "Uptown Funk",                                artist: "Mark Ronson ft. Bruno Mars",      lead: "Ian" },
+  { title: "Valerie",                                    artist: "Mark Ronson ft. Amy Winehouse",   lead: "Savannah" },
+  { title: "We Are Family",                              artist: "Sister Sledge",                   lead: "Savannah" },
+  { title: "What a Wonderful World",                     artist: "Louis Armstrong",                 lead: "Savannah" },
+  { title: "WHERE IS MY HUSBAND!",                       artist: "RAYE",                            lead: "Savannah" },
+  { title: "You Are the Best Thing",                     artist: "Ray LaMontagne",                  lead: "Matt" },
+  { title: "You Make Me Feel Like Dancing",              artist: "Leo Sayer",                       lead: "Ian" },
+  { title: "You Make My Dreams (Come True)",             artist: "Daryl Hall & John Oates",         lead: "Matt" },
+  { title: "You Sexy Thing",                             artist: "Hot Chocolate",                   lead: "Ian" },
+  { title: "1999",                                       artist: "Prince",                          lead: "Matt" }
 ];
+
+/* Lead lookup by title — used to migrate existing songs that lack the lead field */
+const LEAD_BY_TITLE = {};
+SEED_SONGS.forEach(s => { LEAD_BY_TITLE[s.title.toLowerCase()] = s.lead; });
 
 /* DB is defined in firebase-db.js (Firestore-backed cache layer) */
 
@@ -96,9 +100,22 @@ function initSeedData() {
       id: 'seed_' + i,
       title: s.title,
       artist: s.artist,
-      addedAt: 1  // epoch 1ms — always predates any client
+      lead: s.lead || '',
+      addedAt: 1
     }));
     DB.setMasterSongs(songs);
+  } else {
+    // Migrate existing songs that are missing the lead field
+    const songs = DB.getMasterSongs();
+    const missing = songs.filter(s => !s.lead && s.lead !== '');
+    if (missing.length) {
+      missing.forEach(s => {
+        const lead = LEAD_BY_TITLE[s.title.toLowerCase()];
+        if (lead !== undefined) s.lead = lead;
+        else s.lead = '';
+      });
+      DB.setMasterSongs(songs);
+    }
   }
 }
 
@@ -695,7 +712,7 @@ function renderMasterSongList() {
     <div class="song-item">
       <div class="song-info">
         <div class="song-title">${escHtml(s.title)}</div>
-        <div class="song-artist">${escHtml(s.artist)}</div>
+        <div class="song-artist">${escHtml(s.artist)}${s.lead ? ' <span class="song-lead-tag">' + escHtml(s.lead) + '</span>' : ''}</div>
       </div>
       ${s.addedAt > 1 ? '<span class="song-new-badge">New</span>' : ''}
       <span style="font-size:11px;color:#ccc;font-family:var(--font-sans);margin-left:auto;padding-right:8px">
@@ -708,11 +725,11 @@ function renderMasterSongList() {
   `).join('');
 }
 
-function addSong(title, artist) {
+function addSong(title, artist, lead) {
   const songs = DB.getMasterSongs();
   const dup = songs.find(s => s.title.toLowerCase() === title.toLowerCase() && s.artist.toLowerCase() === artist.toLowerCase());
   if (dup) return false;
-  songs.push({ id: uid(), title: title.trim(), artist: artist.trim(), addedAt: Date.now() });
+  songs.push({ id: uid(), title: title.trim(), artist: artist.trim(), lead: (lead || '').trim(), addedAt: Date.now() });
   DB.setMasterSongs(songs);
   return true;
 }
@@ -2002,9 +2019,10 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     const title  = document.getElementById('new-song-title').value.trim();
     const artist = document.getElementById('new-song-artist').value.trim();
+    const lead   = document.getElementById('new-song-lead').value.trim();
     const errEl  = document.getElementById('add-song-error');
     if (!title || !artist) { errEl.textContent='Title and artist are required.'; errEl.classList.remove('hidden'); return; }
-    if (!addSong(title, artist)) { errEl.textContent='That song is already in the list.'; errEl.classList.remove('hidden'); return; }
+    if (!addSong(title, artist, lead)) { errEl.textContent='That song is already in the list.'; errEl.classList.remove('hidden'); return; }
     closeModal('modal-add-song');
     renderMasterSongList();
     showToast('"' + title + '" added to catalog.');

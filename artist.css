@@ -307,3 +307,60 @@
     /* Prevent iOS auto-zoom on input focus */
     input, select, textarea { font-size: 16px !important; }
 }
+
+/* ---- Lead vocalist tag in setlist rows ---- */
+.setlist-lead {
+    font-weight: 600;
+    color: #7a6fa0;
+}
+
+/* ---- Lead count table ---- */
+.lead-count-wrap {
+    padding: 16px 24px 20px;
+    border-top: 1px solid #f0ede8;
+}
+.lead-count-title {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #bbb;
+    margin-bottom: 10px;
+}
+.lead-count-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 13px;
+}
+.lead-count-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #aaa;
+    padding: 0 10px 6px 0;
+    border-bottom: 1px solid #f0ede8;
+}
+.lead-count-table th:not(:first-child) { text-align: center; }
+.lead-count-table td {
+    padding: 6px 10px 6px 0;
+    color: #444;
+    border-bottom: 1px solid #fafafa;
+}
+.lead-count-table td:not(:first-child) { text-align: center; color: #666; }
+.lead-count-table tr:last-child td { border-bottom: none; }
+.lead-count-name { font-weight: 600; color: #333; }
+
+/* ---- Lead tag in admin master song list ---- */
+.song-lead-tag {
+    display: inline-block;
+    background: #f0edf8;
+    color: #7a6fa0;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+}

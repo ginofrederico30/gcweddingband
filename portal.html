@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
     <script src="firebase-db.js"></script>
     <script src="https://kit.fontawesome.com/9d7b870bec.js" crossorigin="anonymous" defer></script>
     <script>
@@ -1237,6 +1236,7 @@
         <form id="add-song-form" novalidate>
             <div class="field-group"><label>Song Title</label><input type="text" id="new-song-title" placeholder="Song title" required></div>
             <div class="field-group"><label>Artist</label><input type="text" id="new-song-artist" placeholder="Artist name" required></div>
+            <div class="field-group"><label>Lead <span style="font-weight:400;color:#999">(vocalist)</span></label><input type="text" id="new-song-lead" placeholder="e.g. Ian, Savannah, Matt"></div>
             <p id="add-song-error" class="form-error hidden"></p>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary modal-close" data-modal="modal-add-song">Cancel</button>

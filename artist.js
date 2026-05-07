@@ -94,13 +94,13 @@ function generateSetlist(clientId) {
   // Build priority-ordered pool of all selected songs
   const pool = [
     ...catalog.filter(s => prefs[s.id] === 'Priority')
-              .map(s => ({ id:s.id, title:s.title, artist:s.artist, spotify:s.spotify||'', source:'catalog', priority:true })),
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, spotify:s.spotify||'', source:'catalog', priority:true,  lead:s.lead||'' })),
     ...reqs.filter(r => r.type === 'Priority')
-           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:true })),
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:true,  lead:'' })),
     ...catalog.filter(s => prefs[s.id] === 'Yes')
-              .map(s => ({ id:s.id, title:s.title, artist:s.artist, spotify:s.spotify||'', source:'catalog', priority:false })),
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, spotify:s.spotify||'', source:'catalog', priority:false, lead:s.lead||'' })),
     ...reqs.filter(r => r.type !== 'Priority')
-           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:false })),
+           .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:false, lead:'' })),
   ];
 
   // Remove the first matching song from pool by title (case-insensitive exact, then partial)
@@ -442,7 +442,7 @@ function renderGigDetail(clientId) {
 let _setlistSets = [[], []]; // in-memory working copy
 
 function sanitizeSong(s) {
-  return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority };
+  return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority, lead:s.lead||'' };
 }
 
 function loadAndRenderSetlist(clientId) {
@@ -472,7 +472,7 @@ function _renderSetlistUI() {
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
           <div class="setlist-title">${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(s.title)} ${refLinkIcon(s.spotify)}</a>` : escHtml(s.title)}</div>
-          <div class="setlist-artist">${escHtml(s.artist)}</div>
+          <div class="setlist-artist">${escHtml(s.artist)}${s.lead ? ' <span class="setlist-lead">' + escHtml(s.lead) + '</span>' : ''}</div>
         </div>
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
         ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
@@ -505,6 +505,7 @@ function _renderSetlistUI() {
     buildSetHTML(1);
 
   _attachSetlistEvents();
+  _renderLeadCounts();
 }
 
 function _attachSetlistEvents() {
@@ -673,6 +674,39 @@ function _touchDragEnd(e) {
   _tdSrc = null;
   _renderSetlistUI();
 }
+/* ---- Lead count table ---- */
+function _renderLeadCounts() {
+  const el = document.getElementById('setlist-lead-counts');
+  if (!el) return;
+  const counts = {};
+  _setlistSets.forEach((set, si) => {
+    set.forEach(s => {
+      const lead = s.lead || '—';
+      if (!counts[lead]) counts[lead] = [0, 0];
+      counts[lead][si]++;
+    });
+  });
+  const rows = Object.entries(counts)
+    .map(([lead, c]) => ({ lead, s0: c[0], s1: c[1], total: c[0] + c[1] }))
+    .sort((a, b) => b.total - a.total);
+  if (!rows.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="lead-count-wrap">
+      <div class="lead-count-title">Song Count by Lead</div>
+      <table class="lead-count-table">
+        <thead><tr><th>Lead</th><th>Set 1</th><th>Set 2</th><th>Total</th></tr></thead>
+        <tbody>${rows.map(r => `
+          <tr>
+            <td class="lead-count-name">${escHtml(r.lead)}</td>
+            <td>${r.s0 || '—'}</td>
+            <td>${r.s1 || '—'}</td>
+            <td><strong>${r.total}</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 /* ---- Save setlist ---- */
 async function saveSetlist(clientId) {
   const btn = document.getElementById('btn-save-setlist');
