@@ -530,7 +530,7 @@ function _attachSetlistEvents() {
     });
   });
 
-  /* ---- Drag and drop ---- */
+  /* ---- Drag and drop (mouse) ---- */
   let dragSrc = null;
 
   document.querySelectorAll('.setlist-row').forEach(row => {
@@ -539,15 +539,11 @@ function _attachSetlistEvents() {
       this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
-
     row.addEventListener('dragend', function() {
       this.classList.remove('dragging');
-      document.querySelectorAll('.setlist-row, .setlist-rows').forEach(el => {
-        el.classList.remove('drag-over');
-      });
+      document.querySelectorAll('.setlist-row, .setlist-rows').forEach(el => el.classList.remove('drag-over'));
       dragSrc = null;
     });
-
     row.addEventListener('dragover', function(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -555,18 +551,14 @@ function _attachSetlistEvents() {
       document.querySelectorAll('.setlist-row').forEach(r => r.classList.remove('drag-over'));
       this.classList.add('drag-over');
     });
-
     row.addEventListener('drop', function(e) {
       e.preventDefault();
       e.stopPropagation();
       if (!dragSrc) return;
-
       const destSi  = +this.dataset.set;
       const destIdx = +this.dataset.idx;
       if (dragSrc.si === destSi && dragSrc.idx === destIdx) return;
-
       const song = _setlistSets[dragSrc.si].splice(dragSrc.idx, 1)[0];
-      // Adjust target index when removing from the same set before the target
       let ti = destIdx;
       if (dragSrc.si === destSi && dragSrc.idx < destIdx) ti = destIdx - 1;
       _setlistSets[destSi].splice(ti, 0, song);
@@ -582,9 +574,7 @@ function _attachSetlistEvents() {
       e.dataTransfer.dropEffect = 'move';
       this.classList.add('drag-over');
     });
-    block.addEventListener('dragleave', function() {
-      this.classList.remove('drag-over');
-    });
+    block.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
     block.addEventListener('drop', function(e) {
       e.preventDefault();
       this.classList.remove('drag-over');
@@ -596,8 +586,93 @@ function _attachSetlistEvents() {
       _renderSetlistUI();
     });
   });
+
+  /* ---- Touch drag and drop (mobile) ---- */
+  document.querySelectorAll('.setlist-drag-handle').forEach(handle => {
+    handle.addEventListener('touchstart', _touchDragStart, { passive: false });
+  });
 }
 
+/* Touch drag state */
+let _tdSrc    = null; // { si, idx }
+let _tdGhost  = null;
+let _tdOffX   = 0;
+let _tdOffY   = 0;
+
+function _touchDragStart(e) {
+  const row = e.currentTarget.closest('.setlist-row');
+  if (!row) return;
+  e.preventDefault();
+
+  const touch = e.touches[0];
+  const rect  = row.getBoundingClientRect();
+  _tdOffX = touch.clientX - rect.left;
+  _tdOffY = touch.clientY - rect.top;
+  _tdSrc  = { si: +row.dataset.set, idx: +row.dataset.idx };
+
+  _tdGhost = row.cloneNode(true);
+  Object.assign(_tdGhost.style, {
+    position: 'fixed', left: rect.left + 'px', top: rect.top + 'px',
+    width: rect.width + 'px', opacity: '0.85', pointerEvents: 'none',
+    zIndex: '9999', boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+    borderRadius: '8px', background: '#fff',
+  });
+  document.body.appendChild(_tdGhost);
+  row.classList.add('dragging');
+
+  document.addEventListener('touchmove', _touchDragMove, { passive: false });
+  document.addEventListener('touchend',  _touchDragEnd);
+}
+
+function _touchDragMove(e) {
+  e.preventDefault();
+  if (!_tdGhost) return;
+  const touch = e.touches[0];
+  _tdGhost.style.left = (touch.clientX - _tdOffX) + 'px';
+  _tdGhost.style.top  = (touch.clientY - _tdOffY) + 'px';
+
+  _tdGhost.style.display = 'none';
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  _tdGhost.style.display = '';
+  const target = el && el.closest('.setlist-row');
+  document.querySelectorAll('.setlist-row').forEach(r => r.classList.remove('drag-over'));
+  if (target) target.classList.add('drag-over');
+}
+
+function _touchDragEnd(e) {
+  document.removeEventListener('touchmove', _touchDragMove);
+  document.removeEventListener('touchend',  _touchDragEnd);
+
+  if (_tdGhost) { _tdGhost.remove(); _tdGhost = null; }
+  document.querySelectorAll('.setlist-row').forEach(r => r.classList.remove('dragging', 'drag-over'));
+
+  if (!_tdSrc) return;
+  const touch = e.changedTouches[0];
+  _tdGhost = null; // already removed
+  const el     = document.elementFromPoint(touch.clientX, touch.clientY);
+  const target = el && el.closest('.setlist-row');
+
+  if (target && target.dataset.set !== undefined) {
+    const destSi  = +target.dataset.set;
+    const destIdx = +target.dataset.idx;
+    if (!(_tdSrc.si === destSi && _tdSrc.idx === destIdx)) {
+      const song = _setlistSets[_tdSrc.si].splice(_tdSrc.idx, 1)[0];
+      let ti = destIdx;
+      if (_tdSrc.si === destSi && _tdSrc.idx < destIdx) ti = destIdx - 1;
+      _setlistSets[destSi].splice(ti, 0, song);
+    }
+  } else {
+    const block  = el && el.closest('.setlist-rows');
+    if (block) {
+      const destSi = +block.id.replace('setlist-rows-', '');
+      const song   = _setlistSets[_tdSrc.si].splice(_tdSrc.idx, 1)[0];
+      _setlistSets[destSi].push(song);
+    }
+  }
+
+  _tdSrc = null;
+  _renderSetlistUI();
+}
 /* ---- Save setlist ---- */
 async function saveSetlist(clientId) {
   const btn = document.getElementById('btn-save-setlist');
