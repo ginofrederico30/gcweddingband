@@ -90,7 +90,13 @@ const DB = {
     this._cache.clients   = cliSnap.docs.map(d => d.data());
     conSnap.docs.forEach(d => { this._cache.contracts[d.id] = d.data(); });
     gcpSnap.docs.forEach(d => { this._cache.gcp[d.id]       = d.data(); });
-    slSnap.docs.forEach(d  => { this._cache.setlists[d.id]  = d.data(); });
+    slSnap.docs.forEach(d  => {
+      const raw = d.data();
+      // Reconstruct sets array from flat set0/set1 fields (Firestore cannot store arrays-of-arrays)
+      this._cache.setlists[d.id] = raw.sets
+        ? raw
+        : { sets: [raw.set0 || [], raw.set1 || []], savedAt: raw.savedAt };
+    });
     const msDoc = cfgSnap.docs.find(d => d.id === 'masterSongs');
     const mcDoc = cfgSnap.docs.find(d => d.id === 'masterContract');
     this._cache.masterSongs    = msDoc ? (msDoc.data().songs || []) : [];
@@ -195,7 +201,13 @@ const ADB = {
     this._cache.clients = cliSnap.docs.map(d => d.data());
     conSnap.docs.forEach(d => { this._cache.contracts[d.id] = d.data(); });
     gcpSnap.docs.forEach(d => { this._cache.gcp[d.id]       = d.data(); });
-    slSnap.docs.forEach(d  => { this._cache.setlists[d.id]  = d.data(); });
+    slSnap.docs.forEach(d  => {
+      const raw = d.data();
+      // Reconstruct sets array from flat set0/set1 fields (Firestore cannot store arrays-of-arrays)
+      this._cache.setlists[d.id] = raw.sets
+        ? raw
+        : { sets: [raw.set0 || [], raw.set1 || []], savedAt: raw.savedAt };
+    });
     this._cache.masterSongs = msDoc.exists ? (msDoc.data().songs || []) : [];
   },
 
@@ -208,12 +220,17 @@ const ADB = {
     return { songs:{}, songRequests:[], checklist:{}, ceremony:{}, ...d };
   },
 
-  /* Write a single client's setlist to Firestore and update cache */
+  /* Write a single client's setlist to Firestore and update cache.
+     Firestore does not support arrays-of-arrays, so sets are stored
+     as flat fields set0/set1 and reconstructed on load. */
   setSetlist(cid, data) {
     this._cache.setlists[cid] = data;
-    // JSON round-trip strips undefined values which Firestore rejects
-    const clean = JSON.parse(JSON.stringify(data));
-    return _db.doc('setlists/' + cid).set(clean);
+    const doc = {
+      set0: JSON.parse(JSON.stringify(data.sets[0] || [])),
+      set1: JSON.parse(JSON.stringify(data.sets[1] || [])),
+      savedAt: data.savedAt || Date.now(),
+    };
+    return _db.doc('setlists/' + cid).set(doc);
   },
 
   /* Write all setlist entries back to Firestore (legacy bulk) */
