@@ -21,7 +21,7 @@ firebase.initializeApp(FIREBASE_CONFIG);
 const _db        = firebase.firestore();
 const _auth      = firebase.auth();
 const _storage   = firebase.storage();
-const _functions = firebase.functions();
+const _functions = typeof firebase.functions === 'function' ? firebase.functions() : null;
 
 /* ---- Firestore write error handler ---- */
 function _fsErr(e) { console.error('Firestore sync error:', e); }
