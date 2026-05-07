@@ -80,6 +80,34 @@ function fmtSetDuration(count) {
   return m === 0 ? h + ' hr' : h + ' hr ' + m + ' min';
 }
 
+/* Lead fallback by title (lowercase) — covers songs saved before the lead field was added */
+const ARTIST_LEAD_BY_TITLE = {
+  "1999":"Matt","ain't it fun":"Savannah","ain't no mountain high enough":"Ian/Savannah",
+  "all night long":"Ian","all the small things":"Matt","all your'n":"Matt",
+  "are you gonna be my girl":"Ian/Savannah","birthday":"Savannah","blame it on the boogie":"Ian",
+  "boogie shoes":"Matt","brick house":"Ian","bust a move":"Ian","cake by the ocean":"Savannah",
+  "canned heat":"Ian","celebration":"Gino","come and get your love":"Ian","come on eileen":"Matt",
+  "crazy in love":"Savannah","dancing in the moonlight":"Ian","dancing on the ceiling":"Ian",
+  "dancing queen":"Savannah","december 1963 (oh, what a night)":"Matt","don't start now":"Savannah",
+  "dreams":"Lee","funkytown":"Savannah","get down on it":"Gino","gimme! gimme! gimme!":"Savannah",
+  "give it to me baby":"Matt","heaven":"Lee","hips don't lie":"Ian/Savannah","hot stuff":"Savannah",
+  "hot to go!":"Savannah","how bizarre":"Lee","i wanna be your lover":"Matt",
+  "i wanna dance with somebody":"Savannah","i wish":"Ian","if i ain't got you":"Savannah",
+  "is this love":"Ian","le freak":"Ian","levitating":"Savannah","lil boo thang":"Matt",
+  "love story":"Savannah","man! i feel like a woman!":"Savannah","man i need":"Savannah",
+  "mr. brightside":"Nick","music for a sushi restaurant":"Matt","my girl":"Ian",
+  "pick up the pieces":"N/A","pink pony club":"Savannah","play that funky music":"Ian",
+  "red wine supernova":"Savannah","reelin' in the years":"Savannah","rich girl":"Savannah",
+  "semi-charmed life":"Matt","september":"Matt","shake your body (down to the ground)":"Matt",
+  "shining star":"Ian","signed, sealed, delivered (i'm yours)":"Ian","sir duke":"Ian",
+  "stayin' alive":"Ian","sunday morning":"Ian","superstition":"Ian","tennessee whiskey":"Savannah",
+  "tequila":"N/A","the real slim shady":"Matt","this will be (an everlasting love)":"Savannah",
+  "treasure":"Matt","unwritten":"Savannah","uptown funk":"Ian","valerie":"Savannah",
+  "we are family":"Savannah","what a wonderful world":"Savannah","where is my husband!":"Savannah",
+  "you are the best thing":"Matt","you make me feel like dancing":"Ian",
+  "you make my dreams (come true)":"Matt","you sexy thing":"Ian",
+};
+
 /* ============================================
    SETLIST GENERATION
    ============================================ */
@@ -445,12 +473,26 @@ function sanitizeSong(s) {
   return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority, lead:s.lead||'' };
 }
 
+/* Enrich saved setlist songs with lead/spotify from the current master catalog.
+   Falls back to ARTIST_LEAD_BY_TITLE for songs saved before the lead field existed. */
+function _enrichFromCatalog(songs) {
+  const catalog = ADB.getMasterSongs();
+  const byId = {};
+  catalog.forEach(s => { byId[s.id] = s; });
+  return songs.map(s => {
+    const master = byId[s.id];
+    const lead = s.lead || (master && master.lead) || ARTIST_LEAD_BY_TITLE[s.title.toLowerCase()] || '';
+    const spotify = s.spotify || (master && master.spotify) || '';
+    return { ...s, lead, spotify };
+  });
+}
+
 function loadAndRenderSetlist(clientId) {
   const setlists = ADB.getSetlists();
   if (setlists[clientId]) {
     _setlistSets = [
-      (setlists[clientId].sets[0] || []).map(sanitizeSong),
-      (setlists[clientId].sets[1] || []).map(sanitizeSong),
+      _enrichFromCatalog((setlists[clientId].sets[0] || []).map(sanitizeSong)),
+      _enrichFromCatalog((setlists[clientId].sets[1] || []).map(sanitizeSong)),
     ];
   } else {
     const gen = generateSetlist(clientId);
