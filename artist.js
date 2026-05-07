@@ -752,6 +752,24 @@ function _renderLeadCounts() {
 }
 
 /* ---- Unplaced client requests ---- */
+function _addRequestToSet(reqId, setIndex) {
+  const gcp = ADB.getGCP(_currentClientId);
+  const req = (gcp.songRequests || []).find(r => r.id === reqId);
+  if (!req) return;
+  const lead = ARTIST_LEAD_BY_TITLE[req.title.toLowerCase()] || '';
+  _setlistSets[setIndex].push({
+    id:       req.id,
+    title:    req.title,
+    artist:   req.artist || '',
+    spotify:  req.spotify || '',
+    source:   'request',
+    priority: req.type === 'Priority',
+    lead,
+  });
+  _renderSetlistUI();
+  showToast(`Added to Set ${setIndex + 1}`);
+}
+
 function _renderUnplacedRequests() {
   const el = document.getElementById('setlist-unplaced-requests');
   if (!el || !_currentClientId) return;
@@ -776,20 +794,29 @@ function _renderUnplacedRequests() {
           ? `<a href="${escHtml(r.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(r.title)} ${refLinkIcon(r.spotify)}</a>`
           : escHtml(r.title);
         return `
-          <div class="unplaced-request-row">
+          <div class="unplaced-request-row" data-reqid="${escHtml(r.id)}">
             <div class="setlist-info">
               <div class="setlist-title">${titleHtml}</div>
               <div class="setlist-artist">${escHtml(r.artist || '')}</div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap">
               ${lead ? `<span class="status-badge setlist-lead-badge" style="font-size:9px">${escHtml(lead)}</span>` : ''}
               ${r.type === 'Priority'
                 ? `<span class="status-badge status-alert" style="font-size:9px">Priority</span>`
                 : `<span class="status-badge status-pending" style="font-size:9px">Request</span>`}
+              <button class="unplaced-add-btn" data-reqid="${escHtml(r.id)}" data-set="0">+ Set 1</button>
+              <button class="unplaced-add-btn" data-reqid="${escHtml(r.id)}" data-set="1">+ Set 2</button>
             </div>
           </div>`;
       }).join('')}
     </div>`;
+
+  el.querySelectorAll('.unplaced-add-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _addRequestToSet(this.dataset.reqid, +this.dataset.set);
+    });
+  });
 }
 
 /* ---- Save setlist ---- */

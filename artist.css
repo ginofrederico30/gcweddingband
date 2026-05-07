@@ -379,3 +379,22 @@
     border-bottom: 1px solid #f4f3f0;
 }
 .unplaced-request-row:last-child { border-bottom: none; }
+
+.unplaced-add-btn {
+    background: #f0f4f8;
+    border: 1px solid #d0d8e4;
+    color: #3a5a7a;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--ease), border-color var(--ease);
+}
+.unplaced-add-btn:hover {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+}
