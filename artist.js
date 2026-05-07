@@ -94,11 +94,11 @@ function generateSetlist(clientId) {
   // Build priority-ordered pool of all selected songs
   const pool = [
     ...catalog.filter(s => prefs[s.id] === 'Priority')
-              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog', priority:true })),
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, spotify:s.spotify||'', source:'catalog', priority:true })),
     ...reqs.filter(r => r.type === 'Priority')
            .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:true })),
     ...catalog.filter(s => prefs[s.id] === 'Yes')
-              .map(s => ({ id:s.id, title:s.title, artist:s.artist, source:'catalog', priority:false })),
+              .map(s => ({ id:s.id, title:s.title, artist:s.artist, spotify:s.spotify||'', source:'catalog', priority:false })),
     ...reqs.filter(r => r.type !== 'Priority')
            .map(r => ({ id:r.id, title:r.title, artist:r.artist, spotify:r.spotify||'', source:'request', priority:false })),
   ];
@@ -441,12 +441,16 @@ function renderGigDetail(clientId) {
    ============================================ */
 let _setlistSets = [[], []]; // in-memory working copy
 
+function sanitizeSong(s) {
+  return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority };
+}
+
 function loadAndRenderSetlist(clientId) {
   const setlists = ADB.getSetlists();
   if (setlists[clientId]) {
     _setlistSets = [
-      (setlists[clientId].sets[0] || []).slice(),
-      (setlists[clientId].sets[1] || []).slice(),
+      (setlists[clientId].sets[0] || []).map(sanitizeSong),
+      (setlists[clientId].sets[1] || []).map(sanitizeSong),
     ];
   } else {
     const gen = generateSetlist(clientId);
