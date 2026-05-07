@@ -309,9 +309,10 @@
 }
 
 /* ---- Lead vocalist tag in setlist rows ---- */
-.setlist-lead {
-    font-weight: 600;
-    color: #7a6fa0;
+.setlist-lead-badge {
+    background: #eef0f3;
+    color: #555;
+    border: 1px solid #dde0e6;
 }
 
 /* ---- Lead count table ---- */

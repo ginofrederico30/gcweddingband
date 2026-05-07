@@ -514,8 +514,9 @@ function _renderSetlistUI() {
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
           <div class="setlist-title">${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(s.title)} ${refLinkIcon(s.spotify)}</a>` : escHtml(s.title)}</div>
-          <div class="setlist-artist">${escHtml(s.artist)}${s.lead ? ' <span class="setlist-lead">' + escHtml(s.lead) + '</span>' : ''}</div>
+          <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
+        ${s.lead ? `<span class="status-badge setlist-lead-badge" style="font-size:9px;flex-shrink:0">${escHtml(s.lead)}</span>` : ''}
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
         ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
