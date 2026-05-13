@@ -924,9 +924,10 @@ function downloadSetlistPDF() {
   const name     = client ? client.name : 'Client';
   const date     = fmtDate(a.eventDate || (client && client.eventDate) || '');
   const venue    = a.venue || a.venueName || '';
+  const base     = window.location.origin;
+  const hasSet2  = _setlistSets[1].length > 0;
 
   function buildRows(songs) {
-    if (!songs.length) return '<p class="sl-empty">No songs in this set.</p>';
     return songs.map((s, i) => `
       <div class="sl-row">
         <span class="sl-num">${i + 1}</span>
@@ -941,32 +942,41 @@ function downloadSetlistPDF() {
       </div>`).join('');
   }
 
+  const set2HTML = hasSet2 ? `
+  <div class="sl-break">— 30-Minute Break —</div>
+  <div class="sl-set-header">
+    <span class="sl-set-title">Set 2</span>
+    <span class="sl-set-meta">${_setlistSets[1].length} songs &nbsp;·&nbsp; ~${fmtSetDuration(_setlistSets[1].length)}</span>
+  </div>
+  ${buildRows(_setlistSets[1])}` : '';
+
   const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <title>${escHtml(name)} — Setlist</title>
 <style>
+  @font-face{font-family:'Montserrat';src:url('${base}/Montserrat-VariableFont_wght.ttf') format('truetype')}
+  @font-face{font-family:'Bitter';src:url('${base}/Bitter-VariableFont_wght.ttf') format('truetype')}
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:36px 44px;font-size:12px}
+  body{font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;color:#222;padding:36px 44px;font-size:12px}
   .sl-header{text-align:center;padding-bottom:18px;margin-bottom:4px;border-bottom:2px solid #153147}
-  .sl-brand{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:#999;margin-bottom:8px}
-  .sl-client{font-size:22px;font-weight:700;color:#153147;margin-bottom:4px}
-  .sl-meta{font-size:11px;color:#777}
+  .sl-brand{font-family:'Montserrat',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:3px;color:#999;margin-bottom:8px}
+  .sl-client{font-family:'Bitter',serif;font-size:24px;font-weight:700;color:#153147;margin-bottom:4px}
+  .sl-meta{font-family:'Montserrat',sans-serif;font-size:11px;color:#777}
   .sl-set-header{display:flex;align-items:baseline;gap:8px;margin-top:22px;margin-bottom:6px;padding-bottom:5px;border-bottom:1.5px solid #153147}
-  .sl-set-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#153147}
-  .sl-set-meta{font-size:10px;color:#aaa}
+  .sl-set-title{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#153147}
+  .sl-set-meta{font-family:'Montserrat',sans-serif;font-size:10px;color:#aaa}
   .sl-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0ede8}
   .sl-row:last-child{border-bottom:none}
-  .sl-num{font-size:10px;font-weight:700;color:#ccc;width:18px;text-align:right;flex-shrink:0}
+  .sl-num{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#ccc;width:18px;text-align:right;flex-shrink:0}
   .sl-info{flex:1}
-  .sl-title{font-size:13px;font-weight:600;color:#222}
-  .sl-sub{font-size:10px;color:#888;margin-top:1px}
+  .sl-title{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;color:#222}
+  .sl-sub{font-family:'Montserrat',sans-serif;font-size:10px;color:#888;margin-top:1px}
   .sl-badges{display:flex;gap:4px;flex-shrink:0}
-  .sl-badge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px}
+  .sl-badge{font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px}
   .sl-req{background:#fff3cd;color:#856404}
   .sl-pri{background:#fff0e0;color:#b45309}
-  .sl-break{text-align:center;margin:18px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#bbb}
-  .sl-empty{font-size:11px;color:#ccc;padding:12px 0}
-  .sl-footer{margin-top:36px;text-align:center;font-size:9px;color:#ccc;border-top:1px solid #f0ede8;padding-top:12px}
+  .sl-break{font-family:'Montserrat',sans-serif;text-align:center;margin:18px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#bbb}
+  .sl-footer{font-family:'Montserrat',sans-serif;margin-top:36px;text-align:center;font-size:9px;color:#ccc;border-top:1px solid #f0ede8;padding-top:12px}
   @media print{body{padding:20px 28px}@page{margin:1cm}}
 </style></head><body>
   <div class="sl-header">
@@ -979,12 +989,7 @@ function downloadSetlistPDF() {
     <span class="sl-set-meta">${_setlistSets[0].length} songs &nbsp;·&nbsp; ~${fmtSetDuration(_setlistSets[0].length)}</span>
   </div>
   ${buildRows(_setlistSets[0])}
-  <div class="sl-break">— 30-Minute Break —</div>
-  <div class="sl-set-header">
-    <span class="sl-set-title">Set 2</span>
-    <span class="sl-set-meta">${_setlistSets[1].length} songs &nbsp;·&nbsp; ~${fmtSetDuration(_setlistSets[1].length)}</span>
-  </div>
-  ${buildRows(_setlistSets[1])}
+  ${set2HTML}
   <div class="sl-footer">Good Company Wedding Band &nbsp;·&nbsp; Reception Setlist</div>
 </body></html>`;
 
@@ -992,7 +997,9 @@ function downloadSetlistPDF() {
   if (!win) { showToast('Allow pop-ups to download PDF.'); return; }
   win.document.write(html);
   win.document.close();
-  setTimeout(() => win.print(), 400);
+  // Wait for fonts to load before printing
+  win.addEventListener('load', () => setTimeout(() => win.print(), 300));
+  setTimeout(() => win.print(), 1200);
 }
 
 /* ============================================
