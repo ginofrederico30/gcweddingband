@@ -939,11 +939,7 @@ function downloadSetlistPDF() {
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;color:#1a1a1a;padding:20px 28px;font-size:13px}
   .sl-header{text-align:center;margin-bottom:18px}
-  .sl-logo-wrap{
-    width:84px;height:84px;background:#153147;border-radius:50%;
-    display:inline-flex;align-items:center;justify-content:center;margin-bottom:0
-  }
-  .sl-logo-wrap img{width:68px;height:68px;object-fit:contain}
+  .sl-logo{width:90px;height:90px;object-fit:contain;display:block;margin:0 auto}
   .sl-body{display:grid;gap:36px;align-items:start;margin-bottom:16px}
   .sl-body.two-col{grid-template-columns:1fr 1fr}
   .sl-body.one-col{grid-template-columns:1fr;max-width:380px;margin:0 auto 16px}
@@ -965,9 +961,7 @@ function downloadSetlistPDF() {
   @media print{body{padding:10px 18px}@page{margin:0.5cm;size:letter portrait}}
 </style></head><body>
   <div class="sl-header">
-    <div class="sl-logo-wrap">
-      <img src="${base}/Circle GC Logo_White.png" alt="Good Company">
-    </div>
+    <img class="sl-logo" src="${base}/Insta%20Profile.png" alt="Good Company Wedding Band">
   </div>
   <div class="sl-body ${hasSet2 ? 'two-col' : 'one-col'}">
     <div>
