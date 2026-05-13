@@ -915,6 +915,87 @@ function _renderAddSongList(query) {
 }
 
 /* ============================================
+   PDF DOWNLOAD
+   ============================================ */
+function downloadSetlistPDF() {
+  const client   = ADB.getClients().find(c => c.id === _currentClientId);
+  const contract = ADB.getContract(_currentClientId);
+  const a        = contract.admin || {};
+  const name     = client ? client.name : 'Client';
+  const date     = fmtDate(a.eventDate || (client && client.eventDate) || '');
+  const venue    = a.venue || a.venueName || '';
+
+  function buildRows(songs) {
+    if (!songs.length) return '<p class="sl-empty">No songs in this set.</p>';
+    return songs.map((s, i) => `
+      <div class="sl-row">
+        <span class="sl-num">${i + 1}</span>
+        <div class="sl-info">
+          <div class="sl-title">${escHtml(s.title)}</div>
+          <div class="sl-sub">${escHtml(s.artist)}${s.lead ? ' · ' + escHtml(s.lead) : ''}</div>
+        </div>
+        <div class="sl-badges">
+          ${s.source === 'request' ? '<span class="sl-badge sl-req">Request</span>' : ''}
+          ${s.priority            ? '<span class="sl-badge sl-pri">Priority</span>' : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>${escHtml(name)} — Setlist</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:36px 44px;font-size:12px}
+  .sl-header{text-align:center;padding-bottom:18px;margin-bottom:4px;border-bottom:2px solid #153147}
+  .sl-brand{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:#999;margin-bottom:8px}
+  .sl-client{font-size:22px;font-weight:700;color:#153147;margin-bottom:4px}
+  .sl-meta{font-size:11px;color:#777}
+  .sl-set-header{display:flex;align-items:baseline;gap:8px;margin-top:22px;margin-bottom:6px;padding-bottom:5px;border-bottom:1.5px solid #153147}
+  .sl-set-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#153147}
+  .sl-set-meta{font-size:10px;color:#aaa}
+  .sl-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0ede8}
+  .sl-row:last-child{border-bottom:none}
+  .sl-num{font-size:10px;font-weight:700;color:#ccc;width:18px;text-align:right;flex-shrink:0}
+  .sl-info{flex:1}
+  .sl-title{font-size:13px;font-weight:600;color:#222}
+  .sl-sub{font-size:10px;color:#888;margin-top:1px}
+  .sl-badges{display:flex;gap:4px;flex-shrink:0}
+  .sl-badge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px}
+  .sl-req{background:#fff3cd;color:#856404}
+  .sl-pri{background:#fff0e0;color:#b45309}
+  .sl-break{text-align:center;margin:18px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#bbb}
+  .sl-empty{font-size:11px;color:#ccc;padding:12px 0}
+  .sl-footer{margin-top:36px;text-align:center;font-size:9px;color:#ccc;border-top:1px solid #f0ede8;padding-top:12px}
+  @media print{body{padding:20px 28px}@page{margin:1cm}}
+</style></head><body>
+  <div class="sl-header">
+    <div class="sl-brand">Good Company Wedding Band</div>
+    <div class="sl-client">${escHtml(name)}</div>
+    <div class="sl-meta">${escHtml(date)}${venue ? ' &nbsp;·&nbsp; ' + escHtml(venue) : ''}</div>
+  </div>
+  <div class="sl-set-header">
+    <span class="sl-set-title">Set 1</span>
+    <span class="sl-set-meta">${_setlistSets[0].length} songs &nbsp;·&nbsp; ~${fmtSetDuration(_setlistSets[0].length)}</span>
+  </div>
+  ${buildRows(_setlistSets[0])}
+  <div class="sl-break">— 30-Minute Break —</div>
+  <div class="sl-set-header">
+    <span class="sl-set-title">Set 2</span>
+    <span class="sl-set-meta">${_setlistSets[1].length} songs &nbsp;·&nbsp; ~${fmtSetDuration(_setlistSets[1].length)}</span>
+  </div>
+  ${buildRows(_setlistSets[1])}
+  <div class="sl-footer">Good Company Wedding Band &nbsp;·&nbsp; Reception Setlist</div>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow pop-ups to download PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
+
+/* ============================================
    BOOTSTRAP
    ============================================ */
 document.addEventListener('DOMContentLoaded', function() {
@@ -972,6 +1053,10 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Save setlist */
   document.getElementById('btn-save-setlist').addEventListener('click', () => {
     if (_currentClientId) saveSetlist(_currentClientId);
+  });
+
+  document.getElementById('btn-download-setlist').addEventListener('click', () => {
+    if (_currentClientId) downloadSetlistPDF();
   });
 
   /* Add Song modal close */
