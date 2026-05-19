@@ -1685,11 +1685,25 @@ function _applyChecklistVisibility(clientId) {
   _applyDanceVisibility();
 }
 
+function autoGrowEl(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function initAutoGrow(container) {
+  const root = container || document;
+  root.querySelectorAll('textarea.auto-grow').forEach(el => {
+    autoGrowEl(el);
+    el.addEventListener('input', function() { autoGrowEl(this); });
+  });
+}
+
 function loadChecklist(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
   DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
   _applyChecklistVisibility(clientId);
+  initAutoGrow(document.getElementById('view-checklist'));
 }
 
 function saveChecklist(clientId) {

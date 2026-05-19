@@ -60,6 +60,7 @@ input, select, textarea, button {
 }
 
 textarea { resize: vertical; }
+textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 
 /* ============================================
    Utility
