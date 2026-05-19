@@ -1703,7 +1703,7 @@ function loadChecklist(clientId) {
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
   DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
   _applyChecklistVisibility(clientId);
-  initAutoGrow(document.getElementById('view-checklist'));
+  setTimeout(() => initAutoGrow(document.getElementById('view-checklist')), 0);
 }
 
 function saveChecklist(clientId) {
