@@ -111,7 +111,31 @@ const ARTIST_LEAD_BY_TITLE = {
 /* ============================================
    SETLIST GENERATION
    ============================================ */
-const SONGS_PER_SET = 18; // 18 × 4:15 ≈ 1 hr 16 min
+const AVG_SONG_MIN = 4.25; // average song length used for duration estimates
+
+let _setStructure = { totalMin: 180, breakMin: 30, songsPerSet: 18, sets: 2 };
+
+function calcSetStructure(clientId) {
+  const gcp = ADB.getGCP(clientId);
+  const chk = gcp.checklist || {};
+  function toMin(t) {
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    return isNaN(h) ? null : h * 60 + m;
+  }
+  const danceMin = toMin(chk['cl-dance-floor']);
+  const endMin   = toMin(chk['cl-reception-end']);
+  if (!danceMin || !endMin) {
+    return { totalMin: 180, breakMin: 30, songsPerSet: 18, sets: 2, danceStr: null, endStr: null };
+  }
+  let totalMin = endMin - danceMin;
+  if (totalMin <= 0) totalMin += 1440; // handle midnight wrap
+  // Break scales linearly with block length, clamped to 15–30 min. No break for blocks under 90 min.
+  const breakMin = totalMin < 90 ? 0 : Math.max(15, Math.min(30, Math.round((totalMin - 90) / 3)));
+  const sets = breakMin > 0 ? 2 : 1;
+  const songsPerSet = Math.max(8, Math.round((totalMin - breakMin) / sets / AVG_SONG_MIN));
+  return { totalMin, breakMin, songsPerSet, sets, danceStr: chk['cl-dance-floor'], endStr: chk['cl-reception-end'] };
+}
 
 function generateSetlist(clientId) {
   const gcp     = ADB.getGCP(clientId);
@@ -152,9 +176,10 @@ function generateSetlist(clientId) {
   const mrBrightside = pluck('mr. brightside');
   const areYouGonna  = pluck('are you gonna be my girl');
 
+  const sps = _setStructure.songsPerSet;
   // Set 1: [September] [Don't Start Now] [...middle...] [Tequila]
   const s1Pinned = [september, dontStart, tequila].filter(Boolean).length;
-  const s1Middle = pool.splice(0, Math.max(0, SONGS_PER_SET - s1Pinned));
+  const s1Middle = pool.splice(0, Math.max(0, sps - s1Pinned));
   const set1 = [
     ...(september ? [september] : []),
     ...(dontStart ? [dontStart] : []),
@@ -164,7 +189,7 @@ function generateSetlist(clientId) {
 
   // Set 2: [Pink Pony Club] [...middle...] [Hot To Go!] [Mr. Brightside] [Are You Gonna Be My Girl]
   const s2Pinned = [ppc, hotToGo, mrBrightside, areYouGonna].filter(Boolean).length;
-  const s2Middle = pool.splice(0, Math.max(0, SONGS_PER_SET - s2Pinned));
+  const s2Middle = pool.splice(0, Math.max(0, sps - s2Pinned));
   const set2 = [
     ...(ppc          ? [ppc]          : []),
     ...s2Middle,
@@ -500,6 +525,7 @@ function _enrichFromCatalog(songs) {
 }
 
 function loadAndRenderSetlist(clientId) {
+  _setStructure = calcSetStructure(clientId);
   const setlists = ADB.getSetlists();
   if (setlists[clientId]) {
     _setlistSets = [
@@ -515,16 +541,36 @@ function loadAndRenderSetlist(clientId) {
 
 function _renderSetlistUI() {
   const container = document.getElementById('setlist-container');
+  const { songsPerSet, breakMin, sets, totalMin, danceStr, endStr } = _setStructure;
+
+  // Timing summary banner
+  const targetDur = fmtSetDuration(songsPerSet);
+  let timingBanner = '';
+  if (danceStr && endStr) {
+    const totalH = Math.floor(totalMin / 60), totalM = totalMin % 60;
+    const totalLabel = totalM === 0 ? totalH + ' hr' : totalH + ' hr ' + totalM + ' min';
+    timingBanner = `<div class="setlist-timing-banner">
+      <i class="fas fa-clock"></i>
+      <strong>${fmtTime12(danceStr)} – ${fmtTime12(endStr)}</strong>
+      <span class="setlist-timing-sep">·</span> ${totalLabel} performance block
+      <span class="setlist-timing-sep">·</span> ${breakMin}-min break
+      <span class="setlist-timing-sep">·</span> target <strong>${songsPerSet} songs/set</strong> (~${targetDur})
+    </div>`;
+  } else {
+    timingBanner = `<div class="setlist-timing-banner setlist-timing-default">
+      <i class="fas fa-info-circle"></i>
+      No dance floor / reception end time set in the Day-of Checklist — using default 3-hour block (${songsPerSet} songs/set).
+    </div>`;
+  }
 
   function buildSetHTML(si) {
-    const songs   = _setlistSets[si];
-    const dur     = fmtSetDuration(songs.length);
-    const target  = SONGS_PER_SET;
-    const short   = target - songs.length;
-    const warnHTML = (songs.length > 0 && songs.length < target)
+    const songs  = _setlistSets[si];
+    const dur    = fmtSetDuration(songs.length);
+    const short  = songsPerSet - songs.length;
+    const warnHTML = (songs.length > 0 && songs.length < songsPerSet)
       ? `<div class="setlist-duration-warn">
            <i class="fas fa-exclamation-triangle"></i>
-           Add ${short} more song${short !== 1 ? 's' : ''} — set is ~${dur}, target is ~1 hr 15 min
+           Add ${short} more song${short !== 1 ? 's' : ''} — set is ~${dur}, target is ~${targetDur}
          </div>`
       : '';
 
@@ -559,14 +605,16 @@ function _renderSetlistUI() {
       </div>`;
   }
 
-  container.innerHTML =
-    buildSetHTML(0) +
-    `<div class="setlist-break-divider">
-      <div class="setlist-break-line"></div>
-      <span class="setlist-break-label">30-Minute Break</span>
-      <div class="setlist-break-line"></div>
-    </div>` +
-    buildSetHTML(1);
+  const breakLabel = breakMin > 0 ? `${breakMin}-Minute Break` : 'No Break';
+  const set2HTML = sets > 1
+    ? `<div class="setlist-break-divider">
+        <div class="setlist-break-line"></div>
+        <span class="setlist-break-label">${breakLabel}</span>
+        <div class="setlist-break-line"></div>
+      </div>` + buildSetHTML(1)
+    : '';
+
+  container.innerHTML = timingBanner + buildSetHTML(0) + set2HTML;
 
   _attachSetlistEvents();
   _renderLeadCounts();

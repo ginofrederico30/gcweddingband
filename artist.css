@@ -399,6 +399,25 @@
     color: #fff;
 }
 
+/* ---- Setlist timing banner ---- */
+.setlist-timing-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 24px;
+    background: #f0f4f9;
+    border-bottom: 1px solid #dce6f0;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: #4a6a8a;
+}
+.setlist-timing-banner i { color: #5a85ae; flex-shrink: 0; }
+.setlist-timing-banner strong { color: var(--navy); }
+.setlist-timing-sep { color: #b0c0d0; }
+.setlist-timing-default { background: #fafaf8; border-color: #e8e4dc; color: #888; }
+.setlist-timing-default i { color: #bbb; }
+
 /* ---- Set duration warning ---- */
 .setlist-duration-warn {
     display: flex;
