@@ -523,7 +523,8 @@ function savePresignedFields(clientId) {
   }
   DB.setContract(clientId, contract);
   showToast('Contract details saved.');
-  flashSaved('presigned-fields-saved');
+  renderAdminDash();
+  showView('view-admin-dash');
 }
 
 function openClientDetail(clientId) {
