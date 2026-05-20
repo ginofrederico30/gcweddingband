@@ -4,25 +4,26 @@
 
 /* ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_TTL, and DB are defined in firebase-db.js */
 
-/* ---- EmailJS config (fill in after creating account at emailjs.com) ---- */
-const EMAILJS_PUBLIC_KEY   = 'YOUR_PUBLIC_KEY';   // Account → API Keys
-const EMAILJS_SERVICE_ID   = 'YOUR_SERVICE_ID';   // Email Services tab
-const EMAILJS_TEMPLATE_ID  = 'YOUR_TEMPLATE_ID';  // Email Templates tab
+/* ---- Web3Forms config — get free access key at web3forms.com ---- */
+const WEB3FORMS_ACCESS_KEY = 'YOUR_ACCESS_KEY';
 
 function notifyContractSigned(clientId) {
-  if (!window.emailjs || EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') return;
+  if (WEB3FORMS_ACCESS_KEY === 'YOUR_ACCESS_KEY') return;
   const client = DB.getClients().find(c => c.id === clientId) || {};
   const name   = client.spouseName
     ? client.name + ' & ' + client.spouseName
     : (client.name || 'A client');
   const date   = client.eventDate ? fmtDate(client.eventDate) : '—';
-  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    to_email:    'gino@gcweddingband.com',
-    client_name: name,
-    event_date:  date,
-    portal_url:  window.location.origin + '/portal.html',
-  }).catch(err => console.warn('EmailJS notification failed:', err));
+  fetch('https://api.web3forms.com/submit', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      access_key: WEB3FORMS_ACCESS_KEY,
+      subject:    'Contract Signed — ' + name + ' (' + date + ')',
+      from_name:  'GC Wedding Band Portal',
+      message:    name + ' has signed their contract and it\'s awaiting your counter-signature.\n\nEvent date: ' + date + '\n\nPortal: ' + window.location.origin + '/portal.html',
+    }),
+  }).catch(err => console.warn('Contract notification failed:', err));
 }
 
 /* ---- SEED SONG LIST ---- */
