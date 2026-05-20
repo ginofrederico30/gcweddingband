@@ -4,6 +4,27 @@
 
 /* ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_TTL, and DB are defined in firebase-db.js */
 
+/* ---- EmailJS config (fill in after creating account at emailjs.com) ---- */
+const EMAILJS_PUBLIC_KEY   = 'YOUR_PUBLIC_KEY';   // Account → API Keys
+const EMAILJS_SERVICE_ID   = 'YOUR_SERVICE_ID';   // Email Services tab
+const EMAILJS_TEMPLATE_ID  = 'YOUR_TEMPLATE_ID';  // Email Templates tab
+
+function notifyContractSigned(clientId) {
+  if (!window.emailjs || EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') return;
+  const client = DB.getClients().find(c => c.id === clientId) || {};
+  const name   = client.spouseName
+    ? client.name + ' & ' + client.spouseName
+    : (client.name || 'A client');
+  const date   = client.eventDate ? fmtDate(client.eventDate) : '—';
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email:    'gino@gcweddingband.com',
+    client_name: name,
+    event_date:  date,
+    portal_url:  window.location.origin + '/portal.html',
+  }).catch(err => console.warn('EmailJS notification failed:', err));
+}
+
 /* ---- SEED SONG LIST ---- */
 const SEED_SONGS = [
   { title: "All Your'n",                                 artist: "Tyler Childers",                  lead: "Matt" },
@@ -2193,6 +2214,7 @@ document.addEventListener('DOMContentLoaded', function() {
     contract.signedAt      = Date.now();
     contract.signatureData = sigUrl;
     DB.setContract(s.clientId, contract);
+    notifyContractSigned(s.clientId);
 
     showToast('Agreement signed! Awaiting counter-signature from Good Company.');
     renderClientContract(s.clientId);
