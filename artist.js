@@ -310,59 +310,41 @@ function renderGigDetail(clientId) {
     : '<span style="font-family:var(--font-sans);font-size:13px;color:#bbb">No services selected yet.</span>';
 
   /* ---- Day Schedule ---- */
+  // sortTime stores the raw "HH:MM" value used for chronological ordering
+  function si(icon, label, val, sortTime) { return { icon, label, val, sortTime }; }
+  const cocktailVal = (fmtTime12(chk['cl-cocktail-start']) && fmtTime12(chk['cl-cocktail-end']))
+    ? `${fmtTime12(chk['cl-cocktail-start'])} – ${fmtTime12(chk['cl-cocktail-end'])}`
+    : (fmtTime12(chk['cl-cocktail-start']) || null);
   const scheduleItems = [
-    { icon:'fa-truck-loading',  label:'Load-in',           val: fmtTime12(chk['cl-arrival-time']) },
-    { icon:'fa-microphone',     label:'Soundcheck',       val: fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)) },
-    { icon:'fa-users',          label:'Guest Arrival',     val: fmtTime12(chk['cl-guest-arrival']) },
-    { icon:'fa-cocktail',       label:'Cocktail Hour',     val: (fmtTime12(chk['cl-cocktail-start']) && fmtTime12(chk['cl-cocktail-end']))
-                                                                 ? `${fmtTime12(chk['cl-cocktail-start'])} – ${fmtTime12(chk['cl-cocktail-end'])}`
-                                                                 : (fmtTime12(chk['cl-cocktail-start']) || null) },
-    { icon:'fa-glass-cheers',   label:'Reception Starts',  val: fmtTime12(chk['cl-reception-start']) },
-    { icon:'fa-utensils',       label:'Dinner',            val: fmtTime12(chk['cl-dinner-time']) },
-    { icon:'fa-heart',          label:'First Dance',       val: fmtTime12(chk['cl-first-dance']) },
-    { icon:'fa-user-friends',   label:'Parent Dances',     val: fmtTime12(chk['cl-parent-dances']) },
-    { icon:'fa-music',          label:'Dance Floor Opens', val: fmtTime12(chk['cl-dance-floor']) },
-    { icon:'fa-flag-checkered', label:'Reception Ends',    val: fmtTime12(chk['cl-reception-end']) },
-    { icon:'fa-box',            label:'Load-out',          val: fmtTime12(chk['cl-loadout']) },
+    si('fa-truck-loading',  'Load-in',           fmtTime12(chk['cl-arrival-time']),                          chk['cl-arrival-time']),
+    si('fa-microphone',     'Soundcheck',         fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)),    subtractMinutes(chk['cl-guest-arrival'], 60)),
+    si('fa-users',          'Guest Arrival',      fmtTime12(chk['cl-guest-arrival']),                         chk['cl-guest-arrival']),
+    si('fa-cocktail',       'Cocktail Hour',      cocktailVal,                                                 chk['cl-cocktail-start']),
+    si('fa-glass-cheers',   'Reception Starts',   fmtTime12(chk['cl-reception-start']),                       chk['cl-reception-start']),
+    si('fa-utensils',       'Dinner',             fmtTime12(chk['cl-dinner-time']),                           chk['cl-dinner-time']),
+    si('fa-heart',          'First Dance',        fmtTime12(chk['cl-first-dance']),                           chk['cl-first-dance']),
+    si('fa-user-friends',   'Parent Dances',      fmtTime12(chk['cl-parent-dances']),                         chk['cl-parent-dances']),
+    si('fa-music',          'Dance Floor Opens',  fmtTime12(chk['cl-dance-floor']),                           chk['cl-dance-floor']),
+    si('fa-flag-checkered', 'Reception Ends',     fmtTime12(chk['cl-reception-end']),                         chk['cl-reception-end']),
+    si('fa-box',            'Load-out',           fmtTime12(chk['cl-loadout']),                               chk['cl-loadout']),
   ];
 
-  // Inject speeches sorted by time into schedule
+  // Inject speeches
   const scheduleSpeeches = (gcp.speeches || []).filter(s => s.time);
-  scheduleSpeeches.sort((a, b) => a.time.localeCompare(b.time));
   scheduleSpeeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
-    scheduleItems.push({ icon: 'fa-microphone-alt', label: 'Speech: ' + label, val: fmtTime12(s.time) });
+    scheduleItems.push(si('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time));
   });
-  // Re-sort all items that have a time value by the 24h time key stored in checklist/speech
-  const timeKeyOf = item => {
-    // find the original 24h time for known schedule entries
-    const map = {
-      'Load-in':           chk['cl-arrival-time'],
-      'Soundcheck':        subtractMinutes(chk['cl-guest-arrival'], 60),
-      'Guest Arrival':     chk['cl-guest-arrival'],
-      'Reception Starts':  chk['cl-reception-start'],
-      'Dinner':            chk['cl-dinner-time'],
-      'First Dance':       chk['cl-first-dance'],
-      'Parent Dances':     chk['cl-parent-dances'],
-      'Dance Floor Opens': chk['cl-dance-floor'],
-      'Reception Ends':    chk['cl-reception-end'],
-      'Load-out':          chk['cl-loadout'],
-    };
-    if (item.label.startsWith('Speech: ')) {
-      const sp = scheduleSpeeches.find(s => item.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
-      return sp ? sp.time : null;
-    }
-    return map[item.label] || null;
-  };
-  // Convert "HH:MM" to sortable minutes, treating 00:00–07:59 as next-day (add 1440)
+
+  // Sort chronologically; treat 00:00–07:59 as next-day to keep midnight load-out at end
   function toSortMin(t) {
     if (!t) return null;
     const [h, m] = t.split(':').map(Number);
     const mins = h * 60 + m;
-    return mins < 480 ? mins + 1440 : mins; // before 8 AM = next day
+    return mins < 480 ? mins + 1440 : mins;
   }
   scheduleItems.sort((a, b) => {
-    const ta = toSortMin(timeKeyOf(a)), tb = toSortMin(timeKeyOf(b));
+    const ta = toSortMin(a.sortTime), tb = toSortMin(b.sortTime);
     if (ta == null && tb == null) return 0;
     if (ta == null) return 1;
     if (tb == null) return -1;

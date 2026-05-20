@@ -857,17 +857,18 @@ function renderClientBandSchedule(clientId) {
 
   const rows = [];
 
-  function addRow(icon, label, val) {
-    if (val) rows.push({ icon, label, val });
+  // sortTime stores raw "HH:MM" for chronological ordering
+  function addRow(icon, label, val, sortTime) {
+    if (val) rows.push({ icon, label, val, sortTime: sortTime || null });
   }
 
-  addRow('fa-truck', 'Band Arrival / Load-in', cl['cl-arrival-time'] ? fmtTime12(cl['cl-arrival-time']) : '');
-  addRow('fa-users', 'Guest Arrival', cl['cl-guest-arrival'] ? fmtTime12(cl['cl-guest-arrival']) : '');
+  addRow('fa-truck',        'Band Arrival / Load-in', cl['cl-arrival-time']    ? fmtTime12(cl['cl-arrival-time'])    : '', cl['cl-arrival-time']);
+  addRow('fa-users',        'Guest Arrival',           cl['cl-guest-arrival']   ? fmtTime12(cl['cl-guest-arrival'])   : '', cl['cl-guest-arrival']);
 
   if (hasCeremony) {
     const cer = DB.getGCP(clientId).ceremony || {};
-    addRow('fa-ring', 'Ceremony Begins', cer['cer-start'] ? fmtTime12(cer['cer-start']) : '');
-    addRow('fa-door-open', 'Ceremony Ends', cer['cer-end'] ? fmtTime12(cer['cer-end']) : '');
+    addRow('fa-ring',      'Ceremony Begins', cer['cer-start'] ? fmtTime12(cer['cer-start']) : '', cer['cer-start']);
+    addRow('fa-door-open', 'Ceremony Ends',   cer['cer-end']   ? fmtTime12(cer['cer-end'])   : '', cer['cer-end']);
   }
 
   if (hasCocktailBand) {
@@ -876,39 +877,28 @@ function renderClientBandSchedule(clientId) {
     const cocktailStart = cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '';
     const cocktailEnd   = cl['cl-cocktail-end']   ? fmtTime12(cl['cl-cocktail-end'])   : '';
     if (cocktailStart || cocktailEnd) {
-      addRow('fa-glass-cheers', cocktailLabel, [cocktailStart, cocktailEnd].filter(Boolean).join(' – '));
+      addRow('fa-glass-cheers', cocktailLabel, [cocktailStart, cocktailEnd].filter(Boolean).join(' – '), cl['cl-cocktail-start']);
     }
   }
 
-  addRow('fa-door-open', 'Reception Begins', cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '');
+  addRow('fa-door-open',    'Reception Begins',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
   if (cl['cl-first-dance'] === 'Yes') {
     const fdSong = cl['cl-first-dance-song'] ? ' — ' + cl['cl-first-dance-song'] : '';
-    addRow('fa-heart', 'First Dance' + fdSong, cl['cl-first-dance-length'] || '');
+    addRow('fa-heart', 'First Dance' + fdSong, cl['cl-first-dance-length'] || '', cl['cl-first-dance']);
   }
-  addRow('fa-utensils', 'Dinner', cl['cl-dinner-time'] ? fmtTime12(cl['cl-dinner-time']) : '');
-  addRow('fa-music', 'Dance Floor Opens', cl['cl-dance-floor'] ? fmtTime12(cl['cl-dance-floor']) : '');
-  addRow('fa-flag-checkered', 'Reception Ends', cl['cl-reception-end'] ? fmtTime12(cl['cl-reception-end']) : '');
-  addRow('fa-box', 'Load-out', cl['cl-loadout'] ? fmtTime12(cl['cl-loadout']) : '');
+  addRow('fa-utensils',     'Dinner',            cl['cl-dinner-time']     ? fmtTime12(cl['cl-dinner-time'])     : '', cl['cl-dinner-time']);
+  addRow('fa-music',        'Dance Floor Opens', cl['cl-dance-floor']     ? fmtTime12(cl['cl-dance-floor'])     : '', cl['cl-dance-floor']);
+  addRow('fa-flag-checkered','Reception Ends',   cl['cl-reception-end']   ? fmtTime12(cl['cl-reception-end'])   : '', cl['cl-reception-end']);
+  addRow('fa-box',          'Load-out',          cl['cl-loadout']         ? fmtTime12(cl['cl-loadout'])         : '', cl['cl-loadout']);
 
   // Speeches with a time set
   const schedSpeeches = (DB.getGCP(clientId).speeches || []).filter(s => s.time);
-  schedSpeeches.sort((a, b) => a.time.localeCompare(b.time));
   schedSpeeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
-    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time));
+    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time);
   });
 
-  // Sort all timed rows chronologically
-  const timeMap = {
-    'Band Arrival / Load-in': cl['cl-arrival-time'],
-    'Guest Arrival':           cl['cl-guest-arrival'],
-    'Reception Begins':        cl['cl-reception-start'],
-    'Dinner':                  cl['cl-dinner-time'],
-    'Dance Floor Opens':       cl['cl-dance-floor'],
-    'Reception Ends':          cl['cl-reception-end'],
-    'Load-out':                cl['cl-loadout'],
-  };
-  // Treat 00:00–07:59 as next-day to keep midnight load-out at the end
+  // Sort chronologically; treat 00:00–07:59 as next-day to keep midnight load-out at end
   function schedToMin(t) {
     if (!t) return null;
     const [h, m] = t.split(':').map(Number);
@@ -916,17 +906,7 @@ function renderClientBandSchedule(clientId) {
     return mins < 480 ? mins + 1440 : mins;
   }
   rows.sort((a, b) => {
-    let ta = timeMap[a.label];
-    let tb = timeMap[b.label];
-    if (!ta && a.label.startsWith('Speech: ')) {
-      const sp = schedSpeeches.find(s => a.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
-      ta = sp ? sp.time : null;
-    }
-    if (!tb && b.label.startsWith('Speech: ')) {
-      const sp = schedSpeeches.find(s => b.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
-      tb = sp ? sp.time : null;
-    }
-    const ma = schedToMin(ta), mb = schedToMin(tb);
+    const ma = schedToMin(a.sortTime), mb = schedToMin(b.sortTime);
     if (ma == null && mb == null) return 0;
     if (ma == null) return 1;
     if (mb == null) return -1;
