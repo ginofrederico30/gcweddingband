@@ -909,6 +909,41 @@ function renderClientBandSchedule(clientId) {
   addRow('fa-flag-checkered', 'Reception Ends', cl['cl-reception-end'] ? fmtTime12(cl['cl-reception-end']) : '');
   addRow('fa-box', 'Load-out', cl['cl-loadout'] ? fmtTime12(cl['cl-loadout']) : '');
 
+  // Speeches with a time set
+  const schedSpeeches = (DB.getGCP(clientId).speeches || []).filter(s => s.time);
+  schedSpeeches.sort((a, b) => a.time.localeCompare(b.time));
+  schedSpeeches.forEach(s => {
+    const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
+    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time));
+  });
+
+  // Sort all timed rows chronologically
+  const timeMap = {
+    'Band Arrival / Load-in': cl['cl-arrival-time'],
+    'Guest Arrival':           cl['cl-guest-arrival'],
+    'Reception Begins':        cl['cl-reception-start'],
+    'Dinner':                  cl['cl-dinner-time'],
+    'Dance Floor Opens':       cl['cl-dance-floor'],
+    'Reception Ends':          cl['cl-reception-end'],
+    'Load-out':                cl['cl-loadout'],
+  };
+  rows.sort((a, b) => {
+    let ta = timeMap[a.label];
+    let tb = timeMap[b.label];
+    if (!ta && a.label.startsWith('Speech: ')) {
+      const sp = schedSpeeches.find(s => a.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
+      ta = sp ? sp.time : null;
+    }
+    if (!tb && b.label.startsWith('Speech: ')) {
+      const sp = schedSpeeches.find(s => b.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
+      tb = sp ? sp.time : null;
+    }
+    if (!ta && !tb) return 0;
+    if (!ta) return 1;
+    if (!tb) return -1;
+    return ta.localeCompare(tb);
+  });
+
   if (!rows.length) {
     card.classList.add('hidden');
     return;

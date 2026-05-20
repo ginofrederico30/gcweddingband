@@ -250,10 +250,11 @@ function renderGigsDash() {
 
     const venue = cl.venue || a.venue || '';
 
+    const displayName = c.spouseName ? c.name + ' & ' + c.spouseName : c.name;
     return `
       <div class="artist-gig-card" data-client-id="${escHtml(c.id)}">
         <div class="artist-gig-main">
-          <div class="artist-gig-name">${escHtml(c.name)}</div>
+          <div class="artist-gig-name">${escHtml(displayName)}</div>
           <div class="artist-gig-meta">
             <span><i class="fas fa-calendar-alt"></i>${fmtDateShort(a.eventDate || c.eventDate)}</span>
             ${venue ? `<span><i class="fas fa-map-marker-alt"></i>${escHtml(venue)}</span>` : ''}
@@ -299,7 +300,8 @@ function renderGigDetail(clientId) {
   const cer = gcp.ceremony  || {};
   const scope = a.scopeOfServices || [];
 
-  document.getElementById('gig-client-name').textContent = client.name;
+  const gigDisplayName = client.spouseName ? client.name + ' & ' + client.spouseName : client.name;
+  document.getElementById('gig-client-name').textContent = gigDisplayName;
   document.getElementById('gig-event-date').textContent  = fmtDate(a.eventDate || client.eventDate);
 
   /* ---- Scope pills ---- */
@@ -323,6 +325,42 @@ function renderGigDetail(clientId) {
     { icon:'fa-flag-checkered', label:'Reception Ends',    val: fmtTime12(chk['cl-reception-end']) },
     { icon:'fa-box',            label:'Load-out',          val: fmtTime12(chk['cl-loadout']) },
   ];
+
+  // Inject speeches sorted by time into schedule
+  const scheduleSpeeches = (gcp.speeches || []).filter(s => s.time);
+  scheduleSpeeches.sort((a, b) => a.time.localeCompare(b.time));
+  scheduleSpeeches.forEach(s => {
+    const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
+    scheduleItems.push({ icon: 'fa-microphone-alt', label: 'Speech: ' + label, val: fmtTime12(s.time) });
+  });
+  // Re-sort all items that have a time value by the 24h time key stored in checklist/speech
+  const timeKeyOf = item => {
+    // find the original 24h time for known schedule entries
+    const map = {
+      'Load-in':           chk['cl-arrival-time'],
+      'Soundcheck':        subtractMinutes(chk['cl-guest-arrival'], 60),
+      'Guest Arrival':     chk['cl-guest-arrival'],
+      'Reception Starts':  chk['cl-reception-start'],
+      'Dinner':            chk['cl-dinner-time'],
+      'First Dance':       chk['cl-first-dance'],
+      'Parent Dances':     chk['cl-parent-dances'],
+      'Dance Floor Opens': chk['cl-dance-floor'],
+      'Reception Ends':    chk['cl-reception-end'],
+      'Load-out':          chk['cl-loadout'],
+    };
+    if (item.label.startsWith('Speech: ')) {
+      const sp = scheduleSpeeches.find(s => item.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
+      return sp ? sp.time : null;
+    }
+    return map[item.label] || null;
+  };
+  scheduleItems.sort((a, b) => {
+    const ta = timeKeyOf(a), tb = timeKeyOf(b);
+    if (!ta && !tb) return 0;
+    if (!ta) return 1;
+    if (!tb) return -1;
+    return ta.localeCompare(tb);
+  });
 
   document.getElementById('gig-schedule').innerHTML = scheduleItems.map(item => `
     <div class="artist-timeline-row">
