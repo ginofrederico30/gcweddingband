@@ -4,26 +4,24 @@
 
 /* ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_TTL, and DB are defined in firebase-db.js */
 
-/* ---- Web3Forms config — get free access key at web3forms.com ---- */
-const WEB3FORMS_ACCESS_KEY = 'YOUR_ACCESS_KEY';
+/* ---- Push notifications via ntfy.sh (no account needed) ---- */
+const NTFY_TOPIC = 'gcweddingband-c64dda8c-2b9d-403f-b64e-c40b41bd70f8';
 
 function notifyContractSigned(clientId) {
-  if (WEB3FORMS_ACCESS_KEY === 'YOUR_ACCESS_KEY') return;
   const client = DB.getClients().find(c => c.id === clientId) || {};
   const name   = client.spouseName
     ? client.name + ' & ' + client.spouseName
     : (client.name || 'A client');
   const date   = client.eventDate ? fmtDate(client.eventDate) : '—';
-  fetch('https://api.web3forms.com/submit', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      access_key: WEB3FORMS_ACCESS_KEY,
-      subject:    'Contract Signed — ' + name + ' (' + date + ')',
-      from_name:  'GC Wedding Band Portal',
-      message:    name + ' has signed their contract and it\'s awaiting your counter-signature.\n\nEvent date: ' + date + '\n\nPortal: ' + window.location.origin + '/portal.html',
-    }),
-  }).catch(err => console.warn('Contract notification failed:', err));
+  fetch('https://ntfy.sh/' + NTFY_TOPIC, {
+    method: 'POST',
+    headers: {
+      Title:    'Contract Signed — ' + name,
+      Priority: 'high',
+      Tags:     'pen',
+    },
+    body: name + ' signed their contract and it\'s awaiting your counter-signature.\nWedding: ' + date,
+  }).catch(err => console.warn('Push notification failed:', err));
 }
 
 /* ---- SEED SONG LIST ---- */
