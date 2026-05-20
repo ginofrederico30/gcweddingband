@@ -908,6 +908,13 @@ function renderClientBandSchedule(clientId) {
     'Reception Ends':          cl['cl-reception-end'],
     'Load-out':                cl['cl-loadout'],
   };
+  // Treat 00:00–07:59 as next-day to keep midnight load-out at the end
+  function schedToMin(t) {
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    const mins = h * 60 + m;
+    return mins < 480 ? mins + 1440 : mins;
+  }
   rows.sort((a, b) => {
     let ta = timeMap[a.label];
     let tb = timeMap[b.label];
@@ -919,10 +926,11 @@ function renderClientBandSchedule(clientId) {
       const sp = schedSpeeches.find(s => b.label === 'Speech: ' + [s.speaker, s.relation].filter(Boolean).join(' — '));
       tb = sp ? sp.time : null;
     }
-    if (!ta && !tb) return 0;
-    if (!ta) return 1;
-    if (!tb) return -1;
-    return ta.localeCompare(tb);
+    const ma = schedToMin(ta), mb = schedToMin(tb);
+    if (ma == null && mb == null) return 0;
+    if (ma == null) return 1;
+    if (mb == null) return -1;
+    return ma - mb;
   });
 
   if (!rows.length) {

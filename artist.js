@@ -354,12 +354,19 @@ function renderGigDetail(clientId) {
     }
     return map[item.label] || null;
   };
+  // Convert "HH:MM" to sortable minutes, treating 00:00–07:59 as next-day (add 1440)
+  function toSortMin(t) {
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    const mins = h * 60 + m;
+    return mins < 480 ? mins + 1440 : mins; // before 8 AM = next day
+  }
   scheduleItems.sort((a, b) => {
-    const ta = timeKeyOf(a), tb = timeKeyOf(b);
-    if (!ta && !tb) return 0;
-    if (!ta) return 1;
-    if (!tb) return -1;
-    return ta.localeCompare(tb);
+    const ta = toSortMin(timeKeyOf(a)), tb = toSortMin(timeKeyOf(b));
+    if (ta == null && tb == null) return 0;
+    if (ta == null) return 1;
+    if (tb == null) return -1;
+    return ta - tb;
   });
 
   document.getElementById('gig-schedule').innerHTML = scheduleItems.map(item => `
