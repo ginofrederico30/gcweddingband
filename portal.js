@@ -269,7 +269,7 @@ function checklistProgress(cid) {
     'cl-cocktail-sep','cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
     'cl-coordinator','cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor',
     'cl-power','cl-reception-start','cl-dinner-time','cl-dinner-style',
-    'cl-table-announce','cl-meals','cl-band-eat','cl-speeches',
+    'cl-table-announce','cl-meals','cl-band-eat',
     'cl-first-dance','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-length',
     'cl-parent-dances','cl-dance-floor','cl-reception-end',
     'cl-attendance','cl-loadout',
@@ -1625,7 +1625,7 @@ const CHECKLIST_FIELDS = [
   'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify','cl-coordinator',
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
-  'cl-meals','cl-band-eat','cl-speeches','cl-dance-floor','cl-reception-end',
+  'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
   'cl-attendance','cl-loadout',
   'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party',
   'cl-grand-entrance','cl-couple-announce','cl-spotify-couple',
@@ -1685,6 +1685,45 @@ function _applyChecklistVisibility(clientId) {
   _applyDanceVisibility();
 }
 
+/* ============================================
+   SPEECHES
+   ============================================ */
+function renderSpeeches(clientId) {
+  const el = document.getElementById('speeches-list');
+  if (!el) return;
+  const speeches = DB.getGCP(clientId).speeches || [];
+  if (!speeches.length) {
+    el.innerHTML = '<div class="speech-empty">No speeches added yet.</div>';
+    return;
+  }
+  el.innerHTML = speeches.map(s => `
+    <div class="speech-item">
+      <span class="speech-time">${s.time ? escHtml(fmtTime12(s.time)) : '—'}</span>
+      <span class="speech-speaker">${escHtml(s.speaker)}</span>
+      <span class="speech-relation">${escHtml(s.relation)}</span>
+      <button class="speech-delete-btn" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+}
+
+function addSpeech(clientId) {
+  const speaker  = (document.getElementById('sp-speaker')  || {}).value?.trim() || '';
+  const relation = (document.getElementById('sp-relation') || {}).value?.trim() || '';
+  const time     = (document.getElementById('sp-time')     || {}).value || '';
+  if (!speaker) { showToast('Please enter a speaker name.'); return; }
+  const gcp = DB.getGCP(clientId);
+  (gcp.speeches = gcp.speeches || []).push({ id: uid(), time, speaker, relation });
+  DB.setGCP(clientId, gcp);
+  ['sp-speaker','sp-relation','sp-time'].forEach(id => { const f = document.getElementById(id); if (f) f.value = ''; });
+  renderSpeeches(clientId);
+}
+
+function deleteSpeech(clientId, speechId) {
+  const gcp = DB.getGCP(clientId);
+  gcp.speeches = (gcp.speeches || []).filter(s => s.id !== speechId);
+  DB.setGCP(clientId, gcp);
+  renderSpeeches(clientId);
+}
+
 function autoGrowEl(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
@@ -1702,6 +1741,7 @@ function loadChecklist(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
   DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
+  renderSpeeches(clientId);
   _applyChecklistVisibility(clientId);
   setTimeout(() => initAutoGrow(document.getElementById('view-checklist')), 0);
 }
@@ -2166,6 +2206,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleSaveChecklist() { const s=getSession(); if(s) saveChecklist(s.clientId); }
   document.getElementById('btn-save-checklist').addEventListener('click', handleSaveChecklist);
   document.getElementById('btn-save-checklist-bottom').addEventListener('click', handleSaveChecklist);
+  document.getElementById('btn-add-speech').addEventListener('click', function() {
+    const s = getSession(); if (s) addSpeech(s.clientId);
+  });
 
   /* ---- Checklist: conditional field toggles (attached once) ---- */
   function clToggle(selectId, wrapIds) {
