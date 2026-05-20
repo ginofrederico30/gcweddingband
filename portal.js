@@ -2112,12 +2112,9 @@ document.addEventListener('DOMContentLoaded', function() {
       scopeOfServices: checkedServices
     };
     DB.setContract(currentAdminClientId, contract);
-    flashSaved('admin-contract-saved');
     showToast('Contract info saved.');
-    const cs = contractStatus(currentAdminClientId);
-    const badge = document.getElementById('admin-contract-badge');
-    badge.className   = 'status-badge ' + cs.cls;
-    badge.textContent = cs.label;
+    renderAdminDash();
+    showView('view-admin-dash');
   });
 
   /* ---- Admin: back from client detail ---- */
