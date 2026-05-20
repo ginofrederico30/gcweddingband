@@ -504,15 +504,7 @@ function renderGigDetail(clientId) {
     if (odLabel || chk['cl-other-dance-spotify']) musicRows.push(linkRow(odMeta ? '↳ Song' : 'Other Dance', odLabel || null, chk['cl-other-dance-spotify'] || null));
   }
 
-  // Speeches
-  const speeches = gcp.speeches || [];
-  if (speeches.length) {
-    const spLines = speeches.map(s => {
-      const parts = [s.speaker, s.relation].filter(Boolean).join(' — ');
-      return escHtml((s.time ? fmtTime12(s.time) + '  ·  ' : '') + parts);
-    }).join('<br>');
-    musicRows.push(`<div class="artist-info-row"><div class="artist-info-label">Speeches</div><div class="artist-info-val" style="line-height:1.9">${spLines}</div></div>`);
-  }
+
 
   // Background Music
   if (chk['cl-spotify-dinner']) musicRows.push(linkRow('Dinner Music', chk['cl-spotify-dinner'], null));
