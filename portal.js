@@ -340,10 +340,20 @@ function countSelectedSongs(clientId) {
 /* ============================================
    CONTRACT AUTO-CALC (admin side)
    ============================================ */
+function parseMoney(val) {
+  return parseFloat(String(val).replace(/[$,\s]/g, '')) || 0;
+}
+
+function fmtMoneyInput(val) {
+  const n = parseMoney(val);
+  if (!n) return '';
+  return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
 function calcContractTotals() {
-  const fee   = parseFloat(document.getElementById('ac-performance-fee').value) || 0;
-  const trans = parseFloat(document.getElementById('ac-transportation').value)  || 0;
-  const lodge = parseFloat(document.getElementById('ac-lodging').value)          || 0;
+  const fee   = parseMoney(document.getElementById('ac-performance-fee').value);
+  const trans = parseMoney(document.getElementById('ac-transportation').value);
+  const lodge = parseMoney(document.getElementById('ac-lodging').value);
   const total   = fee + trans + lodge;
   const deposit = total * 0.25;
   const balance = total - deposit;
@@ -515,9 +525,9 @@ function openClientDetail(clientId) {
   const a = contract.admin || {};
   document.getElementById('ac-client-name').value     = a.clientName    || client.name;
   document.getElementById('ac-event-date').value       = a.eventDate     || client.eventDate || '';
-  document.getElementById('ac-performance-fee').value  = a.performanceFee || '';
-  document.getElementById('ac-transportation').value   = a.transportation || '';
-  document.getElementById('ac-lodging').value          = a.lodging        || '';
+  document.getElementById('ac-performance-fee').value  = a.performanceFee ? fmtMoneyInput(a.performanceFee) : '';
+  document.getElementById('ac-transportation').value   = a.transportation  ? fmtMoneyInput(a.transportation)  : '';
+  document.getElementById('ac-lodging').value          = a.lodging         ? fmtMoneyInput(a.lodging)         : '';
   calcContractTotals();
 
   // Scope of services checkboxes — only check what was explicitly saved
@@ -2003,9 +2013,17 @@ document.addEventListener('DOMContentLoaded', function() {
     showToast('Client added: ' + name);
   });
 
-  /* ---- Admin: contract auto-calc ---- */
+  /* ---- Admin: contract auto-calc + money formatting ---- */
   ['ac-performance-fee','ac-transportation','ac-lodging'].forEach(id => {
-    document.getElementById(id).addEventListener('input', calcContractTotals);
+    const el = document.getElementById(id);
+    el.addEventListener('input', calcContractTotals);
+    el.addEventListener('blur', function() {
+      if (this.value) this.value = fmtMoneyInput(this.value);
+    });
+    el.addEventListener('focus', function() {
+      const n = parseMoney(this.value);
+      this.value = n ? String(n) : '';
+    });
   });
 
   /* ---- Admin: save contract ---- */
@@ -2013,9 +2031,9 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     if (!currentAdminClientId) return;
     const contract = DB.getContract(currentAdminClientId);
-    const fee   = parseFloat(document.getElementById('ac-performance-fee').value) || 0;
-    const trans = parseFloat(document.getElementById('ac-transportation').value)  || 0;
-    const lodge = parseFloat(document.getElementById('ac-lodging').value)          || 0;
+    const fee   = parseMoney(document.getElementById('ac-performance-fee').value);
+    const trans = parseMoney(document.getElementById('ac-transportation').value);
+    const lodge = parseMoney(document.getElementById('ac-lodging').value);
     const checkedServices = Array.from(
       document.querySelectorAll('input[name="scope-service"]:checked')
     ).map(cb => cb.value);
@@ -2023,9 +2041,9 @@ document.addEventListener('DOMContentLoaded', function() {
     contract.admin = {
       clientName:      document.getElementById('ac-client-name').value,
       eventDate:       document.getElementById('ac-event-date').value,
-      performanceFee:  document.getElementById('ac-performance-fee').value,
-      transportation:  document.getElementById('ac-transportation').value,
-      lodging:         document.getElementById('ac-lodging').value,
+      performanceFee:  parseMoney(document.getElementById('ac-performance-fee').value),
+      transportation:  parseMoney(document.getElementById('ac-transportation').value),
+      lodging:         parseMoney(document.getElementById('ac-lodging').value),
       totalCost:       fee + trans + lodge,
       deposit:         (fee + trans + lodge) * 0.25,
       finalBalance:    (fee + trans + lodge) * 0.75,
