@@ -462,6 +462,7 @@ function renderAdminDash() {
    ADMIN CLIENT DETAIL
    ============================================ */
 let currentAdminClientId = null;
+let _checklistClientId = null;
 
 function renderPresignedEditFields(clientId) {
   const contract = DB.getContract(clientId);
@@ -1754,6 +1755,7 @@ function initAutoGrow(container) {
 }
 
 function loadChecklist(clientId) {
+  _checklistClientId = clientId;
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
   DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
@@ -2231,7 +2233,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-save-checklist').addEventListener('click', handleSaveChecklist);
   document.getElementById('btn-save-checklist-bottom').addEventListener('click', handleSaveChecklist);
   document.getElementById('btn-add-speech').addEventListener('click', function() {
-    const s = getSession(); if (s) addSpeech(s.clientId);
+    if (_checklistClientId) addSpeech(_checklistClientId);
   });
   document.getElementById('sp-relation').addEventListener('change', function() {
     const other = document.getElementById('sp-relation-other');
