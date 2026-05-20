@@ -4,24 +4,24 @@
 
 /* ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_TTL, and DB are defined in firebase-db.js */
 
-/* ---- Push notifications via ntfy.sh (no account needed) ---- */
-const NTFY_TOPIC = 'gcweddingband-c64dda8c-2b9d-403f-b64e-c40b41bd70f8';
+/* ---- Email notification via EmailJS ---- */
+/* Fill in after setup at emailjs.com (see setup instructions) */
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
 
 function notifyContractSigned(clientId) {
+  if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') return;
   const client = DB.getClients().find(c => c.id === clientId) || {};
   const name   = client.spouseName
     ? client.name + ' & ' + client.spouseName
     : (client.name || 'A client');
   const date   = client.eventDate ? fmtDate(client.eventDate) : '—';
-  fetch('https://ntfy.sh/' + NTFY_TOPIC, {
-    method: 'POST',
-    headers: {
-      Title:    'Contract Signed — ' + name,
-      Priority: 'high',
-      Tags:     'pen',
-    },
-    body: name + ' signed their contract and it\'s awaiting your counter-signature.\nWedding: ' + date,
-  }).catch(err => console.warn('Push notification failed:', err));
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    client_name: name,
+    event_date:  date,
+    portal_url:  window.location.origin + '/portal.html',
+  }, EMAILJS_PUBLIC_KEY).catch(err => console.warn('Email notification failed:', err));
 }
 
 /* ---- SEED SONG LIST ---- */
