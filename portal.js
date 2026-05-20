@@ -4,25 +4,6 @@
 
 /* ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_TTL, and DB are defined in firebase-db.js */
 
-/* ---- Email notification via EmailJS ---- */
-/* Fill in after setup at emailjs.com (see setup instructions) */
-const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
-const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-
-function notifyContractSigned(clientId) {
-  if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') return;
-  const client = DB.getClients().find(c => c.id === clientId) || {};
-  const name   = client.spouseName
-    ? client.name + ' & ' + client.spouseName
-    : (client.name || 'A client');
-  const date   = client.eventDate ? fmtDate(client.eventDate) : '—';
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    client_name: name,
-    event_date:  date,
-    portal_url:  window.location.origin + '/portal.html',
-  }, EMAILJS_PUBLIC_KEY).catch(err => console.warn('Email notification failed:', err));
-}
 
 /* ---- SEED SONG LIST ---- */
 const SEED_SONGS = [
@@ -2250,8 +2231,6 @@ document.addEventListener('DOMContentLoaded', function() {
     contract.signedAt      = Date.now();
     contract.signatureData = sigUrl;
     DB.setContract(s.clientId, contract);
-    notifyContractSigned(s.clientId);
-
     showToast('Agreement signed! Awaiting counter-signature from Good Company.');
     renderClientContract(s.clientId);
     renderClientDash(s.clientId);
