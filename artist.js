@@ -338,7 +338,9 @@ function renderGigDetail(clientId) {
   const logRows = [
     infoRow('Venue',            cl.venue || '—'),
     infoRow('Client Contact',   cl.contactName ? `${cl.contactName}${cl.phone ? '  ·  ' + cl.phone : ''}` : '—'),
-    infoRow('Coordinator',      chk['cl-coordinator'] || '—'),
+    infoRow('Coordinator', chk['cl-coordinator']
+      ? chk['cl-coordinator'] + (chk['cl-coordinator-phone'] ? '  ·  ' + chk['cl-coordinator-phone'] : '')
+      : '—'),
     infoRow('Dress Code',       cl.dressCode || '—'),
     infoRow('Load-in Location', chk['cl-loadinlocation'] || '—'),
     infoRow('Parking',          chk['cl-parking'] || '—'),
@@ -515,8 +517,16 @@ function _renderSetlistUI() {
   const container = document.getElementById('setlist-container');
 
   function buildSetHTML(si) {
-    const songs = _setlistSets[si];
-    const dur   = fmtSetDuration(songs.length);
+    const songs   = _setlistSets[si];
+    const dur     = fmtSetDuration(songs.length);
+    const target  = SONGS_PER_SET;
+    const short   = target - songs.length;
+    const warnHTML = (songs.length > 0 && songs.length < target)
+      ? `<div class="setlist-duration-warn">
+           <i class="fas fa-exclamation-triangle"></i>
+           Add ${short} more song${short !== 1 ? 's' : ''} — set is ~${dur}, target is ~1 hr 15 min
+         </div>`
+      : '';
 
     const rows = songs.map((s, i) => `
       <div class="setlist-row" draggable="true" data-set="${si}" data-idx="${i}">
@@ -544,6 +554,7 @@ function _renderSetlistUI() {
             <i class="fas fa-plus"></i> Add Song
           </button>
         </div>
+        ${warnHTML}
         <div class="setlist-rows" id="setlist-rows-${si}">${rows}</div>
       </div>`;
   }

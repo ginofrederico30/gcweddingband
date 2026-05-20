@@ -398,3 +398,20 @@
     border-color: var(--navy);
     color: #fff;
 }
+
+/* ---- Set duration warning ---- */
+.setlist-duration-warn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+    padding: 8px 12px;
+    background: #fff8ec;
+    border: 1px solid #f5d87a;
+    border-radius: 7px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: #7a5c00;
+}
+.setlist-duration-warn i { color: #e0a000; font-size: 12px; flex-shrink: 0; }

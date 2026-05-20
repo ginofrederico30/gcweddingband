@@ -267,7 +267,7 @@ function checklistProgress(cid) {
     'cl-arrival-time','cl-guest-arrival','cl-loadinlocation','cl-parking',
     'cl-parking-payment','cl-dressing-room',
     'cl-cocktail-sep','cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
-    'cl-coordinator','cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor',
+    'cl-coordinator','cl-coordinator-phone','cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor',
     'cl-power','cl-reception-start','cl-dinner-time','cl-dinner-style',
     'cl-table-announce','cl-meals','cl-band-eat',
     'cl-first-dance','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-length',
@@ -1622,7 +1622,7 @@ const CHECKLIST_FIELDS = [
   'cl-arrival-time','cl-loadinlocation','cl-parking','cl-parking-payment',
   'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-sep-location',
   'cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
-  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify','cl-coordinator',
+  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify','cl-coordinator','cl-coordinator-phone',
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
@@ -2177,7 +2177,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-print-contract').addEventListener('click', () => window.print());
 
   /* ---- Phone auto-format on all phone fields ---- */
-  const PHONE_FIELD_IDS = new Set(['cc-phone','ps-phone','new-client-phone']);
+  const PHONE_FIELD_IDS = new Set(['cc-phone','ps-phone','new-client-phone','cl-coordinator-phone']);
   document.addEventListener('input', function(e) {
     if (e.target && (PHONE_FIELD_IDS.has(e.target.id) || e.target.type === 'tel')) {
       e.target.value = formatPhone(e.target.value);
