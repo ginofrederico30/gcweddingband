@@ -876,8 +876,8 @@ function renderClientBandSchedule(clientId) {
     const cocktailLabel = 'Cocktail Hour' + (loc ? ' — ' + loc : '');
     const cocktailStart = cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '';
     const cocktailEnd   = cl['cl-cocktail-end']   ? fmtTime12(cl['cl-cocktail-end'])   : '';
-    if (cocktailStart || cocktailEnd) {
-      addRow('fa-glass-cheers', cocktailLabel, [cocktailStart, cocktailEnd].filter(Boolean).join(' – '), cl['cl-cocktail-start']);
+    if (cocktailStart) {
+      addRow('fa-glass-cheers', cocktailLabel, cocktailStart, cl['cl-cocktail-start']);
     }
   }
 

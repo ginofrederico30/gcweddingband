@@ -312,9 +312,7 @@ function renderGigDetail(clientId) {
   /* ---- Day Schedule ---- */
   // sortTime stores the raw "HH:MM" value used for chronological ordering
   function si(icon, label, val, sortTime) { return { icon, label, val, sortTime }; }
-  const cocktailVal = (fmtTime12(chk['cl-cocktail-start']) && fmtTime12(chk['cl-cocktail-end']))
-    ? `${fmtTime12(chk['cl-cocktail-start'])} – ${fmtTime12(chk['cl-cocktail-end'])}`
-    : (fmtTime12(chk['cl-cocktail-start']) || null);
+  const cocktailVal = fmtTime12(chk['cl-cocktail-start']) || null;
   const scheduleItems = [
     si('fa-truck-loading',  'Load-in',           fmtTime12(chk['cl-arrival-time']),                          chk['cl-arrival-time']),
     si('fa-microphone',     'Soundcheck',         fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)),    subtractMinutes(chk['cl-guest-arrival'], 60)),
