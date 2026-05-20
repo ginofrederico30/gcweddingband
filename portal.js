@@ -1706,14 +1706,20 @@ function renderSpeeches(clientId) {
 }
 
 function addSpeech(clientId) {
-  const speaker  = (document.getElementById('sp-speaker')  || {}).value?.trim() || '';
-  const relation = (document.getElementById('sp-relation') || {}).value?.trim() || '';
-  const time     = (document.getElementById('sp-time')     || {}).value || '';
+  const speaker      = (document.getElementById('sp-speaker')       || {}).value?.trim() || '';
+  const relSel       = document.getElementById('sp-relation');
+  const relOther     = document.getElementById('sp-relation-other');
+  const relVal       = relSel ? relSel.value : '';
+  const relation     = relVal === 'Other' ? (relOther ? relOther.value.trim() : '') : relVal;
+  const time         = (document.getElementById('sp-time') || {}).value || '';
   if (!speaker) { showToast('Please enter a speaker name.'); return; }
   const gcp = DB.getGCP(clientId);
   (gcp.speeches = gcp.speeches || []).push({ id: uid(), time, speaker, relation });
   DB.setGCP(clientId, gcp);
-  ['sp-speaker','sp-relation','sp-time'].forEach(id => { const f = document.getElementById(id); if (f) f.value = ''; });
+  document.getElementById('sp-speaker').value = '';
+  if (relSel)   { relSel.value = ''; }
+  if (relOther) { relOther.value = ''; relOther.classList.add('hidden'); }
+  document.getElementById('sp-time').value = '';
   renderSpeeches(clientId);
 }
 
@@ -2208,6 +2214,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-save-checklist-bottom').addEventListener('click', handleSaveChecklist);
   document.getElementById('btn-add-speech').addEventListener('click', function() {
     const s = getSession(); if (s) addSpeech(s.clientId);
+  });
+  document.getElementById('sp-relation').addEventListener('change', function() {
+    const other = document.getElementById('sp-relation-other');
+    if (other) other.classList.toggle('hidden', this.value !== 'Other');
   });
 
   /* ---- Checklist: conditional field toggles (attached once) ---- */

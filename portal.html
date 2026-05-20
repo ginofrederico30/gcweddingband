@@ -1031,14 +1031,21 @@
                         <div id="speeches-list" class="speeches-list"></div>
                         <div class="speech-add-row">
                             <input type="time" id="sp-time" title="Time of speech">
-                            <input type="text" id="sp-speaker" placeholder="Speaker name" autocomplete="off" list="sp-relation-list">
-                            <datalist id="sp-relation-list">
-                                <option>Best Man</option><option>Maid of Honor</option>
-                                <option>Father of the Bride</option><option>Mother of the Bride</option>
-                                <option>Father of the Groom</option><option>Mother of the Groom</option>
-                                <option>Officiant</option><option>Bridesmaid</option><option>Groomsman</option>
-                            </datalist>
-                            <input type="text" id="sp-relation" placeholder="Relation to couple (e.g. Best Man)" autocomplete="off">
+                            <input type="text" id="sp-speaker" placeholder="Speaker name (e.g. John Doe)" autocomplete="off">
+                            <select id="sp-relation">
+                                <option value="">Relation to couple…</option>
+                                <option>Best Man</option>
+                                <option>Maid of Honor</option>
+                                <option>Father of the Bride</option>
+                                <option>Mother of the Bride</option>
+                                <option>Father of the Groom</option>
+                                <option>Mother of the Groom</option>
+                                <option>Officiant</option>
+                                <option>Bridesmaid</option>
+                                <option>Groomsman</option>
+                                <option>Other</option>
+                            </select>
+                            <input type="text" id="sp-relation-other" placeholder="Specify relation…" autocomplete="off" class="hidden" style="flex:1;min-width:120px">
                             <button type="button" id="btn-add-speech" class="btn-secondary"><i class="fas fa-plus"></i> Add</button>
                         </div>
                     </div>
