@@ -2472,6 +2472,20 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     color: #ccc;
     padding: 4px 0 8px;
 }
+.speech-add-box {
+    background: #f8f7f4;
+    border: 1px solid #e8e4de;
+    border-radius: 8px;
+    padding: 14px 16px 12px;
+    margin-top: 8px;
+}
+.speech-add-instructions {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: #777;
+    margin: 0 0 10px;
+}
+.speech-add-instructions i { color: var(--gold); margin-right: 4px; }
 .speech-add-row {
     display: flex;
     gap: 8px;

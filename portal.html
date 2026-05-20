@@ -1017,9 +1017,9 @@
                     <div class="field-group"><label>Coordinator Phone</label><input type="tel" id="cl-coordinator-phone" placeholder="(555) 555-5555" maxlength="14"></div>
                     <div class="field-group"><label>Venue WiFi Network</label><input type="text" id="cl-wifi-name" placeholder="Network name"></div>
                     <div class="field-group"><label>Venue WiFi Password</label><input type="text" id="cl-wifi-pass" placeholder="Password"></div>
-                    <div class="field-group"><label>Stage Dimensions (approx.)</label><input type="text" id="cl-stage-size" placeholder="e.g. 20ft × 16ft"></div>
+                    <div class="field-group"><label>Stage / Performance Area (approx.)</label><input type="text" id="cl-stage-size" placeholder="e.g. 20ft × 16ft"></div>
                     <div class="field-group"><label>Outdoor Reception?</label><select id="cl-outdoor"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
-                    <div class="field-group"><label>Power Circuits Available</label><input type="text" id="cl-power" placeholder="e.g. 2× 20-amp circuits"></div>
+                    <div class="field-group"><label>Power Circuits Available?</label><select id="cl-power"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group"><label>Reception Start Time</label><input type="time" id="cl-reception-start"></div>
                     <div class="field-group"><label>Dinner Time</label><input type="time" id="cl-dinner-time"></div>
                     <div class="field-group"><label>Dinner Service Style</label><select id="cl-dinner-style"><option value="">Select…</option><option>Plated</option><option>Buffet</option><option>Family Style</option></select></div>
@@ -1029,30 +1029,33 @@
                     <div class="field-group full-width">
                         <label>Speeches</label>
                         <div id="speeches-list" class="speeches-list"></div>
-                        <div class="speech-add-row">
-                            <input type="time" id="sp-time" title="Time of speech">
-                            <input type="text" id="sp-speaker" placeholder="Speaker name (e.g. John Doe)" autocomplete="off">
-                            <select id="sp-relation">
-                                <option value="">Relation to couple…</option>
-                                <option>Best Man</option>
-                                <option>Maid of Honor</option>
-                                <option>Father of the Bride</option>
-                                <option>Mother of the Bride</option>
-                                <option>Father of the Groom</option>
-                                <option>Mother of the Groom</option>
-                                <option>Officiant</option>
-                                <option>Bridesmaid</option>
-                                <option>Groomsman</option>
-                                <option>Other</option>
-                            </select>
-                            <input type="text" id="sp-relation-other" placeholder="Specify relation…" autocomplete="off" class="hidden" style="flex:1;min-width:120px">
-                            <button type="button" id="btn-add-speech" class="btn-secondary"><i class="fas fa-plus"></i> Add</button>
+                        <div class="speech-add-box">
+                            <p class="speech-add-instructions"><i class="fas fa-info-circle"></i> Fill in the fields below, then click <strong>Add Speech</strong> to add it to the list.</p>
+                            <div class="speech-add-row">
+                                <input type="time" id="sp-time" title="Time of speech">
+                                <input type="text" id="sp-speaker" placeholder="Speaker name (e.g. John Doe)" autocomplete="off">
+                                <select id="sp-relation">
+                                    <option value="">Relation to couple…</option>
+                                    <option>Best Man</option>
+                                    <option>Maid of Honor</option>
+                                    <option>Father of the Bride</option>
+                                    <option>Mother of the Bride</option>
+                                    <option>Father of the Groom</option>
+                                    <option>Mother of the Groom</option>
+                                    <option>Officiant</option>
+                                    <option>Bridesmaid</option>
+                                    <option>Groomsman</option>
+                                    <option>Other</option>
+                                </select>
+                                <input type="text" id="sp-relation-other" placeholder="Specify relation…" autocomplete="off" class="hidden" style="flex:1;min-width:120px">
+                                <button type="button" id="btn-add-speech" class="btn-primary"><i class="fas fa-plus"></i> Add Speech</button>
+                            </div>
                         </div>
                     </div>
                     <div class="field-group"><label>Dance Floor Opens</label><input type="time" id="cl-dance-floor"></div>
                     <div class="field-group"><label>Reception End Time</label><input type="time" id="cl-reception-end"></div>
-                    <div class="field-group"><label>Estimated Attendance</label><input type="number" id="cl-attendance" placeholder="# of guests"></div>
-                    <div class="field-group"><label>Load-out Time</label><input type="time" id="cl-loadout"></div>
+                    <div class="field-group"><label>Estimated Attendance</label><input type="text" inputmode="numeric" id="cl-attendance" placeholder="# of guests"></div>
+                    <div class="field-group"><label>Load-out — Band Must Be Out By</label><input type="time" id="cl-loadout"></div>
                     <!-- Wedding Party Entrance — conditional flow -->
                     <div class="field-group full-width"><label>Announce Wedding Party Entrance?</label><select id="cl-announce-party"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group full-width hidden" id="cl-announce-party-how-wrap"><label>How will they be announced?</label><textarea id="cl-announce-party-how" class="auto-grow" rows="1" placeholder="e.g. By couple, Individually, As one big group, Bridesmaids then Groomsmen…"></textarea></div>

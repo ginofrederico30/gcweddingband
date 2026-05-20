@@ -1792,7 +1792,9 @@ function saveChecklist(clientId) {
   gcp.checklist = cl;
   DB.setGCP(clientId, gcp);
   showToast('Checklist saved!');
-  flashSaved('checklist-saved-confirm');
+  const s = getSession();
+  if (s && s.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
+  else if (s) { renderClientDash(clientId); showView('view-client-dash'); }
 }
 
 /* ============================================
@@ -1832,7 +1834,9 @@ function saveCeremony(clientId) {
   gcp.ceremony = cer;
   DB.setGCP(clientId, gcp);
   showToast('Ceremony planner saved!');
-  flashSaved('ceremony-saved-confirm');
+  const s = getSession();
+  if (s && s.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
+  else if (s) { renderClientDash(clientId); showView('view-client-dash'); }
 }
 
 /* ============================================
