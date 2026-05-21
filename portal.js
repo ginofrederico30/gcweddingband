@@ -223,6 +223,16 @@ function fmtTime12(val) {
   return (h % 12 || 12) + ':' + m + ' ' + ampm;
 }
 
+function subtractMinutes(t, mins) {
+  if (!t) return null;
+  const [h, m] = t.split(':').map(Number);
+  if (isNaN(h)) return null;
+  const total = h * 60 + m - mins;
+  const rh = Math.floor(((total % 1440) + 1440) % 1440 / 60);
+  const rm = ((total % 1440) + 1440) % 1440 % 60;
+  return String(rh).padStart(2,'0') + ':' + String(rm).padStart(2,'0');
+}
+
 function escHtml(str) {
   return String(str || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
