@@ -313,10 +313,15 @@ function renderGigDetail(clientId) {
   // sortTime stores the raw "HH:MM" value used for chronological ordering
   function si(icon, label, val, sortTime) { return { icon, label, val, sortTime }; }
   const cocktailVal = fmtTime12(chk['cl-cocktail-start']) || null;
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
   const scheduleItems = [
     si('fa-truck-loading',  'Load-in',           fmtTime12(chk['cl-arrival-time']),                          chk['cl-arrival-time']),
     si('fa-microphone',     'Soundcheck',         fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)),    subtractMinutes(chk['cl-guest-arrival'], 60)),
     si('fa-users',          'Guest Arrival',      fmtTime12(chk['cl-guest-arrival']),                         chk['cl-guest-arrival']),
+    ...(hasCeremony ? [
+      si('fa-ring',         'Ceremony Begins',    fmtTime12(cer['cer-start']),                                cer['cer-start']),
+      si('fa-door-open',    'Ceremony Ends',      fmtTime12(cer['cer-end']),                                  cer['cer-end']),
+    ] : []),
     si('fa-cocktail',       'Cocktail Hour',      cocktailVal,                                                 chk['cl-cocktail-start']),
     si('fa-glass-cheers',   'Reception Starts',   fmtTime12(chk['cl-reception-start']),                       chk['cl-reception-start']),
     si('fa-utensils',       'Dinner',             fmtTime12(chk['cl-dinner-time']),                           chk['cl-dinner-time']),

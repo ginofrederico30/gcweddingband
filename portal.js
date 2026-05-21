@@ -635,9 +635,77 @@ function openClientDetail(clientId) {
     </div>
   `;
 
+  renderAdminSchedule(clientId);
   renderAdminSongSelections(clientId);
   showView('view-admin-client');
   setNavSection('Admin Portal');
+}
+
+function renderAdminSchedule(clientId) {
+  const card = document.getElementById('admin-schedule-card');
+  const container = document.getElementById('admin-schedule');
+  if (!card || !container) return;
+
+  const gcp = DB.getGCP(clientId);
+  const cl  = gcp.checklist || {};
+  const cer = gcp.ceremony  || {};
+  const contract = DB.getContract(clientId);
+  const scope = (contract.admin && contract.admin.scopeOfServices) || [];
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCocktail = scope.includes('Jazz Cocktail Band');
+
+  const rows = [];
+  function addRow(icon, label, val, sortTime) {
+    if (val) rows.push({ icon, label, val, sortTime: sortTime || null });
+  }
+
+  addRow('fa-truck-loading', 'Load-in',          cl['cl-arrival-time']   ? fmtTime12(cl['cl-arrival-time'])   : '', cl['cl-arrival-time']);
+  addRow('fa-microphone',    'Soundcheck',        cl['cl-guest-arrival']  ? fmtTime12(subtractMinutes(cl['cl-guest-arrival'], 60)) : '', subtractMinutes(cl['cl-guest-arrival'], 60));
+  addRow('fa-users',         'Guest Arrival',     cl['cl-guest-arrival']  ? fmtTime12(cl['cl-guest-arrival'])  : '', cl['cl-guest-arrival']);
+  if (hasCeremony) {
+    addRow('fa-ring',        'Ceremony Begins',   cer['cer-start'] ? fmtTime12(cer['cer-start']) : '', cer['cer-start']);
+    addRow('fa-door-open',   'Ceremony Ends',     cer['cer-end']   ? fmtTime12(cer['cer-end'])   : '', cer['cer-end']);
+  }
+  if (hasCocktail) {
+    const cocktailStart = cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '';
+    if (cocktailStart) addRow('fa-cocktail', 'Cocktail Hour', cocktailStart, cl['cl-cocktail-start']);
+  }
+  addRow('fa-glass-cheers',   'Reception Starts',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
+  addRow('fa-utensils',       'Dinner',            cl['cl-dinner-time']     ? fmtTime12(cl['cl-dinner-time'])     : '', cl['cl-dinner-time']);
+  addRow('fa-heart',          'First Dance',       cl['cl-first-dance']     ? fmtTime12(cl['cl-first-dance'])     : '', cl['cl-first-dance']);
+  addRow('fa-user-friends',   'Parent Dances',     cl['cl-parent-dances']   ? fmtTime12(cl['cl-parent-dances'])   : '', cl['cl-parent-dances']);
+  addRow('fa-music',          'Dance Floor Opens', cl['cl-dance-floor']     ? fmtTime12(cl['cl-dance-floor'])     : '', cl['cl-dance-floor']);
+  addRow('fa-flag-checkered', 'Reception Ends',    cl['cl-reception-end']   ? fmtTime12(cl['cl-reception-end'])   : '', cl['cl-reception-end']);
+  addRow('fa-box',            'Load-out',          cl['cl-loadout']         ? fmtTime12(cl['cl-loadout'])         : '', cl['cl-loadout']);
+
+  const speeches = (gcp.speeches || []).filter(s => s.time);
+  speeches.forEach(s => {
+    const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
+    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time);
+  });
+
+  function toMin(t) {
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    const mins = h * 60 + m;
+    return mins < 480 ? mins + 1440 : mins;
+  }
+  rows.sort((a, b) => {
+    const ma = toMin(a.sortTime), mb = toMin(b.sortTime);
+    if (ma == null && mb == null) return 0;
+    if (ma == null) return 1;
+    if (mb == null) return -1;
+    return ma - mb;
+  });
+
+  if (!rows.length) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  container.innerHTML = rows.map(r => `
+    <div class="artist-timeline-row">
+      <div class="artist-timeline-icon"><i class="fas ${escHtml(r.icon)}"></i></div>
+      <div class="artist-timeline-label">${escHtml(r.label)}</div>
+      <div class="artist-timeline-val">${escHtml(r.val)}</div>
+    </div>`).join('');
 }
 
 function renderAdminSongSelections(clientId) {
