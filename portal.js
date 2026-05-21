@@ -1046,7 +1046,10 @@ function renderClientContract(clientId) {
   const servicesList = document.getElementById('scope-services-list');
   if (servicesList) {
     if (a.scopeOfServices && a.scopeOfServices.length) {
-      servicesList.innerHTML = a.scopeOfServices.map(s => `<li>${escHtml(s)}</li>`).join('');
+      const scopeOverrides = contract.scopeLabelOverrides || {};
+      servicesList.innerHTML = a.scopeOfServices
+        .map(s => `<li>${escHtml(scopeOverrides[s] || s)}</li>`)
+        .join('');
     } else {
       servicesList.innerHTML = '<li style="color:#aaa;font-style:italic">Scope of services to be confirmed by Good Company.</li>';
     }
@@ -1418,8 +1421,26 @@ function _sectionBaseHTML(key) {
 function renderLangEditor(clientId) {
   const container = document.getElementById('lang-editor-sections');
   if (!container) return;
-  const contract   = DB.getContract(clientId);
-  const customText = contract.customText || {};
+  const contract      = DB.getContract(clientId);
+  const customText    = contract.customText || {};
+  const scopeOverrides = contract.scopeLabelOverrides || {};
+  const scope         = (contract.admin && contract.admin.scopeOfServices) || [];
+
+  // Render per-service label overrides
+  const scopeWrap = document.getElementById('scope-label-overrides');
+  if (scopeWrap) {
+    if (!scope.length) {
+      scopeWrap.innerHTML = '<p style="font-family:var(--font-sans);font-size:12px;color:#bbb;margin:0 0 8px">No scope of services selected yet.</p>';
+    } else {
+      scopeWrap.innerHTML = scope.map(svc => `
+        <div class="field-group" style="margin-bottom:10px">
+          <label style="font-size:11px;color:#999">${escHtml(svc)}</label>
+          <input type="text" class="scope-label-input" data-service="${escHtml(svc)}"
+            placeholder="${escHtml(svc)}"
+            value="${escHtml(scopeOverrides[svc] || '')}">
+        </div>`).join('');
+    }
+  }
 
   container.innerHTML = CONTRACT_SECTIONS.map(s => {
     const baseHTML    = _sectionBaseHTML(s.key);
@@ -1453,6 +1474,16 @@ function saveLangOverrides(clientId) {
     if (currentHTML !== baseHTML) customText[s.key] = currentHTML;
   });
   contract.customText = customText;
+
+  // Save scope label overrides
+  const scopeOverrides = {};
+  document.querySelectorAll('.scope-label-input').forEach(inp => {
+    const svc = inp.dataset.service;
+    const val = inp.value.trim();
+    if (svc && val && val !== svc) scopeOverrides[svc] = val;
+  });
+  contract.scopeLabelOverrides = scopeOverrides;
+
   DB.setContract(clientId, contract);
   flashSaved('lang-saved-confirm');
   showToast('Contract language saved.');
