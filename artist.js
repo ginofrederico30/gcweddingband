@@ -415,7 +415,6 @@ function renderGigDetail(clientId) {
   document.getElementById('gig-logistics').innerHTML = logRows.join('');
 
   /* ---- Ceremony ---- */
-  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
   const cerCard = document.getElementById('gig-ceremony-card');
   cerCard.classList.toggle('hidden', !hasCeremony);
 
