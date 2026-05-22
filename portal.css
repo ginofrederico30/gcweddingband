@@ -2339,7 +2339,7 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     #print-border-frame {
         display: block;
         position: fixed;
-        inset: 0;
+        inset: 0.15in;
         border: 1.5px solid #c8d0db;
         border-radius: 4px;
         pointer-events: none;
@@ -2358,7 +2358,9 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     .fee-balance-row td { background: #153147 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #signature-canvas { display: none !important; }
     .sig-clear { display: none !important; }
-    .agreement-body { padding: 24px 32px 32px; }
+    /* Indent content so it sits comfortably inside the fixed border frame */
+    .agreement-body { padding: 24px 48px 32px; }
+    #contract-print-area { padding: 0 0.2in; }
     .admin-field input, .admin-field select { background: #eaf5ea !important; print-color-adjust: exact; }
     .client-field input, .client-field select, .client-field textarea { background: #fffbea !important; print-color-adjust: exact; }
 
