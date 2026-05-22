@@ -2433,7 +2433,7 @@ document.addEventListener('DOMContentLoaded', function() {
       a.click();
       return;
     }
-    // Render portal contract in readonly mode, then print
+    // Render portal contract in readonly view — admin can download from within that view
     renderClientContract(currentAdminClientId);
     const clientBack  = document.getElementById('contract-client-back');
     const adminBack   = document.getElementById('contract-admin-back');
@@ -2441,7 +2441,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (adminBack)  adminBack.classList.remove('hidden');
     showView('view-contract');
     setNavSection('Performance Agreement');
-    setTimeout(() => window.print(), 300);
   });
 
   /* ---- Admin: back from contract view ---- */
