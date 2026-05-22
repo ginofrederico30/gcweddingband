@@ -1102,9 +1102,6 @@ function renderClientContract(clientId) {
 
     toggleContractFieldsReadonly(true, cl);
 
-    const execFields = document.getElementById('executed-fields-summary');
-    if (execFields) execFields.innerHTML = _signedFieldsSummaryHTML(cl);
-
     const execSigBlock = document.getElementById('executed-sig-block');
     if (execSigBlock) execSigBlock.innerHTML = _sigBlockHTML(contract, true);
 
@@ -1115,9 +1112,6 @@ function renderClientContract(clientId) {
     executedSection.classList.add('hidden');
 
     toggleContractFieldsReadonly(true, cl);
-
-    const signedFields = document.getElementById('signed-fields-summary');
-    if (signedFields) signedFields.innerHTML = _signedFieldsSummaryHTML(cl);
 
     const signedSigBlock = document.getElementById('signed-sig-display-block');
     if (signedSigBlock) signedSigBlock.innerHTML = _sigBlockHTML(contract, false);
