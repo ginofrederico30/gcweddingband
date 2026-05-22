@@ -1164,7 +1164,7 @@ function _signedFieldsSummaryHTML(cl) {
     <span style="width:160px;color:#888;flex-shrink:0">${label}</span>
     <span style="color:var(--navy);font-weight:600">${escHtml(val||'—')}</span>
   </div>`;
-  return `<div style="margin:16px 0;border:1px solid #e8e6e0;border-radius:8px;padding:4px 16px 4px;background:#fafaf8">
+  return `<div style="margin:20px 0;border:1px solid #e8e6e0;border-radius:8px;padding:12px 20px 4px;background:#fafaf8">
     ${row('Start Time', cl.startTime ? fmtTime12(cl.startTime) : '—')}
     ${row('End Time',   cl.endTime   ? fmtTime12(cl.endTime)   : '—')}
     ${row('Venue',      cl.venue)}
