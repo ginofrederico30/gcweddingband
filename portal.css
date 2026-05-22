@@ -2337,11 +2337,14 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 
     .card { box-shadow: none; border: none; border-radius: 0; }
 
-    /* box-decoration-break: clone redraws border/padding at each page break,
-       so the box closes and reopens cleanly at every page boundary. */
+    /* box-decoration-break: clone redraws border AND padding at each page break.
+       Top/bottom padding must live on #contract-print-area itself — not on a
+       child — so it is replicated at every page fragment boundary. */
     #contract-print-area {
         border: 1.5px solid #c8d0db;
         border-radius: 0;
+        padding-top: 36px;
+        padding-bottom: 44px;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
     }
@@ -2351,8 +2354,8 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     #signature-canvas { display: none !important; }
     .sig-clear { display: none !important; }
 
-    /* Generous padding so content never crowds the border */
-    .agreement-body { padding: 36px 60px 52px; }
+    /* Left/right padding only — top/bottom is handled by #contract-print-area above */
+    .agreement-body { padding: 0 60px 0; }
 
     /* Signed/executed banner: pull in from sides to respect body padding */
     .signed-banner { margin: 0 0 24px; padding: 18px 24px; }
