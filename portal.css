@@ -2324,43 +2324,29 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 /* ============================================
    Print Styles
    ============================================ */
-/* Default @page margin for non-print contexts */
 @page { margin: 0.5in; }
 
-/* Fixed border frame: hidden on screen, shown in print */
-#print-border-frame { display: none; }
-
 @media print {
-    /* 0.5in page margins give consistent spacing at top/bottom of every page.
-       position:fixed elements repeat on every printed page, giving a border box per page. */
+    /* 0.5in @page margins give consistent top/bottom spacing on every page. */
     @page { margin: 0.5in; }
-
-    /* Border box that repeats on every printed page */
-    #print-border-frame {
-        display: block;
-        position: fixed;
-        inset: 0.15in;
-        border: 1.5px solid #c8d0db;
-        border-radius: 4px;
-        pointer-events: none;
-        z-index: 900;
-    }
 
     body { padding: 0; background: #fff; }
     #portal-nav, .btn-back, .btn-primary, .btn-secondary,
     .no-print, .save-bar, .sticky-actions, .page-header { display: none !important; }
     .portal-container { padding: 0; max-width: 100%; }
 
-    /* Strip the card box — the fixed frame provides the border */
+    /* Clean border around the document; no card shadow */
     .card { box-shadow: none; border: none; border-radius: 0; }
+    #contract-print-area {
+        border: 1.5px solid #c8d0db;
+        border-radius: 0;
+    }
 
     .contract-doc-header { background: #153147 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .fee-balance-row td { background: #153147 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #signature-canvas { display: none !important; }
     .sig-clear { display: none !important; }
-    /* Indent content so it sits comfortably inside the fixed border frame */
-    .agreement-body { padding: 24px 48px 32px; }
-    #contract-print-area { padding: 0 0.2in; }
+    .agreement-body { padding: 24px 48px 40px; }
     .admin-field input, .admin-field select { background: #eaf5ea !important; print-color-adjust: exact; }
     .client-field input, .client-field select, .client-field textarea { background: #fffbea !important; print-color-adjust: exact; }
 
