@@ -2332,8 +2332,24 @@ document.addEventListener('DOMContentLoaded', function() {
     renderClientDash(s.clientId);
   });
 
-  /* ---- Client: print contract ---- */
-  document.getElementById('btn-print-contract').addEventListener('click', () => window.print());
+  /* ---- Client/Admin: print contract with custom PDF filename ---- */
+  document.getElementById('btn-print-contract').addEventListener('click', function() {
+    const s = getSession();
+    const clientId = currentAdminClientId || (s && s.clientId);
+    const originalTitle = document.title;
+    if (clientId) {
+      const client   = DB.getClients().find(c => c.id === clientId);
+      const contract = DB.getContract(clientId);
+      const name     = (contract.admin && contract.admin.clientName) || (client && client.name) || 'Client';
+      const dateStr  = (contract.admin && contract.admin.eventDate) || (client && client.eventDate) || '';
+      const datePart = dateStr ? fmtDate(dateStr) : '';
+      document.title = datePart
+        ? `Good Company Performance Agreement - ${name} - ${datePart}`
+        : `Good Company Performance Agreement - ${name}`;
+    }
+    window.print();
+    document.title = originalTitle;
+  });
 
   /* ---- Phone auto-format on all phone fields ---- */
   const PHONE_FIELD_IDS = new Set(['cc-phone','ps-phone','new-client-phone','cl-coordinator-phone']);

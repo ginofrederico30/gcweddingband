@@ -2324,8 +2324,13 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 /* ============================================
    Print Styles
    ============================================ */
+@page { margin: 0.5in; }
+
 @media print {
-    body { padding: 0; background: #fff; }
+    /* Suppress browser-added date/title headers by using @page with zero margin,
+       then compensate with body padding so content isn't flush to the edge. */
+    @page { margin: 0; }
+    body { padding: 0.5in; background: #fff; }
     #portal-nav, .btn-back, .btn-primary, .btn-secondary,
     .no-print, .save-bar, .sticky-actions, .page-header { display: none !important; }
     .portal-container { padding: 0; max-width: 100%; }
