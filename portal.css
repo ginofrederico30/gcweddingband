@@ -2342,6 +2342,13 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     .agreement-body { padding: 24px 32px 32px; }
     .admin-field input, .admin-field select { background: #eaf5ea !important; print-color-adjust: exact; }
     .client-field input, .client-field select, .client-field textarea { background: #fffbea !important; print-color-adjust: exact; }
+
+    /* Keep section headings with their content, avoid breaks inside list items */
+    .agreement-section-block { break-inside: avoid; }
+    .agreement-section-title { break-after: avoid; }
+    .contract-list > li { break-inside: avoid; }
+    .doc-field-grid, .readonly-inline, .payment-options { break-inside: avoid; }
+    .sig-block-grid, .sig-col { break-inside: avoid; }
 }
 
 /* ============================================
