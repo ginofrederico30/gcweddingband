@@ -1760,7 +1760,8 @@ const CHECKLIST_FIELDS = [
   'cl-arrival-time','cl-loadinlocation','cl-parking','cl-parking-payment',
   'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-sep-location',
   'cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
-  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify','cl-coordinator','cl-coordinator-phone',
+  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify',
+  'cl-dress-code','cl-coordinator','cl-coordinator-phone',
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
@@ -1886,6 +1887,12 @@ function loadChecklist(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
   DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
+  // Seed dress code from contract if not yet set in checklist
+  const dcEl = document.getElementById('cl-dress-code');
+  if (dcEl && !dcEl.value) {
+    const contractDress = (DB.getContract(clientId).client || {}).dressCode || '';
+    if (contractDress) dcEl.value = contractDress;
+  }
   renderSpeeches(clientId);
   _applyChecklistVisibility(clientId);
   setTimeout(() => initAutoGrow(document.getElementById('view-checklist')), 0);
@@ -1898,6 +1905,14 @@ function saveChecklist(clientId) {
   DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.checked ? 'Yes' : ''; });
   gcp.checklist = cl;
   DB.setGCP(clientId, gcp);
+  // Sync dress code back to contract.client so it appears in the contract view
+  const dcVal = cl['cl-dress-code'];
+  if (dcVal) {
+    const contract = DB.getContract(clientId);
+    if (!contract.client) contract.client = {};
+    contract.client.dressCode = dcVal;
+    DB.setContract(clientId, contract);
+  }
   showToast('Checklist saved!');
   const s = getSession();
   if (s && s.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
