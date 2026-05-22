@@ -2343,8 +2343,8 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     #contract-print-area {
         border: 1.5px solid #c8d0db;
         border-radius: 0;
-        padding-top: 36px;
-        padding-bottom: 44px;
+        padding-top: 20px;
+        padding-bottom: 24px;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
     }
