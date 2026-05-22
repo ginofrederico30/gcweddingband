@@ -1394,7 +1394,6 @@ const CONTRACT_SECTIONS = [
   { key: 'clientReqs',      label: '3. Client Requirements' },
   { key: 'gcp',             label: '6. Good Company Planner' },
   { key: 'songRequests',    label: '7. Song Requests' },
-  { key: 'attire',          label: '8. Attire' },
   { key: 'serviceGuarantee',label: '9. Personal Service Guarantee' },
   { key: 'accessSetup',     label: '10. Access and Setup' },
   { key: 'attendance',      label: '11. Attendance' },
