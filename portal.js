@@ -2444,7 +2444,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!sel) return;
     sel.addEventListener('change', function() {
       const show = this.value === 'Yes';
-      wrapIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', !show); });
+      wrapIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('hidden', !show);
+        if (show) el.querySelectorAll('textarea.auto-grow').forEach(autoGrowEl);
+      });
     });
   }
   clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap']);
