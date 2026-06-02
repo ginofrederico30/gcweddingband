@@ -282,7 +282,7 @@ function checklistProgress(cid) {
     'cl-power','cl-reception-start','cl-dinner-time','cl-dinner-style',
     'cl-table-announce','cl-meals','cl-band-eat',
     'cl-first-dance','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-length',
-    'cl-parent-dances','cl-dance-floor','cl-reception-end',
+    'cl-dance-floor','cl-reception-end',
     'cl-attendance','cl-loadout',
     'cl-announce-party','cl-grand-entrance',
     'cl-spotify-dinner','cl-spotify-break'
@@ -302,16 +302,6 @@ function checklistProgress(cid) {
   if (cl['cl-grand-entrance'] === 'Yes') {
     required.push('cl-couple-announce','cl-spotify-couple');
   }
-  if (cl['cl-fd'] === 'Yes') {
-    required.push('cl-fd-song','cl-fd-artist','cl-fd-length');
-  }
-  if (cl['cl-ms'] === 'Yes') {
-    required.push('cl-ms-song','cl-ms-artist','cl-ms-length');
-  }
-  if (cl['cl-other-dance'] === 'Yes') {
-    required.push('cl-other-dance-desc','cl-other-dance-song','cl-other-dance-artist','cl-other-dance-length');
-  }
-
   const filled = required.filter(id => cl[id] !== '' && cl[id] != null).length;
   return Math.min(100, Math.round((filled / required.length) * 100));
 }
@@ -683,7 +673,6 @@ function renderAdminSchedule(clientId) {
   addRow('fa-glass-cheers',   'Reception Starts',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
   addRow('fa-utensils',       'Dinner',            cl['cl-dinner-time']     ? fmtTime12(cl['cl-dinner-time'])     : '', cl['cl-dinner-time']);
   addRow('fa-heart',          'First Dance',       cl['cl-first-dance']     ? fmtTime12(cl['cl-first-dance'])     : '', cl['cl-first-dance']);
-  addRow('fa-user-friends',   'Parent Dances',     cl['cl-parent-dances']   ? fmtTime12(cl['cl-parent-dances'])   : '', cl['cl-parent-dances']);
   addRow('fa-music',          'Dance Floor Opens', cl['cl-dance-floor']     ? fmtTime12(cl['cl-dance-floor'])     : '', cl['cl-dance-floor']);
   addRow('fa-flag-checkered', 'Reception Ends',    cl['cl-reception-end']   ? fmtTime12(cl['cl-reception-end'])   : '', cl['cl-reception-end']);
   addRow('fa-box',            'Load-out',          cl['cl-loadout']         ? fmtTime12(cl['cl-loadout'])         : '', cl['cl-loadout']);
@@ -692,6 +681,13 @@ function renderAdminSchedule(clientId) {
   speeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
     addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time);
+  });
+
+  const specialDances = (gcp.specialDances || []).filter(d => d.time);
+  specialDances.forEach(d => {
+    const who = [d.withName, d.withRelation ? `(${d.withRelation})` : ''].filter(Boolean).join(' ');
+    const label = `${d.name}${d.title ? ' (' + d.title + ')' : ''}${who ? ' & ' + who : ''}`;
+    addRow('fa-user-friends', 'Special Dance: ' + label, fmtTime12(d.time), d.time);
   });
 
   function toMin(t) {
@@ -974,6 +970,14 @@ function renderClientBandSchedule(clientId) {
   schedSpeeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
     addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time);
+  });
+
+  // Special / parent dances with a time set
+  const schedDances = (DB.getGCP(clientId).specialDances || []).filter(d => d.time);
+  schedDances.forEach(d => {
+    const who = [d.withName, d.withRelation ? `(${d.withRelation})` : ''].filter(Boolean).join(' ');
+    const label = `${d.name}${d.title ? ' (' + d.title + ')' : ''}${who ? ' & ' + who : ''}`;
+    addRow('fa-user-friends', 'Special Dance: ' + label, fmtTime12(d.time), d.time);
   });
 
   // Sort chronologically; treat 00:00–07:59 as next-day to keep midnight load-out at end
@@ -1769,22 +1773,9 @@ const CHECKLIST_FIELDS = [
   'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party',
   'cl-grand-entrance','cl-couple-announce','cl-spotify-couple',
   'cl-first-dance','cl-first-dance-length','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-spotify',
-  'cl-parent-dances',
-  'cl-fd-name','cl-fd-length','cl-fd-song','cl-fd-artist','cl-fd-spotify',
-  'cl-ms-name','cl-ms-length','cl-ms-song','cl-ms-artist','cl-ms-spotify',
-  'cl-other-dance-desc','cl-other-dance-length','cl-other-dance-song','cl-other-dance-artist','cl-other-dance-spotify',
   'cl-spotify-dinner','cl-spotify-break',
   'cl-notes'
 ];
-const DANCE_CHECKBOXES = ['cl-fd','cl-ms','cl-other-dance'];
-
-function _applyDanceVisibility() {
-  [['cl-fd','cl-fd-detail'],['cl-ms','cl-ms-detail'],['cl-other-dance','cl-other-dance-detail']].forEach(([cbId, detailId]) => {
-    const cb = document.getElementById(cbId);
-    const detail = document.getElementById(detailId);
-    if (cb && detail) detail.classList.toggle('hidden', !cb.checked);
-  });
-}
 
 function _applyChecklistVisibility(clientId) {
   const contract = DB.getContract(clientId);
@@ -1821,7 +1812,6 @@ function _applyChecklistVisibility(clientId) {
     if (el) el.classList.toggle('hidden', !showCouple);
   });
 
-  _applyDanceVisibility();
 }
 
 /* ============================================
@@ -1869,6 +1859,56 @@ function deleteSpeech(clientId, speechId) {
   renderSpeeches(clientId);
 }
 
+/* ============================================
+   SPECIAL / PARENT DANCES
+   ============================================ */
+function renderSpecialDances(clientId) {
+  const el = document.getElementById('special-dances-list');
+  if (!el) return;
+  const dances = DB.getGCP(clientId).specialDances || [];
+  if (!dances.length) {
+    el.innerHTML = '<div class="speech-empty">No special dances added yet.</div>';
+    return;
+  }
+  el.innerHTML = dances.map(d => {
+    const who = [d.withName, d.withRelation ? `(${d.withRelation})` : ''].filter(Boolean).join(' ');
+    const songPart = d.song ? ` &mdash; <em>${escHtml(d.song)}${d.artist ? ' / ' + escHtml(d.artist) : ''}</em>` : '';
+    return `
+    <div class="speech-item">
+      <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
+      <span class="speech-speaker">${escHtml(d.name)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}</span>
+      <span class="speech-relation">with ${escHtml(who)}${songPart}</span>
+      <button class="speech-delete-btn" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function addSpecialDance(clientId) {
+  const name         = (document.getElementById('sd-name')          || {}).value?.trim() || '';
+  const title        = (document.getElementById('sd-title')         || {}).value || '';
+  const withName     = (document.getElementById('sd-with-name')     || {}).value?.trim() || '';
+  const withRelation = (document.getElementById('sd-with-relation') || {}).value || '';
+  const time         = (document.getElementById('sd-time')          || {}).value || '';
+  const song         = (document.getElementById('sd-song')          || {}).value?.trim() || '';
+  const artist       = (document.getElementById('sd-artist')        || {}).value?.trim() || '';
+  if (!name) { showToast('Please enter a dancer name.'); return; }
+  const gcp = DB.getGCP(clientId);
+  (gcp.specialDances = gcp.specialDances || []).push({ id: uid(), time, name, title, withName, withRelation, song, artist });
+  DB.setGCP(clientId, gcp);
+  ['sd-name','sd-with-name','sd-song','sd-artist'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['sd-title','sd-with-relation'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const timeEl = document.getElementById('sd-time');
+  if (timeEl) timeEl.value = '';
+  renderSpecialDances(clientId);
+}
+
+function deleteSpecialDance(clientId, danceId) {
+  const gcp = DB.getGCP(clientId);
+  gcp.specialDances = (gcp.specialDances || []).filter(d => d.id !== danceId);
+  DB.setGCP(clientId, gcp);
+  renderSpecialDances(clientId);
+}
+
 function autoGrowEl(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
@@ -1886,7 +1926,6 @@ function loadChecklist(clientId) {
   _checklistClientId = clientId;
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
-  DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) el.checked = cl[id] === 'Yes'; });
   // Seed dress code from contract if not yet set in checklist
   const dcEl = document.getElementById('cl-dress-code');
   if (dcEl && !dcEl.value) {
@@ -1894,6 +1933,7 @@ function loadChecklist(clientId) {
     if (contractDress) dcEl.value = contractDress;
   }
   renderSpeeches(clientId);
+  renderSpecialDances(clientId);
   _applyChecklistVisibility(clientId);
   setTimeout(() => initAutoGrow(document.getElementById('view-checklist')), 0);
 }
@@ -1902,7 +1942,6 @@ function saveChecklist(clientId) {
   const gcp = DB.getGCP(clientId);
   const cl  = {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
-  DANCE_CHECKBOXES.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.checked ? 'Yes' : ''; });
   gcp.checklist = cl;
   DB.setGCP(clientId, gcp);
   // Sync dress code back to contract.client so it appears in the contract view
@@ -1933,7 +1972,8 @@ const CEREMONY_FIELDS = [
   'cer-duties-family-link','cer-duties-family-artist','cer-duties-family-spotify',
   'cer-duties-bride-link','cer-duties-bride-artist','cer-duties-bride-spotify',
   'cer-duties-exit-link','cer-duties-exit-artist','cer-duties-exit-spotify',
-  'cer-duties-notes'
+  'cer-duties-notes',
+  'cer-notes'
 ];
 
 function loadCeremony(clientId) {
@@ -2418,10 +2458,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  /* Dance checkboxes */
-  DANCE_CHECKBOXES.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', _applyDanceVisibility);
+  /* Special dances */
+  const btnAddDance = document.getElementById('btn-add-special-dance');
+  if (btnAddDance) btnAddDance.addEventListener('click', function() {
+    if (_checklistClientId) addSpecialDance(_checklistClientId);
   });
 
   /* ---- Admin: ceremony service mutual exclusivity (regular + presigned forms) ---- */

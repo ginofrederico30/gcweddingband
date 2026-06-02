@@ -1112,47 +1112,43 @@
                     <div class="field-group"><label>Artist</label><input type="text" id="cl-first-dance-artist" placeholder="e.g. Etta James"></div>
                     <div class="field-group full-width"><label>Spotify Reference <small style="font-weight:400;opacity:.7">(optional)</small></label><input type="text" id="cl-first-dance-spotify" placeholder="Spotify link or playlist"></div>
 
-                    <!-- Parent Dances -->
-                    <div class="field-group full-width dance-section-label"><strong>Parent Dances</strong></div>
-                    <div class="field-group"><label>Parent Dances Time</label><input type="time" id="cl-parent-dances"></div>
-                    <div class="field-group"></div>
-
+                    <!-- Special / Parent Dances -->
+                    <div class="field-group full-width dance-section-label"><strong>Special &amp; Parent Dances</strong></div>
                     <div class="field-group full-width">
-                        <label class="dance-checkbox-label"><input type="checkbox" id="cl-fd" class="dance-cb"><span>Father / Daughter Dance</span></label>
-                    </div>
-                    <div class="dance-detail-wrap full-width hidden" id="cl-fd-detail">
-                        <div class="dance-detail-grid">
-                            <div class="field-group"><label>Father's Name</label><input type="text" id="cl-fd-name" placeholder="Father's name"></div>
-                            <div class="field-group"><label>Length Preference</label><select id="cl-fd-length"><option value="">Select…</option><option>Full Song</option><option>Fade ~30 sec</option><option>Fade ~1 min</option><option>Fade ~1.5 min</option><option>Fade ~2 min</option><option>Custom</option></select></div>
-                            <div class="field-group"><label>Song Title</label><input type="text" id="cl-fd-song" placeholder="Song title"></div>
-                            <div class="field-group"><label>Artist</label><input type="text" id="cl-fd-artist" placeholder="Artist name"></div>
-                            <div class="field-group full-width"><label>Spotify Reference <small style="font-weight:400;opacity:.7">(optional)</small></label><input type="text" id="cl-fd-spotify" placeholder="Spotify link"></div>
-                        </div>
-                    </div>
-
-                    <div class="field-group full-width">
-                        <label class="dance-checkbox-label"><input type="checkbox" id="cl-ms" class="dance-cb"><span>Mother / Son Dance</span></label>
-                    </div>
-                    <div class="dance-detail-wrap full-width hidden" id="cl-ms-detail">
-                        <div class="dance-detail-grid">
-                            <div class="field-group"><label>Mother's Name</label><input type="text" id="cl-ms-name" placeholder="Mother's name"></div>
-                            <div class="field-group"><label>Length Preference</label><select id="cl-ms-length"><option value="">Select…</option><option>Full Song</option><option>Fade ~30 sec</option><option>Fade ~1 min</option><option>Fade ~1.5 min</option><option>Fade ~2 min</option><option>Custom</option></select></div>
-                            <div class="field-group"><label>Song Title</label><input type="text" id="cl-ms-song" placeholder="Song title"></div>
-                            <div class="field-group"><label>Artist</label><input type="text" id="cl-ms-artist" placeholder="Artist name"></div>
-                            <div class="field-group full-width"><label>Spotify Reference <small style="font-weight:400;opacity:.7">(optional)</small></label><input type="text" id="cl-ms-spotify" placeholder="Spotify link"></div>
-                        </div>
-                    </div>
-
-                    <div class="field-group full-width">
-                        <label class="dance-checkbox-label"><input type="checkbox" id="cl-other-dance" class="dance-cb"><span>Other Dance</span></label>
-                    </div>
-                    <div class="dance-detail-wrap full-width hidden" id="cl-other-dance-detail">
-                        <div class="dance-detail-grid">
-                            <div class="field-group full-width"><label>What is this dance?</label><input type="text" id="cl-other-dance-desc" placeholder="e.g. Anniversary Dance, Grandparent Dance"></div>
-                            <div class="field-group"><label>Length Preference</label><select id="cl-other-dance-length"><option value="">Select…</option><option>Full Song</option><option>Fade ~30 sec</option><option>Fade ~1 min</option><option>Fade ~1.5 min</option><option>Fade ~2 min</option><option>Custom</option></select></div>
-                            <div class="field-group"><label>Song Title</label><input type="text" id="cl-other-dance-song" placeholder="Song title"></div>
-                            <div class="field-group"><label>Artist</label><input type="text" id="cl-other-dance-artist" placeholder="Artist name"></div>
-                            <div class="field-group full-width"><label>Spotify Reference <small style="font-weight:400;opacity:.7">(optional)</small></label><input type="text" id="cl-other-dance-spotify" placeholder="Spotify link"></div>
+                        <div id="special-dances-list" class="speeches-list"></div>
+                        <div class="speech-add-box">
+                            <p class="speech-add-instructions"><i class="fas fa-info-circle"></i> Fill in the fields below, then click <strong>Add Dance</strong> to add it to the list.</p>
+                            <div class="speech-add-row">
+                                <input type="time" id="sd-time" title="Time of dance">
+                                <input type="text" id="sd-name" placeholder="Dancer name" autocomplete="off">
+                                <select id="sd-title">
+                                    <option value="">Title / Role…</option>
+                                    <option>Father</option>
+                                    <option>Mother</option>
+                                    <option>Step-Father</option>
+                                    <option>Step-Mother</option>
+                                    <option>Grandfather</option>
+                                    <option>Grandmother</option>
+                                    <option>Parent</option>
+                                    <option>Guardian</option>
+                                    <option>Other</option>
+                                </select>
+                                <input type="text" id="sd-with-name" placeholder="Dancing with (name)" autocomplete="off">
+                                <select id="sd-with-relation">
+                                    <option value="">Dancing with…</option>
+                                    <option>Bride</option>
+                                    <option>Groom</option>
+                                    <option>Partner 1</option>
+                                    <option>Partner 2</option>
+                                    <option>Partner</option>
+                                    <option>Other</option>
+                                </select>
+                                <button type="button" id="btn-add-special-dance" class="btn-primary"><i class="fas fa-plus"></i> Add Dance</button>
+                            </div>
+                            <div class="speech-add-row" style="margin-top:8px">
+                                <input type="text" id="sd-song" placeholder="Song title (optional)" autocomplete="off" style="flex:2;min-width:140px">
+                                <input type="text" id="sd-artist" placeholder="Artist (optional)" autocomplete="off" style="flex:1;min-width:120px">
+                            </div>
                         </div>
                     </div>
 
@@ -1232,6 +1228,12 @@
                     <div class="field-group"><label>Couple Exit — Artist</label><input type="text" id="cer-duties-exit-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Couple Exit — Spotify Link</label><input type="text" id="cer-duties-exit-spotify" placeholder="Paste a Spotify link so we can reference the song"></div>
                     <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-duties-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
+                </div>
+            </div>
+            <div class="card checklist-card">
+                <div class="card-header"><h3><i class="fas fa-sticky-note"></i> Ceremony Notes</h3></div>
+                <div class="checklist-grid">
+                    <div class="field-group full-width"><label>Notes for the Band</label><textarea id="cer-notes" rows="4" placeholder="Anything else the band should know about the ceremony…"></textarea></div>
                 </div>
             </div>
         </form>
