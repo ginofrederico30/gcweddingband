@@ -685,8 +685,7 @@ function renderAdminSchedule(clientId) {
 
   const specialDances = (gcp.specialDances || []).filter(d => d.time);
   specialDances.forEach(d => {
-    const who = [d.withName, d.withRelation ? `(${d.withRelation})` : ''].filter(Boolean).join(' ');
-    const label = `${d.name}${d.title ? ' (' + d.title + ')' : ''}${who ? ' & ' + who : ''}`;
+    const label = `${d.name}${d.withRelation ? ' (' + d.withRelation + ')' : ''}${d.withName ? ' & ' + d.withName + (d.title ? ' (' + d.title + ')' : '') : ''}`;
     addRow('fa-user-friends', 'Special Dance: ' + label, fmtTime12(d.time), d.time);
   });
 
@@ -975,8 +974,7 @@ function renderClientBandSchedule(clientId) {
   // Special / parent dances with a time set
   const schedDances = (DB.getGCP(clientId).specialDances || []).filter(d => d.time);
   schedDances.forEach(d => {
-    const who = [d.withName, d.withRelation ? `(${d.withRelation})` : ''].filter(Boolean).join(' ');
-    const label = `${d.name}${d.title ? ' (' + d.title + ')' : ''}${who ? ' & ' + who : ''}`;
+    const label = `${d.name}${d.withRelation ? ' (' + d.withRelation + ')' : ''}${d.withName ? ' & ' + d.withName + (d.title ? ' (' + d.title + ')' : '') : ''}`;
     addRow('fa-user-friends', 'Special Dance: ' + label, fmtTime12(d.time), d.time);
   });
 
@@ -1871,32 +1869,38 @@ function renderSpecialDances(clientId) {
     return;
   }
   el.innerHTML = dances.map(d => {
-    const who = [d.withName, d.withRelation ? `(${d.withRelation})` : ''].filter(Boolean).join(' ');
     const songPart = d.song ? ` &mdash; <em>${escHtml(d.song)}${d.artist ? ' / ' + escHtml(d.artist) : ''}</em>` : '';
     return `
     <div class="speech-item">
       <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
-      <span class="speech-speaker">${escHtml(d.name)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}</span>
-      <span class="speech-relation">with ${escHtml(who)}${songPart}</span>
+      <span class="speech-speaker">${escHtml(d.name)}${d.withRelation ? ' (' + escHtml(d.withRelation) + ')' : ''}</span>
+      <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}</span>
       <button class="speech-delete-btn" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
 }
 
 function addSpecialDance(clientId) {
-  const name         = (document.getElementById('sd-name')          || {}).value?.trim() || '';
-  const title        = (document.getElementById('sd-title')         || {}).value || '';
-  const withName     = (document.getElementById('sd-with-name')     || {}).value?.trim() || '';
-  const withRelation = (document.getElementById('sd-with-relation') || {}).value || '';
-  const time         = (document.getElementById('sd-time')          || {}).value || '';
-  const song         = (document.getElementById('sd-song')          || {}).value?.trim() || '';
-  const artist       = (document.getElementById('sd-artist')        || {}).value?.trim() || '';
-  if (!name) { showToast('Please enter a dancer name.'); return; }
+  const name          = (document.getElementById('sd-name')                 || {}).value?.trim() || '';
+  const withRelSel    = document.getElementById('sd-with-relation');
+  const withRelOther  = document.getElementById('sd-with-relation-other');
+  const withRelVal    = withRelSel ? withRelSel.value : '';
+  const withRelation  = withRelVal === 'Other' ? (withRelOther ? withRelOther.value.trim() : '') : withRelVal;
+  const withName      = (document.getElementById('sd-with-name')            || {}).value?.trim() || '';
+  const titleSel      = document.getElementById('sd-title');
+  const titleOther    = document.getElementById('sd-title-other');
+  const titleVal      = titleSel ? titleSel.value : '';
+  const title         = titleVal === 'Other' ? (titleOther ? titleOther.value.trim() : '') : titleVal;
+  const time          = (document.getElementById('sd-time')                 || {}).value || '';
+  const song          = (document.getElementById('sd-song')                 || {}).value?.trim() || '';
+  const artist        = (document.getElementById('sd-artist')               || {}).value?.trim() || '';
+  if (!name) { showToast('Please enter a name.'); return; }
   const gcp = DB.getGCP(clientId);
-  (gcp.specialDances = gcp.specialDances || []).push({ id: uid(), time, name, title, withName, withRelation, song, artist });
+  (gcp.specialDances = gcp.specialDances || []).push({ id: uid(), time, name, withRelation, withName, title, song, artist });
   DB.setGCP(clientId, gcp);
-  ['sd-name','sd-with-name','sd-song','sd-artist'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['sd-name','sd-with-name','sd-song','sd-artist','sd-with-relation-other','sd-title-other'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['sd-title','sd-with-relation'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  [withRelOther, titleOther].forEach(el => { if (el) el.classList.add('hidden'); });
   const timeEl = document.getElementById('sd-time');
   if (timeEl) timeEl.value = '';
   renderSpecialDances(clientId);
@@ -2467,6 +2471,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnAddDance = document.getElementById('btn-add-special-dance');
   if (btnAddDance) btnAddDance.addEventListener('click', function() {
     if (_checklistClientId) addSpecialDance(_checklistClientId);
+  });
+  const sdWithRelSel = document.getElementById('sd-with-relation');
+  if (sdWithRelSel) sdWithRelSel.addEventListener('change', function() {
+    const other = document.getElementById('sd-with-relation-other');
+    if (other) other.classList.toggle('hidden', this.value !== 'Other');
+  });
+  const sdTitleSel = document.getElementById('sd-title');
+  if (sdTitleSel) sdTitleSel.addEventListener('change', function() {
+    const other = document.getElementById('sd-title-other');
+    if (other) other.classList.toggle('hidden', this.value !== 'Other');
   });
 
   /* ---- Admin: ceremony service mutual exclusivity (regular + presigned forms) ---- */
