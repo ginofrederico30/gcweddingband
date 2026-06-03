@@ -1894,11 +1894,12 @@ function addSpecialDance(clientId) {
   const time          = (document.getElementById('sd-time')                 || {}).value || '';
   const song          = (document.getElementById('sd-song')                 || {}).value?.trim() || '';
   const artist        = (document.getElementById('sd-artist')               || {}).value?.trim() || '';
+  const spotify       = (document.getElementById('sd-spotify')              || {}).value?.trim() || '';
   if (!name) { showToast('Please enter a name.'); return; }
   const gcp = DB.getGCP(clientId);
-  (gcp.specialDances = gcp.specialDances || []).push({ id: uid(), time, name, withRelation, withName, title, song, artist });
+  (gcp.specialDances = gcp.specialDances || []).push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify });
   DB.setGCP(clientId, gcp);
-  ['sd-name','sd-with-name','sd-song','sd-artist','sd-with-relation-other','sd-title-other'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['sd-name','sd-with-name','sd-song','sd-artist','sd-spotify','sd-with-relation-other','sd-title-other'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['sd-title','sd-with-relation'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   [withRelOther, titleOther].forEach(el => { if (el) el.classList.add('hidden'); });
   const timeEl = document.getElementById('sd-time');
