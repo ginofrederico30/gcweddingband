@@ -1118,18 +1118,18 @@
                         <div id="special-dances-list" class="speeches-list"></div>
                         <div class="speech-add-box">
                             <p class="speech-add-instructions"><i class="fas fa-info-circle"></i> Fill in the fields below, then click <strong>Add Dance</strong> to add it to the list.</p>
-                            <div class="speech-add-row">
-                                <input type="time" id="sd-time" title="Time of dance">
-                                <input type="text" id="sd-name" placeholder="Celebrant (e.g. Hannah)" autocomplete="off">
-                                <select id="sd-with-relation">
+                            <div class="speech-add-row" style="flex-wrap:nowrap">
+                                <input type="time" id="sd-time" title="Time of dance" style="flex-shrink:0;width:120px">
+                                <input type="text" id="sd-name" placeholder="Celebrant (e.g. Hannah)" autocomplete="off" style="flex:1;min-width:100px;width:auto">
+                                <select id="sd-with-relation" style="flex:1;min-width:90px;width:auto">
                                     <option value="">Role…</option>
                                     <option>Bride</option>
                                     <option>Groom</option>
                                     <option>Other</option>
                                 </select>
-                                <input type="text" id="sd-with-relation-other" placeholder="Specify role…" autocomplete="off" class="hidden" style="flex:1;min-width:100px">
-                                <input type="text" id="sd-with-name" placeholder="Dancing with (e.g. Jenny)" autocomplete="off">
-                                <select id="sd-title">
+                                <input type="text" id="sd-with-relation-other" placeholder="Specify role…" autocomplete="off" class="hidden" style="flex:1;min-width:90px;width:auto">
+                                <input type="text" id="sd-with-name" placeholder="Dancing with (e.g. Peter)" autocomplete="off" style="flex:1;min-width:100px;width:auto">
+                                <select id="sd-title" style="flex:1;min-width:140px;width:auto">
                                     <option value="">Relation to Celebrant…</option>
                                     <option>Father</option>
                                     <option>Mother</option>
@@ -1141,8 +1141,8 @@
                                     <option>Guardian</option>
                                     <option>Other</option>
                                 </select>
-                                <input type="text" id="sd-title-other" placeholder="Specify relation…" autocomplete="off" class="hidden" style="flex:1;min-width:100px">
-                                <button type="button" id="btn-add-special-dance" class="btn-primary"><i class="fas fa-plus"></i> Add Dance</button>
+                                <input type="text" id="sd-title-other" placeholder="Specify relation…" autocomplete="off" class="hidden" style="flex:1;min-width:100px;width:auto">
+                                <button type="button" id="btn-add-special-dance" class="btn-primary" style="flex-shrink:0"><i class="fas fa-plus"></i> Add Dance</button>
                             </div>
                             <div class="speech-add-row" style="margin-top:8px">
                                 <input type="text" id="sd-song" placeholder="Song title (optional)" autocomplete="off" style="flex:2;min-width:140px">
