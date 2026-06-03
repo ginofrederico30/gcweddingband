@@ -1117,37 +1117,64 @@
                     <div class="field-group full-width">
                         <div id="special-dances-list" class="speeches-list"></div>
                         <div class="speech-add-box">
-                            <p class="speech-add-instructions"><i class="fas fa-info-circle"></i> Fill in the fields below, then click <strong>Add Dance</strong> to add it to the list.</p>
-                            <div class="speech-add-row" style="flex-wrap:nowrap">
-                                <input type="time" id="sd-time" title="Time of dance" style="flex-shrink:0;width:120px">
-                                <input type="text" id="sd-name" placeholder="Newlywed (e.g. Hannah)" autocomplete="off" style="flex:1;min-width:100px;width:auto">
-                                <select id="sd-with-relation" style="flex:1;min-width:90px;width:auto">
-                                    <option value="">Role…</option>
-                                    <option>Bride</option>
-                                    <option>Groom</option>
-                                    <option>Other</option>
-                                </select>
-                                <input type="text" id="sd-with-relation-other" placeholder="Specify role…" autocomplete="off" class="hidden" style="flex:1;min-width:90px;width:auto">
-                                <input type="text" id="sd-with-name" placeholder="Dancing with (e.g. Peter)" autocomplete="off" style="flex:1;min-width:100px;width:auto">
-                                <select id="sd-title" style="flex:1;min-width:140px;width:auto">
-                                    <option value="">Relation to Celebrant…</option>
-                                    <option>Father</option>
-                                    <option>Mother</option>
-                                    <option>Step-Father</option>
-                                    <option>Step-Mother</option>
-                                    <option>Grandfather</option>
-                                    <option>Grandmother</option>
-                                    <option>Parent</option>
-                                    <option>Guardian</option>
-                                    <option>Other</option>
-                                </select>
-                                <input type="text" id="sd-title-other" placeholder="Specify relation…" autocomplete="off" class="hidden" style="flex:1;min-width:100px;width:auto">
-                                <button type="button" id="btn-add-special-dance" class="btn-primary" style="flex-shrink:0"><i class="fas fa-plus"></i> Add Dance</button>
-                            </div>
-                            <div class="speech-add-row" style="margin-top:8px">
-                                <input type="text" id="sd-song" placeholder="Song title" autocomplete="off" style="flex:2;min-width:140px">
-                                <input type="text" id="sd-artist" placeholder="Artist" autocomplete="off" style="flex:1;min-width:120px">
-                                <input type="text" id="sd-spotify" placeholder="Spotify reference (optional)" autocomplete="off" style="flex:2;min-width:160px">
+                            <div class="sd-add-grid">
+                                <div class="field-group">
+                                    <label>Time</label>
+                                    <input type="time" id="sd-time">
+                                </div>
+                                <div class="field-group">
+                                    <label>Newlywed</label>
+                                    <input type="text" id="sd-name" placeholder="e.g. Hannah" autocomplete="off">
+                                </div>
+                                <div class="field-group">
+                                    <label>Role</label>
+                                    <div class="sd-select-wrap">
+                                        <select id="sd-with-relation">
+                                            <option value="">Select…</option>
+                                            <option>Bride</option>
+                                            <option>Groom</option>
+                                            <option>Other</option>
+                                        </select>
+                                        <input type="text" id="sd-with-relation-other" placeholder="Specify role…" autocomplete="off" class="hidden">
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label>Dancing With</label>
+                                    <input type="text" id="sd-with-name" placeholder="e.g. Peter" autocomplete="off">
+                                </div>
+                                <div class="field-group">
+                                    <label>Relation to Newlywed</label>
+                                    <div class="sd-select-wrap">
+                                        <select id="sd-title">
+                                            <option value="">Select…</option>
+                                            <option>Father</option>
+                                            <option>Mother</option>
+                                            <option>Step-Father</option>
+                                            <option>Step-Mother</option>
+                                            <option>Grandfather</option>
+                                            <option>Grandmother</option>
+                                            <option>Parent</option>
+                                            <option>Guardian</option>
+                                            <option>Other</option>
+                                        </select>
+                                        <input type="text" id="sd-title-other" placeholder="Specify relation…" autocomplete="off" class="hidden">
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label>Song Title</label>
+                                    <input type="text" id="sd-song" placeholder="Song title" autocomplete="off">
+                                </div>
+                                <div class="field-group">
+                                    <label>Artist</label>
+                                    <input type="text" id="sd-artist" placeholder="Artist" autocomplete="off">
+                                </div>
+                                <div class="field-group sd-full">
+                                    <label>Spotify Reference <small style="font-weight:400;opacity:.7">(optional)</small></label>
+                                    <input type="text" id="sd-spotify" placeholder="Spotify link or playlist" autocomplete="off">
+                                </div>
+                                <div class="sd-full sd-add-btn-row">
+                                    <button type="button" id="btn-add-special-dance" class="btn-primary"><i class="fas fa-plus"></i> Add Dance</button>
+                                </div>
                             </div>
                         </div>
                     </div>
