@@ -230,17 +230,12 @@ function renderGigsDash() {
     const contract = ADB.getContract(c.id);
     const a  = contract.admin  || {};
     const cl = contract.client || {};
-    const scope    = a.scopeOfServices || [];
     const setlists = ADB.getSetlists();
     const sl       = setlists[c.id];
     const gcp      = ADB.getGCP(c.id);
     const hasSongs = Object.values(gcp.songs || {}).some(v => v === 'Priority' || v === 'Yes')
                      || (gcp.songRequests || []).length > 0;
     const hasSetlist = sl && (sl.sets[0].length > 0 || sl.sets[1].length > 0);
-
-    const scopePills = scope.map(s =>
-      `<span class="status-badge status-info" style="font-size:11px">${escHtml(s)}</span>`
-    ).join('');
 
     const setlistBadge = hasSetlist
       ? `<span class="status-badge status-signed">Setlist Ready</span>`
@@ -259,7 +254,6 @@ function renderGigsDash() {
             <span><i class="fas fa-calendar-alt"></i>${fmtDateShort(a.eventDate || c.eventDate)}</span>
             ${venue ? `<span><i class="fas fa-map-marker-alt"></i>${escHtml(venue)}</span>` : ''}
           </div>
-          ${scope.length ? `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">${scopePills}</div>` : ''}
         </div>
         <div class="artist-gig-right">
           ${setlistBadge}
@@ -304,10 +298,44 @@ function renderGigDetail(clientId) {
   document.getElementById('gig-client-name').textContent = gigDisplayName;
   document.getElementById('gig-event-date').textContent  = fmtDate(a.eventDate || client.eventDate);
 
-  /* ---- Scope pills ---- */
-  document.getElementById('gig-scope').innerHTML = scope.length
-    ? scope.map(s => `<span class="status-badge status-info" style="font-size:12px;padding:5px 14px">${escHtml(s)}</span>`).join('')
-    : '<span style="font-family:var(--font-sans);font-size:13px;color:#bbb">No services selected yet.</span>';
+  /* ---- Key Times ---- */
+  const soundcheckTime = subtractMinutes(chk['cl-guest-arrival'], 60);
+  const keyTimes = [
+    { icon: 'fa-truck-loading', label: 'Load-in',              val: fmtTime12(chk['cl-arrival-time']), raw: chk['cl-arrival-time'] },
+    { icon: 'fa-microphone',    label: 'Soundcheck',           val: fmtTime12(soundcheckTime),         raw: soundcheckTime },
+    { icon: 'fa-utensils',      label: 'Dinner',               val: fmtTime12(chk['cl-dinner-time']),  raw: chk['cl-dinner-time'] },
+    { icon: 'fa-music',         label: 'Dance Floor / Band Start', val: fmtTime12(chk['cl-dance-floor']), raw: chk['cl-dance-floor'] },
+  ];
+  document.getElementById('gig-key-times').innerHTML = keyTimes.map(item => `
+    <div class="artist-timeline-row">
+      <div class="artist-timeline-icon"><i class="fas ${item.icon}"></i></div>
+      <div class="artist-timeline-label">${item.label}</div>
+      <div class="artist-timeline-val${item.val ? '' : ' empty'}">${item.val || '—'}</div>
+    </div>`).join('');
+
+  /* ---- Songs to Learn ---- */
+  const savedSetlist = ADB.getSetlists()[clientId];
+  const allSetlistSongs = savedSetlist
+    ? [...(savedSetlist.sets[0] || []), ...(savedSetlist.sets[1] || [])]
+    : [];
+  const songsToLearn = allSetlistSongs.filter(s => s.source === 'request');
+  const stlCard = document.getElementById('gig-songs-to-learn-card');
+  const stlEl   = document.getElementById('gig-songs-to-learn');
+  if (songsToLearn.length) {
+    stlCard.classList.remove('hidden');
+    stlEl.innerHTML = songsToLearn.map(s => {
+      const spotifyLink = s.spotify
+        ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link"><i class="fab fa-spotify"></i></a>`
+        : '';
+      return `
+      <div class="artist-info-row">
+        <div class="artist-info-label">${escHtml(s.title)}</div>
+        <div class="artist-info-val">${escHtml(s.artist || '—')} ${spotifyLink}</div>
+      </div>`;
+    }).join('');
+  } else {
+    stlCard.classList.add('hidden');
+  }
 
   /* ---- Day Schedule ---- */
   // sortTime stores the raw "HH:MM" value used for chronological ordering
@@ -326,7 +354,6 @@ function renderGigDetail(clientId) {
     si('fa-glass-cheers',   'Reception Starts',   fmtTime12(chk['cl-reception-start']),                       chk['cl-reception-start']),
     si('fa-utensils',       'Dinner',             fmtTime12(chk['cl-dinner-time']),                           chk['cl-dinner-time']),
     si('fa-heart',          'First Dance',        fmtTime12(chk['cl-first-dance']),                           chk['cl-first-dance']),
-    si('fa-user-friends',   'Parent Dances',      fmtTime12(chk['cl-parent-dances']),                         chk['cl-parent-dances']),
     si('fa-music',          'Dance Floor Opens',  fmtTime12(chk['cl-dance-floor']),                           chk['cl-dance-floor']),
     si('fa-flag-checkered', 'Reception Ends',     fmtTime12(chk['cl-reception-end']),                         chk['cl-reception-end']),
     si('fa-box',            'Load-out',           fmtTime12(chk['cl-loadout']),                               chk['cl-loadout']),
