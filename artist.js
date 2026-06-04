@@ -954,9 +954,40 @@ function _renderUnplacedRequests() {
 async function saveSetlist(clientId) {
   const btn = document.getElementById('btn-save-setlist');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…'; }
-  const setlists = ADB.getSetlists();
-  setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
   try {
+    // Sync request songs in setlist → master catalog
+    const requestSongs = [..._setlistSets[0], ..._setlistSets[1]].filter(s => s.source === 'request');
+    if (requestSongs.length) {
+      // Fresh read from Firestore so we don't overwrite concurrent changes
+      const msDoc = await _db.doc('config/masterSongs').get();
+      const catalog = msDoc.exists ? (msDoc.data().songs || []) : [];
+      let catalogChanged = false;
+      requestSongs.forEach(song => {
+        const alreadyIn = catalog.some(
+          c => c.id === song.id ||
+               (c.title.toLowerCase() === song.title.toLowerCase() &&
+                c.artist.toLowerCase() === (song.artist || '').toLowerCase())
+        );
+        if (!alreadyIn) {
+          catalog.push({
+            id:      song.id,
+            title:   song.title,
+            artist:  song.artist || '',
+            spotify: song.spotify || '',
+            lead:    song.lead || '',
+            addedAt: Date.now(),
+          });
+          catalogChanged = true;
+        }
+      });
+      if (catalogChanged) {
+        ADB.setMasterSongs(catalog);
+      }
+    }
+
+    // Save setlist
+    const setlists = ADB.getSetlists();
+    setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
     await ADB.setSetlist(clientId, setlists[clientId]);
     showToast('Setlist saved!');
   } catch(e) {
@@ -972,6 +1003,10 @@ async function saveSetlist(clientId) {
    ============================================ */
 function openAddSongModal() {
   document.getElementById('add-song-search').value = '';
+  document.getElementById('add-song-search').style.display = '';
+  document.getElementById('add-song-list').style.display = '';
+  document.getElementById('add-song-lead-step').classList.add('hidden');
+  _pendingAddSong = null;
   _renderAddSongList('');
   document.getElementById('modal-add-song').classList.remove('hidden');
   setTimeout(() => document.getElementById('add-song-search').focus(), 50);
