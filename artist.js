@@ -1079,6 +1079,48 @@ function _renderAddSongList(query) {
 let _pendingAddSong = null;
 
 /* ============================================
+   SETLIST PREVIEW VIEW
+   ============================================ */
+function renderSetlistPreview() {
+  const client   = ADB.getClients().find(c => c.id === _currentClientId);
+  const contract = ADB.getContract(_currentClientId);
+  const a        = contract.admin || {};
+  const name     = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
+  const date     = fmtDate(a.eventDate || (client && client.eventDate) || '');
+  const hasSet2  = _setlistSets[1].length > 0;
+  const base     = window.location.origin;
+
+  function buildSongs(songs) {
+    return songs.length
+      ? songs.map(s => `
+        <div class="slp-song">
+          <span class="slp-title">${escHtml(s.title)}</span>
+          ${s.lead ? `<span class="slp-lead">${escHtml(s.lead)}</span>` : ''}
+        </div>`).join('')
+      : '<div class="slp-empty">No songs in this set.</div>';
+  }
+
+  document.getElementById('setlist-preview-content').innerHTML = `
+    <div class="slp-header">
+      <img class="slp-logo" src="${base}/Insta%20Profile.png" alt="Good Company">
+    </div>
+    <div class="slp-body${hasSet2 ? ' two-col' : ' one-col'}">
+      <div class="slp-set">
+        <div class="slp-set-header">Set 1</div>
+        ${buildSongs(_setlistSets[0])}
+      </div>
+      ${hasSet2 ? `<div class="slp-set">
+        <div class="slp-set-header">Set 2</div>
+        ${buildSongs(_setlistSets[1])}
+      </div>` : ''}
+    </div>
+    <div class="slp-footer">
+      <div class="slp-client-name">${escHtml(name)}</div>
+      ${date ? `<div class="slp-event-date">${escHtml(date)}</div>` : ''}
+    </div>`;
+}
+
+/* ============================================
    PDF DOWNLOAD
    ============================================ */
 function downloadSetlistPDF() {
@@ -1204,6 +1246,24 @@ document.addEventListener('DOMContentLoaded', function() {
     renderGigsDash();
     showView('view-gigs');
     window.scrollTo(0, 0);
+  });
+
+  /* View Setlist button */
+  document.getElementById('btn-view-setlist').addEventListener('click', () => {
+    renderSetlistPreview();
+    showView('view-setlist-preview');
+    window.scrollTo(0, 0);
+  });
+
+  /* Back from setlist preview */
+  document.getElementById('btn-back-to-gig').addEventListener('click', () => {
+    showView('view-gig');
+    window.scrollTo(0, 0);
+  });
+
+  /* Download PDF from preview */
+  document.getElementById('btn-print-setlist').addEventListener('click', () => {
+    if (_currentClientId) downloadSetlistPDF();
   });
 
   /* Save setlist */

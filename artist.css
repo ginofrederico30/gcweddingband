@@ -447,3 +447,98 @@
     color: #7a5c00;
 }
 .setlist-duration-warn i { color: #e0a000; font-size: 12px; flex-shrink: 0; }
+
+/* ============================================
+   SETLIST PREVIEW VIEW
+   ============================================ */
+#setlist-print-area {
+    padding: 32px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.slp-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.slp-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+.slp-body {
+    display: grid;
+    gap: 40px;
+    align-items: start;
+    margin-bottom: 24px;
+}
+.slp-body.two-col { grid-template-columns: 1fr 1fr; }
+.slp-body.one-col { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto 24px; }
+.slp-set-header {
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--navy);
+    padding-bottom: 10px;
+    margin-bottom: 2px;
+    border-bottom: 2.5px solid var(--navy);
+}
+.slp-song {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 4px;
+    border-bottom: 1px solid #ebebeb;
+}
+.slp-song:last-child { border-bottom: none; }
+.slp-title {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1a1a1a;
+}
+.slp-lead {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    color: #888;
+    background: #f0f0f0;
+    border-radius: 4px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+}
+.slp-empty {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #bbb;
+    text-align: center;
+    padding: 20px 0;
+}
+.slp-footer {
+    text-align: center;
+    padding-top: 18px;
+    border-top: 1.5px solid #e0ddd8;
+}
+.slp-client-name {
+    font-family: var(--font-serif, 'Bitter', serif);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 3px;
+}
+.slp-event-date {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+@media print {
+    .no-print { display: none !important; }
+    #setlist-print-area { box-shadow: none; border: none; padding: 0; }
+}

@@ -64,6 +64,7 @@
                 <h2 id="gig-client-name">—</h2>
                 <span class="page-subhead" id="gig-event-date"></span>
             </div>
+            <button class="btn-secondary" id="btn-view-setlist"><i class="fas fa-eye"></i> View Setlist</button>
         </div>
 
         <!-- Scope of Services -->
@@ -126,6 +127,22 @@
             <div id="setlist-unplaced-requests"></div>
         </div>
 
+    </div>
+</div>
+
+<!-- ============ VIEW: SETLIST PREVIEW ============ -->
+<div id="view-setlist-preview" class="portal-view hidden">
+    <div class="portal-container">
+        <div class="page-header no-print">
+            <div>
+                <button class="btn-back" id="btn-back-to-gig"><i class="fas fa-arrow-left"></i> Back</button>
+                <h2>Setlist Preview</h2>
+            </div>
+            <button class="btn-primary" id="btn-print-setlist"><i class="fas fa-download"></i> Download PDF</button>
+        </div>
+        <div class="card" id="setlist-print-area">
+            <div id="setlist-preview-content"></div>
+        </div>
     </div>
 </div>
 
