@@ -150,6 +150,26 @@
             </div>
         </div>
         <div id="add-song-list" style="max-height:320px;overflow-y:auto;border:1px solid #eee;border-radius:8px"></div>
+
+        <!-- Step 2: lead picker for request songs -->
+        <div id="add-song-lead-step" class="hidden" style="margin-top:16px;padding:16px;background:#f8f7f4;border:1px solid #e8e4de;border-radius:8px">
+            <div style="font-family:var(--font-sans);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px">Assign Lead Vocalist</div>
+            <div id="add-song-lead-title" style="font-family:var(--font-sans);font-size:14px;font-weight:600;color:#333;margin-bottom:12px"></div>
+            <select id="add-song-lead-select" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:var(--font-sans);margin-bottom:8px">
+                <option value="">Select lead vocalist…</option>
+                <option>Gino</option>
+                <option>Ian</option>
+                <option>Lee</option>
+                <option>Matt</option>
+                <option>Nick</option>
+                <option>Savannah</option>
+                <option>N/A (Instrumental)</option>
+                <option>Multiple</option>
+            </select>
+            <input type="text" id="add-song-lead-other" placeholder="e.g. Ian/Savannah" class="hidden"
+                style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:var(--font-sans);margin-bottom:8px;box-sizing:border-box">
+            <button id="btn-confirm-add-song" class="btn-primary" style="width:100%"><i class="fas fa-plus"></i> Confirm &amp; Add to Set</button>
+        </div>
     </div>
 </div>
 

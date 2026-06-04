@@ -877,18 +877,28 @@ function _addRequestToSet(reqId, setIndex) {
   const gcp = ADB.getGCP(_currentClientId);
   const req = (gcp.songRequests || []).find(r => r.id === reqId);
   if (!req) return;
-  const lead = ARTIST_LEAD_BY_TITLE[req.title.toLowerCase()] || '';
-  _setlistSets[setIndex].push({
+  // Route through lead picker modal
+  _pendingAddSong = {
     id:       req.id,
     title:    req.title,
     artist:   req.artist || '',
     spotify:  req.spotify || '',
     source:   'request',
     priority: req.type === 'Priority',
-    lead,
-  });
-  _renderSetlistUI();
-  showToast(`Added to Set ${setIndex + 1}`);
+  };
+  // Pre-select known lead if available
+  const knownLead = ARTIST_LEAD_BY_TITLE[req.title.toLowerCase()] || '';
+  document.getElementById('add-song-lead-title').textContent = req.title + (req.artist ? ' — ' + req.artist : '');
+  const leadSel = document.getElementById('add-song-lead-select');
+  leadSel.value = knownLead || '';
+  document.getElementById('add-song-lead-other').classList.add('hidden');
+  // Override set index radio
+  document.querySelector(`input[name="add-to-set"][value="${setIndex}"]`).checked = true;
+  // Show modal with only lead picker visible
+  document.getElementById('add-song-list').style.display = 'none';
+  document.getElementById('add-song-search').style.display = 'none';
+  document.getElementById('add-song-lead-step').classList.remove('hidden');
+  document.getElementById('modal-add-song').classList.remove('hidden');
 }
 
 function _renderUnplacedRequests() {
@@ -999,13 +1009,16 @@ function _renderAddSongList(query) {
     return;
   }
 
-  list.innerHTML = available.map(s => `
+  list.innerHTML = available.map(s => {
+    const lead = s.lead || ARTIST_LEAD_BY_TITLE[s.title.toLowerCase()] || '';
+    return `
     <div class="add-song-item${s.dim ? ' dim' : ''}"
          data-id="${escHtml(s.id)}"
          data-title="${escHtml(s.title)}"
          data-artist="${escHtml(s.artist)}"
          data-source="${s.source}"
          data-spotify="${escHtml(s.spotify||'')}"
+         data-lead="${escHtml(lead)}"
          data-priority="${s.priority ? '1' : ''}">
       <div style="min-width:0;flex:1">
         <div style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.title)}</div>
@@ -1014,18 +1027,42 @@ function _renderAddSongList(query) {
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px">Request</span>` : ''}
         ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px">Priority</span>` : ''}
+        ${lead ? `<span class="status-badge setlist-lead-badge" style="font-size:9px">${escHtml(lead)}</span>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   list.querySelectorAll('.add-song-item').forEach(item => {
     item.addEventListener('click', function() {
+      const source = this.dataset.source;
+      if (source === 'request') {
+        // Show lead picker step for requested songs
+        _pendingAddSong = {
+          id:       this.dataset.id,
+          title:    this.dataset.title,
+          artist:   this.dataset.artist,
+          source:   'request',
+          spotify:  this.dataset.spotify || '',
+          priority: this.dataset.priority === '1',
+        };
+        document.getElementById('add-song-lead-title').textContent = this.dataset.title + ' — ' + this.dataset.artist;
+        document.getElementById('add-song-lead-select').value = '';
+        document.getElementById('add-song-lead-other').value = '';
+        document.getElementById('add-song-lead-other').classList.add('hidden');
+        document.getElementById('add-song-lead-step').classList.remove('hidden');
+        document.getElementById('add-song-list').style.display = 'none';
+        document.getElementById('add-song-search').style.display = 'none';
+        return;
+      }
+      // Catalog song — add directly with lead from data attribute
       const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
       _setlistSets[setIndex].push({
         id:       this.dataset.id,
         title:    this.dataset.title,
         artist:   this.dataset.artist,
-        source:   this.dataset.source,
+        source:   'catalog',
         spotify:  this.dataset.spotify || '',
+        lead:     this.dataset.lead || '',
         priority: this.dataset.priority === '1',
       });
       document.getElementById('modal-add-song').classList.add('hidden');
@@ -1034,6 +1071,8 @@ function _renderAddSongList(query) {
     });
   });
 }
+
+let _pendingAddSong = null;
 
 /* ============================================
    PDF DOWNLOAD
@@ -1173,11 +1212,58 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   /* Add Song modal close */
-  document.getElementById('modal-add-song-close').addEventListener('click', () => {
+  function closeAddSongModal() {
     document.getElementById('modal-add-song').classList.add('hidden');
-  });
+    document.getElementById('add-song-lead-step').classList.add('hidden');
+    document.getElementById('add-song-list').style.display = '';
+    document.getElementById('add-song-search').style.display = '';
+    _pendingAddSong = null;
+  }
+  document.getElementById('modal-add-song-close').addEventListener('click', closeAddSongModal);
   document.getElementById('modal-add-song').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.add('hidden');
+    if (e.target === this) closeAddSongModal();
+  });
+
+  /* Lead picker: Multiple → show free-text field */
+  document.getElementById('add-song-lead-select').addEventListener('change', function() {
+    document.getElementById('add-song-lead-other').classList.toggle('hidden', this.value !== 'Multiple');
+  });
+
+  /* Lead picker confirm — add requested song to setlist and master catalog */
+  document.getElementById('btn-confirm-add-song').addEventListener('click', function() {
+    if (!_pendingAddSong) return;
+    const sel = document.getElementById('add-song-lead-select').value;
+    if (!sel) { showToast('Please select a lead vocalist.'); return; }
+    const lead = sel === 'Multiple'
+      ? (document.getElementById('add-song-lead-other').value.trim() || sel)
+      : sel === 'N/A (Instrumental)' ? 'N/A' : sel;
+
+    const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
+    _setlistSets[setIndex].push({ ..._pendingAddSong, lead });
+
+    // Auto-add to master catalog if not already present
+    const catalog = ADB.getMasterSongs();
+    const alreadyInCatalog = catalog.some(
+      s => s.title.toLowerCase() === _pendingAddSong.title.toLowerCase()
+        && s.artist.toLowerCase() === _pendingAddSong.artist.toLowerCase()
+    );
+    if (!alreadyInCatalog) {
+      catalog.push({
+        id:       _pendingAddSong.id,
+        title:    _pendingAddSong.title,
+        artist:   _pendingAddSong.artist,
+        spotify:  _pendingAddSong.spotify || '',
+        lead:     lead,
+        addedAt:  Date.now(),
+      });
+      ADB.setMasterSongs(catalog);
+      showToast(`Added to Set ${setIndex + 1} & master catalog`);
+    } else {
+      showToast(`Added to Set ${setIndex + 1}`);
+    }
+
+    closeAddSongModal();
+    _renderSetlistUI();
   });
 
   /* Add Song search */
