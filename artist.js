@@ -328,13 +328,13 @@ function renderGigDetail(clientId) {
   if (songsToLearn.length) {
     stlCard.classList.remove('hidden');
     stlEl.innerHTML = songsToLearn.map(s => {
-      const spotifyLink = s.spotify
-        ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link"><i class="fab fa-spotify"></i></a>`
-        : '';
+      const artistDisplay = s.spotify
+        ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link">${escHtml(s.artist || '—')} <i class="fab fa-spotify"></i></a>`
+        : escHtml(s.artist || '—');
       return `
       <div class="artist-info-row">
         <div class="artist-info-label">${escHtml(s.title)}</div>
-        <div class="artist-info-val">${escHtml(s.artist || '—')} ${spotifyLink}</div>
+        <div class="artist-info-val">${artistDisplay}</div>
       </div>`;
     }).join('');
   } else {
