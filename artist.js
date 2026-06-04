@@ -243,7 +243,20 @@ function renderGigsDash() {
         ? `<span class="status-badge status-pending">Songs Selected</span>`
         : `<span class="status-badge status-none">No Songs Yet</span>`;
 
+    const chk = gcp.checklist || {};
     const venue = cl.venue || a.venue || '';
+
+    const soundcheckRaw = subtractMinutes(chk['cl-guest-arrival'], 60);
+    function kt(icon, label, raw) {
+      const val = fmtTime12(raw);
+      return val ? `<span class="artist-key-time"><i class="fas ${icon}"></i>${label}: <strong>${val}</strong></span>` : '';
+    }
+    const keyTimesHtml = [
+      kt('fa-truck-loading', 'Load-in',    chk['cl-arrival-time']),
+      kt('fa-microphone',    'Soundcheck', soundcheckRaw),
+      kt('fa-utensils',      'Dinner',     chk['cl-dinner-time']),
+      kt('fa-music',         'Band Start', chk['cl-dance-floor']),
+    ].filter(Boolean).join('');
 
     const displayName = c.spouseName ? c.name + ' & ' + c.spouseName : c.name;
     return `
@@ -254,6 +267,7 @@ function renderGigsDash() {
             <span><i class="fas fa-calendar-alt"></i>${fmtDateShort(a.eventDate || c.eventDate)}</span>
             ${venue ? `<span><i class="fas fa-map-marker-alt"></i>${escHtml(venue)}</span>` : ''}
           </div>
+          ${keyTimesHtml ? `<div class="artist-key-times-row">${keyTimesHtml}</div>` : ''}
         </div>
         <div class="artist-gig-right">
           ${setlistBadge}
@@ -298,20 +312,10 @@ function renderGigDetail(clientId) {
   document.getElementById('gig-client-name').textContent = gigDisplayName;
   document.getElementById('gig-event-date').textContent  = fmtDate(a.eventDate || client.eventDate);
 
-  /* ---- Key Times ---- */
-  const soundcheckTime = subtractMinutes(chk['cl-guest-arrival'], 60);
-  const keyTimes = [
-    { icon: 'fa-truck-loading', label: 'Load-in',              val: fmtTime12(chk['cl-arrival-time']), raw: chk['cl-arrival-time'] },
-    { icon: 'fa-microphone',    label: 'Soundcheck',           val: fmtTime12(soundcheckTime),         raw: soundcheckTime },
-    { icon: 'fa-utensils',      label: 'Dinner',               val: fmtTime12(chk['cl-dinner-time']),  raw: chk['cl-dinner-time'] },
-    { icon: 'fa-music',         label: 'Dance Floor / Band Start', val: fmtTime12(chk['cl-dance-floor']), raw: chk['cl-dance-floor'] },
-  ];
-  document.getElementById('gig-key-times').innerHTML = keyTimes.map(item => `
-    <div class="artist-timeline-row">
-      <div class="artist-timeline-icon"><i class="fas ${item.icon}"></i></div>
-      <div class="artist-timeline-label">${item.label}</div>
-      <div class="artist-timeline-val${item.val ? '' : ' empty'}">${item.val || '—'}</div>
-    </div>`).join('');
+  /* ---- Scope of Services ---- */
+  document.getElementById('gig-scope').innerHTML = scope.length
+    ? scope.map(s => `<span class="status-badge status-info" style="font-size:12px;padding:5px 14px">${escHtml(s)}</span>`).join('')
+    : '<span style="font-family:var(--font-sans);font-size:13px;color:#bbb">No services selected yet.</span>';
 
   /* ---- Songs to Learn ---- */
   const savedSetlist = ADB.getSetlists()[clientId];
