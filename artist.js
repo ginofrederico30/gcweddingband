@@ -381,6 +381,13 @@ function renderGigDetail(clientId) {
     scheduleItems.push(si('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time));
   });
 
+  // Inject special dances
+  const scheduleSpecialDances = (gcp.specialDances || []).filter(d => d.time);
+  scheduleSpecialDances.forEach(d => {
+    const label = `${d.name}${d.withRelation ? ' (' + d.withRelation + ')' : ''}${d.withName ? ' & ' + d.withName + (d.title ? ' (' + d.title + ')' : '') : ''}`;
+    scheduleItems.push(si('fa-user-friends', 'Special Dance: ' + label, fmtTime12(d.time), d.time));
+  });
+
   // Sort chronologically; treat 00:00–07:59 as next-day to keep midnight load-out at end
   function toSortMin(t) {
     if (!t) return null;

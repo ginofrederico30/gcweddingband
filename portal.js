@@ -975,9 +975,9 @@ function renderClientBandSchedule(clientId) {
     const t = addMinutes(cl['cl-reception-start'], 6);
     addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
   }
-  if (cl['cl-first-dance'] === 'Yes') {
+  if (cl['cl-first-dance']) {
     const fdSong = cl['cl-first-dance-song'] ? ' — ' + cl['cl-first-dance-song'] : '';
-    addRow('fa-heart', 'First Dance' + fdSong, cl['cl-first-dance-length'] || '', cl['cl-first-dance']);
+    addRow('fa-heart', 'First Dance' + fdSong, fmtTime12(cl['cl-first-dance']), cl['cl-first-dance']);
   }
   addRow('fa-utensils',     'Dinner',            cl['cl-dinner-time']     ? fmtTime12(cl['cl-dinner-time'])     : '', cl['cl-dinner-time']);
   addRow('fa-music',        'Dance Floor Opens', cl['cl-dance-floor']     ? fmtTime12(cl['cl-dance-floor'])     : '', cl['cl-dance-floor']);
