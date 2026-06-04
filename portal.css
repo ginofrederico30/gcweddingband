@@ -2534,8 +2534,10 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 .speech-add-row select { width: 220px; flex-shrink: 0; }
 @media (max-width: 600px) {
     .speech-add-row { flex-direction: column; align-items: stretch; }
-    .speech-add-row input[type="time"],
-    .speech-add-row input[type="text"]:first-of-type { width: 100%; }
+    .speech-add-row input[type="time"] { width: auto; align-self: flex-start; }
+    .speech-add-row input[type="text"] { width: 100%; }
+    .speech-add-row select { width: 100%; }
+    .speech-add-row .btn-primary { width: 100%; }
 }
 
 /* Special dances add form grid */
