@@ -62,6 +62,8 @@ function fmtTime12(t) {
   return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
 }
 
+function addMinutes(t, mins) { return subtractMinutes(t, -mins); }
+
 function subtractMinutes(t, mins) {
   if (!t) return null;
   const [h, m] = t.split(':').map(Number);
@@ -356,6 +358,12 @@ function renderGigDetail(clientId) {
     ] : []),
     si('fa-cocktail',       'Cocktail Hour',      cocktailVal,                                                 chk['cl-cocktail-start']),
     si('fa-glass-cheers',   'Reception Starts',   fmtTime12(chk['cl-reception-start']),                       chk['cl-reception-start']),
+    ...(chk['cl-announce-party'] === 'Yes' && chk['cl-reception-start'] ? [
+      si('fa-users', 'Wedding Party Entrance', fmtTime12(addMinutes(chk['cl-reception-start'], 5)), addMinutes(chk['cl-reception-start'], 5)),
+    ] : []),
+    ...(chk['cl-grand-entrance'] === 'Yes' && chk['cl-reception-start'] ? [
+      si('fa-star', 'Grand Entrance', fmtTime12(addMinutes(chk['cl-reception-start'], 6)), addMinutes(chk['cl-reception-start'], 6)),
+    ] : []),
     si('fa-utensils',       'Dinner',             fmtTime12(chk['cl-dinner-time']),                           chk['cl-dinner-time']),
     si('fa-heart',          'First Dance',        fmtTime12(chk['cl-first-dance']),                           chk['cl-first-dance']),
     si('fa-music',          'Dance Floor Opens',  fmtTime12(chk['cl-dance-floor']),                           chk['cl-dance-floor']),

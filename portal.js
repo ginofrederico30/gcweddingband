@@ -233,6 +233,10 @@ function subtractMinutes(t, mins) {
   return String(rh).padStart(2,'0') + ':' + String(rm).padStart(2,'0');
 }
 
+function addMinutes(t, mins) {
+  return subtractMinutes(t, -mins);
+}
+
 function escHtml(str) {
   return String(str || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -671,6 +675,14 @@ function renderAdminSchedule(clientId) {
     if (cocktailStart) addRow('fa-cocktail', 'Cocktail Hour', cocktailStart, cl['cl-cocktail-start']);
   }
   addRow('fa-glass-cheers',   'Reception Starts',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
+  if (cl['cl-announce-party'] === 'Yes' && cl['cl-reception-start']) {
+    const t = addMinutes(cl['cl-reception-start'], 5);
+    addRow('fa-users', 'Wedding Party Entrance', fmtTime12(t), t);
+  }
+  if (cl['cl-grand-entrance'] === 'Yes' && cl['cl-reception-start']) {
+    const t = addMinutes(cl['cl-reception-start'], 6);
+    addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
+  }
   addRow('fa-utensils',       'Dinner',            cl['cl-dinner-time']     ? fmtTime12(cl['cl-dinner-time'])     : '', cl['cl-dinner-time']);
   addRow('fa-heart',          'First Dance',       cl['cl-first-dance']     ? fmtTime12(cl['cl-first-dance'])     : '', cl['cl-first-dance']);
   addRow('fa-music',          'Dance Floor Opens', cl['cl-dance-floor']     ? fmtTime12(cl['cl-dance-floor'])     : '', cl['cl-dance-floor']);
@@ -955,6 +967,14 @@ function renderClientBandSchedule(clientId) {
   }
 
   addRow('fa-door-open',    'Reception Begins',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
+  if (cl['cl-announce-party'] === 'Yes' && cl['cl-reception-start']) {
+    const t = addMinutes(cl['cl-reception-start'], 5);
+    addRow('fa-users', 'Wedding Party Entrance', fmtTime12(t), t);
+  }
+  if (cl['cl-grand-entrance'] === 'Yes' && cl['cl-reception-start']) {
+    const t = addMinutes(cl['cl-reception-start'], 6);
+    addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
+  }
   if (cl['cl-first-dance'] === 'Yes') {
     const fdSong = cl['cl-first-dance-song'] ? ' — ' + cl['cl-first-dance-song'] : '';
     addRow('fa-heart', 'First Dance' + fdSong, cl['cl-first-dance-length'] || '', cl['cl-first-dance']);
