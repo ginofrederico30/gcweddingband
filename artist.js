@@ -8,7 +8,10 @@ let _gigsDashLoaded = false;
 
 function artistLogout() {
   _gigsDashLoaded = false;
-  _auth.signOut();
+  _auth.signOut().then(() => {
+    document.getElementById('pnav-logout').classList.add('hidden');
+    showView('view-login');
+  }).catch(e => console.error('Sign out error:', e));
 }
 
 /* ---- View management ---- */
