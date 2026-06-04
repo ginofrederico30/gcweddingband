@@ -954,40 +954,9 @@ function _renderUnplacedRequests() {
 async function saveSetlist(clientId) {
   const btn = document.getElementById('btn-save-setlist');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…'; }
+  const setlists = ADB.getSetlists();
+  setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
   try {
-    // Sync request songs in setlist → master catalog
-    const requestSongs = [..._setlistSets[0], ..._setlistSets[1]].filter(s => s.source === 'request');
-    if (requestSongs.length) {
-      // Fresh read from Firestore so we don't overwrite concurrent changes
-      const msDoc = await _db.doc('config/masterSongs').get();
-      const catalog = msDoc.exists ? (msDoc.data().songs || []) : [];
-      let catalogChanged = false;
-      requestSongs.forEach(song => {
-        const alreadyIn = catalog.some(
-          c => c.id === song.id ||
-               (c.title.toLowerCase() === song.title.toLowerCase() &&
-                c.artist.toLowerCase() === (song.artist || '').toLowerCase())
-        );
-        if (!alreadyIn) {
-          catalog.push({
-            id:      song.id,
-            title:   song.title,
-            artist:  song.artist || '',
-            spotify: song.spotify || '',
-            lead:    song.lead || '',
-            addedAt: Date.now(),
-          });
-          catalogChanged = true;
-        }
-      });
-      if (catalogChanged) {
-        ADB.setMasterSongs(catalog);
-      }
-    }
-
-    // Save setlist
-    const setlists = ADB.getSetlists();
-    setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
     await ADB.setSetlist(clientId, setlists[clientId]);
     showToast('Setlist saved!');
   } catch(e) {
@@ -1264,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('add-song-lead-other').classList.toggle('hidden', this.value !== 'Multiple');
   });
 
-  /* Lead picker confirm — add requested song to setlist and master catalog */
+  /* Lead picker confirm — add requested song to setlist */
   document.getElementById('btn-confirm-add-song').addEventListener('click', function() {
     if (!_pendingAddSong) return;
     const sel = document.getElementById('add-song-lead-select').value;
@@ -1275,28 +1244,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
     _setlistSets[setIndex].push({ ..._pendingAddSong, lead });
-
-    // Auto-add to master catalog if not already present
-    const catalog = ADB.getMasterSongs();
-    const alreadyInCatalog = catalog.some(
-      s => s.title.toLowerCase() === _pendingAddSong.title.toLowerCase()
-        && s.artist.toLowerCase() === _pendingAddSong.artist.toLowerCase()
-    );
-    if (!alreadyInCatalog) {
-      catalog.push({
-        id:       _pendingAddSong.id,
-        title:    _pendingAddSong.title,
-        artist:   _pendingAddSong.artist,
-        spotify:  _pendingAddSong.spotify || '',
-        lead:     lead,
-        addedAt:  Date.now(),
-      });
-      ADB.setMasterSongs(catalog);
-      showToast(`Added to Set ${setIndex + 1} & master catalog`);
-    } else {
-      showToast(`Added to Set ${setIndex + 1}`);
-    }
-
+    showToast(`Added to Set ${setIndex + 1}`);
     closeAddSongModal();
     _renderSetlistUI();
   });

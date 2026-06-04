@@ -214,10 +214,6 @@ const ADB = {
   getClients()     { return this._cache.clients || []; },
   getContract(cid) { return this._cache.contracts[cid] || { admin:{}, client:{}, signedAt:null }; },
   getMasterSongs() { return this._cache.masterSongs || []; },
-  setMasterSongs(arr) {
-    this._cache.masterSongs = arr;
-    _db.doc('config/masterSongs').set({ songs: arr }).catch(_fsErr);
-  },
   getSetlists()    { return this._cache.setlists || {}; },
   getGCP(cid) {
     const d = this._cache.gcp[cid] || {};
