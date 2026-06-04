@@ -1127,7 +1127,7 @@ function downloadSetlistPDF() {
   const client   = ADB.getClients().find(c => c.id === _currentClientId);
   const contract = ADB.getContract(_currentClientId);
   const a        = contract.admin || {};
-  const name     = client ? client.name : 'Client';
+  const name     = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
   const date     = fmtDate(a.eventDate || (client && client.eventDate) || '');
   const base     = window.location.origin;
   const hasSet2  = _setlistSets[1].length > 0;
