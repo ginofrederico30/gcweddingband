@@ -48,7 +48,7 @@ const SEED_SONGS = [
   { title: "Levitating",                                 artist: "Dua Lipa",                        lead: "Savannah" },
   { title: "Lil Boo Thang",                              artist: "Paul Russell",                    lead: "Matt" },
   { title: "Love Story",                                 artist: "Taylor Swift",                    lead: "Savannah" },
-  { title: "Man! I Feel Like a Woman!",                  artist: "Shania Twain",                    lead: "Savannah" },
+  { title: "Man! I Feel Like a Woman",                   artist: "Shania Twain",                    lead: "Savannah" },
   { title: "Man I Need",                                 artist: "Olivia Dean",                     lead: "Savannah" },
   { title: "Mr. Brightside",                             artist: "The Killers",                     lead: "Nick" },
   { title: "Music For a Sushi Restaurant",               artist: "Harry Styles",                    lead: "Matt" },
@@ -106,17 +106,25 @@ function initSeedData() {
     }));
     DB.setMasterSongs(songs);
   } else {
-    // Migrate existing songs that are missing the lead field
     const songs = DB.getMasterSongs();
-    const missing = songs.filter(s => !s.lead && s.lead !== '');
-    if (missing.length) {
-      missing.forEach(s => {
-        const lead = LEAD_BY_TITLE[s.title.toLowerCase()];
-        if (lead !== undefined) s.lead = lead;
-        else s.lead = '';
-      });
-      DB.setMasterSongs(songs);
-    }
+    let changed = false;
+
+    // Migrate: fill in missing lead fields
+    songs.filter(s => !s.lead && s.lead !== '').forEach(s => {
+      const lead = LEAD_BY_TITLE[s.title.toLowerCase()];
+      s.lead = (lead !== undefined) ? lead : '';
+      changed = true;
+    });
+
+    // Migrate: correct known title typos (safe — client selections use id, not title)
+    const TITLE_FIXES = {
+      'Man! I Feel Like a Woman!': 'Man! I Feel Like a Woman'
+    };
+    songs.forEach(s => {
+      if (TITLE_FIXES[s.title]) { s.title = TITLE_FIXES[s.title]; changed = true; }
+    });
+
+    if (changed) DB.setMasterSongs(songs);
   }
 }
 
@@ -739,7 +747,7 @@ function renderAdminSongSelections(clientId) {
   const gcp      = DB.getGCP(clientId);
   const songs    = gcp.songs || {};
   const requests = gcp.songRequests || [];
-  const allSongs = DB.getMasterSongs();
+  const allSongs = DB.getMasterSongs().sort((a, b) => a.title.localeCompare(b.title));
   const container = document.getElementById('admin-song-selections');
 
   // Normalize catalog prefs
@@ -810,9 +818,9 @@ function renderAdminSongSelections(clientId) {
    ============================================ */
 function renderMasterSongList() {
   const query = (document.getElementById('song-search').value || '').toLowerCase();
-  const songs = DB.getMasterSongs().filter(s =>
-    !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)
-  );
+  const songs = DB.getMasterSongs()
+    .filter(s => !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query))
+    .sort((a, b) => a.title.localeCompare(b.title));
   document.getElementById('song-count-label').textContent = DB.getMasterSongs().length + ' songs';
   const container = document.getElementById('master-song-list');
   if (!songs.length) { container.innerHTML = '<p class="empty-state">No songs found.</p>'; return; }
@@ -1613,9 +1621,9 @@ function renderSongSelector(clientId) {
   Object.keys(rawPrefs).forEach(k => { prefs[k] = _normalizePref(rawPrefs[k]); });
 
   const query    = (document.getElementById('song-selector-search').value || '').toLowerCase();
-  const allSongs = DB.getMasterSongs().filter(s =>
-    !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)
-  );
+  const allSongs = DB.getMasterSongs()
+    .filter(s => !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query))
+    .sort((a, b) => a.title.localeCompare(b.title));
   const newSongs = allSongs.filter(s => s.addedAt > client.createdAt);
 
   const { total } = _songSelectionCounts(prefs);

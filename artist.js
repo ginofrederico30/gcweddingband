@@ -1022,14 +1022,15 @@ function _renderAddSongList(query) {
 
   const q = query.toLowerCase().trim();
 
-  // Build list: client-selected songs first, then full catalog, then requests
-  const selected = catalog
+  // Build list: client-selected songs first (alpha), then requests, then full catalog (alpha)
+  const sortAlpha = arr => arr.sort((a, b) => a.title.localeCompare(b.title));
+  const selected = sortAlpha(catalog
     .filter(s => (prefs[s.id] === 'Priority' || prefs[s.id] === 'Yes') && !inSetlist.has(s.id))
-    .map(s => ({ ...s, source:'catalog', priority: prefs[s.id] === 'Priority' }));
+    .map(s => ({ ...s, source:'catalog', priority: prefs[s.id] === 'Priority' })));
 
-  const unselected = catalog
+  const unselected = sortAlpha(catalog
     .filter(s => !prefs[s.id] && !inSetlist.has(s.id))
-    .map(s => ({ ...s, source:'catalog', dim:true }));
+    .map(s => ({ ...s, source:'catalog', dim:true })));
 
   const requestItems = reqs
     .filter(r => !inSetlist.has(r.id))
