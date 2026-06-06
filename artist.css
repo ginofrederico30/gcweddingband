@@ -497,6 +497,9 @@
 }
 .slp-body.two-col { grid-template-columns: 1fr 1fr; }
 .slp-body.one-col { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto 24px; }
+@media (max-width: 600px) {
+    .slp-body.two-col { grid-template-columns: 1fr; gap: 32px; }
+}
 .slp-set-header {
     text-align: center;
     font-family: var(--font-sans);
