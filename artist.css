@@ -60,6 +60,28 @@
 }
 
 /* ---- Past events divider ---- */
+.artist-year-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 28px 0 16px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--navy);
+}
+.artist-year-header:first-child { margin-top: 0; }
+.artist-year-header::before,
+.artist-year-header::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--navy);
+    opacity: 0.12;
+}
+
 .artist-past-divider {
     display: flex;
     align-items: center;

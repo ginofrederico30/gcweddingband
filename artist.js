@@ -281,7 +281,21 @@ function renderGigsDash() {
       </div>`;
   }
 
-  let html = upcoming.map(gigCard).join('');
+  // Group upcoming by year
+  const upcomingByYear = {};
+  upcoming.forEach(c => {
+    const year = (c.eventDate || '').slice(0, 4) || 'TBD';
+    if (!upcomingByYear[year]) upcomingByYear[year] = [];
+    upcomingByYear[year].push(c);
+  });
+
+  let html = '';
+  const years = Object.keys(upcomingByYear).sort();
+  years.forEach(year => {
+    html += `<div class="artist-year-header"><span>${year === 'TBD' ? 'Date TBD' : year}</span></div>`;
+    html += upcomingByYear[year].map(gigCard).join('');
+  });
+
   if (past.length) {
     html += `<div class="artist-past-divider"><span>Past Events</span></div>`;
     html += past.map(gigCard).join('');
