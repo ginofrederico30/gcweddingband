@@ -2440,6 +2440,17 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 
     /* Prevent iOS from zooming in on focused inputs (requires font-size >= 16px) */
     input, select, textarea { font-size: 16px !important; }
+
+    /* Time inputs: stay compact — don't stretch to full column width.
+       iOS centers the clock value in the box, so full-width looks broken. */
+    .field-group input[type="time"],
+    .sd-add-grid input[type="time"],
+    .speech-add-row input[type="time"] {
+        width: auto;
+        min-width: 130px;
+        max-width: 160px;
+        align-self: flex-start;
+    }
 }
 
 @media (max-width: 480px) {
