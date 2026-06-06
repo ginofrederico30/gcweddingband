@@ -479,13 +479,15 @@ function renderPresignedEditFields(clientId) {
   const a  = contract.admin  || {};
   const cl = contract.client || {};
   const g  = id => document.getElementById(id);
-  if (g('ps-event-date'))   g('ps-event-date').value   = a.eventDate    || '';
-  if (g('ps-venue'))        g('ps-venue').value         = cl.venue       || '';
-  if (g('ps-start-time'))   g('ps-start-time').value   = cl.startTime   || '';
-  if (g('ps-end-time'))     g('ps-end-time').value     = cl.endTime     || '';
-  if (g('ps-contact-name')) g('ps-contact-name').value = cl.contactName || '';
-  if (g('ps-phone'))        g('ps-phone').value         = cl.phone       || '';
-  if (g('ps-dress-code'))   g('ps-dress-code').value   = cl.dressCode   || '';
+  const client2 = DB.getClients().find(c => c.id === clientId) || {};
+  if (g('ps-event-date'))   g('ps-event-date').value   = a.eventDate      || '';
+  if (g('ps-venue'))        g('ps-venue').value         = cl.venue         || '';
+  if (g('ps-start-time'))   g('ps-start-time').value   = cl.startTime     || '';
+  if (g('ps-end-time'))     g('ps-end-time').value     = cl.endTime       || '';
+  if (g('ps-contact-name')) g('ps-contact-name').value = cl.contactName   || '';
+  if (g('ps-spouse-name'))  g('ps-spouse-name').value  = client2.spouseName || '';
+  if (g('ps-phone'))        g('ps-phone').value         = cl.phone         || '';
+  if (g('ps-dress-code'))   g('ps-dress-code').value   = cl.dressCode     || '';
   const saved = a.scopeOfServices || [];
   document.querySelectorAll('input[name="ps-scope-service"]').forEach(cb => {
     cb.checked = saved.includes(cb.value);
@@ -505,11 +507,13 @@ function savePresignedFields(clientId) {
   contract.client.contactName  = g('ps-contact-name') ? g('ps-contact-name').value.trim()  : contract.client.contactName || '';
   contract.client.phone        = g('ps-phone')        ? g('ps-phone').value.trim()          : contract.client.phone      || '';
   contract.client.dressCode    = g('ps-dress-code')   ? g('ps-dress-code').value            : contract.client.dressCode  || '';
-  // Sync event date to client record
-  if (contract.admin.eventDate) {
-    const clients = DB.getClients();
-    const client  = clients.find(c => c.id === clientId);
-    if (client) { client.eventDate = contract.admin.eventDate; DB.setClients(clients); }
+  // Sync event date and spouse name to client record
+  const clients = DB.getClients();
+  const client  = clients.find(c => c.id === clientId);
+  if (client) {
+    if (contract.admin.eventDate) client.eventDate = contract.admin.eventDate;
+    if (g('ps-spouse-name')) client.spouseName = g('ps-spouse-name').value.trim() || client.spouseName || '';
+    DB.setClients(clients);
   }
   DB.setContract(clientId, contract);
   showToast('Contract details saved.');
@@ -536,6 +540,7 @@ function openClientDetail(clientId) {
   // Admin fields
   const a = contract.admin || {};
   document.getElementById('ac-client-name').value     = a.clientName    || client.name;
+  document.getElementById('ac-spouse-name').value     = client.spouseName || '';
   document.getElementById('ac-event-date').value       = a.eventDate     || client.eventDate || '';
   document.getElementById('ac-performance-fee').value  = a.performanceFee ? fmtMoneyInput(a.performanceFee) : '';
   document.getElementById('ac-transportation').value   = a.transportation  ? fmtMoneyInput(a.transportation)  : '';
@@ -2284,6 +2289,11 @@ document.addEventListener('DOMContentLoaded', function() {
       scopeOfServices: checkedServices
     };
     DB.setContract(currentAdminClientId, contract);
+    // Sync spouse name to client record
+    const spouseVal = document.getElementById('ac-spouse-name').value.trim();
+    const _clients  = DB.getClients();
+    const _client   = _clients.find(c => c.id === currentAdminClientId);
+    if (_client) { _client.spouseName = spouseVal; DB.setClients(_clients); }
     showToast('Contract info saved.');
     renderAdminDash();
     showView('view-admin-dash');
