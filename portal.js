@@ -1160,6 +1160,9 @@ function renderClientContract(clientId) {
     };
     _setTimeTbd('cc-start-time', 'cc-start-time-tbd', cl.startTime);
     _setTimeTbd('cc-end-time',   'cc-end-time-tbd',   cl.endTime);
+    // Show TBD notice if either stored value is TBD
+    const _notice = document.getElementById('tbd-time-notice');
+    if (_notice) _notice.classList.toggle('hidden', cl.startTime !== 'TBD' && cl.endTime !== 'TBD');
     document.getElementById('cc-venue').value      = cl.venue     || '';
 
     // Pre-fill Section 22 contact inputs
@@ -1231,11 +1234,14 @@ function toggleContractFieldsReadonly(signed, cl) {
   ['cc-start-time-hint', 'cc-end-time-hint', 'cc-start-time-tbd', 'cc-end-time-tbd'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      // For checkboxes, hide the parent label element
       const target = (el.type === 'checkbox') ? el.closest('label') : el;
       if (target) target.classList.toggle('hidden', signed);
     }
   });
+
+  // Show TBD notice when signed and either time is TBD
+  const notice = document.getElementById('tbd-time-notice');
+  if (notice) notice.classList.toggle('hidden', !signed || (cl.startTime !== 'TBD' && cl.endTime !== 'TBD'));
 
   const pairs = [
     { input: 'cc-start-time',    display: 'cc-start-time-display',    val: fmtTimeSafe(cl.startTime) },
@@ -2375,11 +2381,17 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   /* ---- TBD checkboxes for start/end time ---- */
+  const _updateTbdNotice = () => {
+    const startTbd = document.getElementById('cc-start-time-tbd').checked;
+    const endTbd   = document.getElementById('cc-end-time-tbd').checked;
+    document.getElementById('tbd-time-notice').classList.toggle('hidden', !startTbd && !endTbd);
+  };
   [['cc-start-time-tbd', 'cc-start-time'], ['cc-end-time-tbd', 'cc-end-time']].forEach(([cbId, inputId]) => {
     document.getElementById(cbId).addEventListener('change', function() {
       const inp = document.getElementById(inputId);
       if (this.checked) { inp.value = ''; inp.disabled = true; }
       else              { inp.disabled = false; }
+      _updateTbdNotice();
     });
   });
 
