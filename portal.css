@@ -1764,6 +1764,26 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     border-color: #c89a00;
     box-shadow: 0 0 0 3px rgba(240,180,41,0.15);
 }
+.inline-client-input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.time-tbd-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.tbd-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    white-space: nowrap;
+}
 
 /* ============================================
    Contract — Inline readonly display

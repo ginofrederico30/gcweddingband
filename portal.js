@@ -222,6 +222,11 @@ function fmtTime12(val) {
   const ampm = h >= 12 ? 'PM' : 'AM';
   return (h % 12 || 12) + ':' + m + ' ' + ampm;
 }
+function fmtTimeSafe(val) {
+  if (!val) return '—';
+  if (val === 'TBD') return 'TBD';
+  return fmtTime12(val);
+}
 
 function subtractMinutes(t, mins) {
   if (!t) return null;
@@ -545,8 +550,8 @@ function openClientDetail(clientId) {
 
   // Client-filled fields (readonly)
   const cl = contract.client || {};
-  document.getElementById('ac-start-time').value            = cl.startTime ? fmtTime12(cl.startTime) : '';
-  document.getElementById('ac-end-time').value              = cl.endTime   ? fmtTime12(cl.endTime)   : '';
+  document.getElementById('ac-start-time').value            = cl.startTime ? fmtTimeSafe(cl.startTime) : '';
+  document.getElementById('ac-end-time').value              = cl.endTime   ? fmtTimeSafe(cl.endTime)   : '';
   document.getElementById('ac-location').value              = cl.venue     || '';
   document.getElementById('ac-client-address').value        = cl.address   || '';
   document.getElementById('ac-client-email-contract').value = cl.email     || '';
@@ -1147,8 +1152,14 @@ function renderClientContract(clientId) {
     toggleContractFieldsReadonly(false, cl);
 
     // Pre-fill Event Details inputs
-    document.getElementById('cc-start-time').value = cl.startTime || '';
-    document.getElementById('cc-end-time').value   = cl.endTime   || '';
+    const _setTimeTbd = (inputId, cbId, val) => {
+      const inp = document.getElementById(inputId);
+      const cb  = document.getElementById(cbId);
+      if (val === 'TBD') { cb.checked = true; inp.value = ''; inp.disabled = true; }
+      else { cb.checked = false; inp.value = val || ''; inp.disabled = false; }
+    };
+    _setTimeTbd('cc-start-time', 'cc-start-time-tbd', cl.startTime);
+    _setTimeTbd('cc-end-time',   'cc-end-time-tbd',   cl.endTime);
     document.getElementById('cc-venue').value      = cl.venue     || '';
 
     // Pre-fill Section 22 contact inputs
@@ -1181,8 +1192,8 @@ function _signedFieldsSummaryHTML(cl) {
     <span style="color:var(--navy);font-weight:600">${escHtml(val||'—')}</span>
   </div>`;
   return `<div style="margin:20px 0;border:1px solid #e8e6e0;border-radius:8px;padding:12px 20px 4px;background:#fafaf8">
-    ${row('Start Time', cl.startTime ? fmtTime12(cl.startTime) : '—')}
-    ${row('End Time',   cl.endTime   ? fmtTime12(cl.endTime)   : '—')}
+    ${row('Start Time', fmtTimeSafe(cl.startTime))}
+    ${row('End Time',   fmtTimeSafe(cl.endTime))}
     ${row('Venue',      cl.venue)}
     ${row('Name',       cl.contactName)}
     ${row('Address',    cl.address)}
@@ -1216,15 +1227,19 @@ function _sigBlockHTML(contract, showAdmin) {
 }
 
 function toggleContractFieldsReadonly(signed, cl) {
-  // Hide time hints when signed
-  ['cc-start-time-hint', 'cc-end-time-hint'].forEach(id => {
+  // Hide time hints and TBD checkboxes when signed
+  ['cc-start-time-hint', 'cc-end-time-hint', 'cc-start-time-tbd', 'cc-end-time-tbd'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('hidden', signed);
+    if (el) {
+      // For checkboxes, hide the parent label element
+      const target = (el.type === 'checkbox') ? el.closest('label') : el;
+      if (target) target.classList.toggle('hidden', signed);
+    }
   });
 
   const pairs = [
-    { input: 'cc-start-time',    display: 'cc-start-time-display',    val: cl.startTime   ? fmtTime12(cl.startTime) : '—' },
-    { input: 'cc-end-time',      display: 'cc-end-time-display',      val: cl.endTime     ? fmtTime12(cl.endTime)   : '—' },
+    { input: 'cc-start-time',    display: 'cc-start-time-display',    val: fmtTimeSafe(cl.startTime) },
+    { input: 'cc-end-time',      display: 'cc-end-time-display',      val: fmtTimeSafe(cl.endTime)   },
     { input: 'cc-venue',         display: 'cc-venue-display',         val: cl.venue       || '—' },
     { input: 'cc-contact-name',  display: 'cc-contact-name-display',  val: cl.contactName || '—' },
     { input: 'cc-address',       display: 'cc-address-display',       val: cl.address     || '—' },
@@ -2359,6 +2374,15 @@ document.addEventListener('DOMContentLoaded', function() {
     renderSongSelector(s.clientId); setNavSection('Song Selector'); showView('view-songs');
   });
 
+  /* ---- TBD checkboxes for start/end time ---- */
+  [['cc-start-time-tbd', 'cc-start-time'], ['cc-end-time-tbd', 'cc-end-time']].forEach(([cbId, inputId]) => {
+    document.getElementById(cbId).addEventListener('change', function() {
+      const inp = document.getElementById(inputId);
+      if (this.checked) { inp.value = ''; inp.disabled = true; }
+      else              { inp.disabled = false; }
+    });
+  });
+
   /* ---- Client: contract sign ---- */
   document.getElementById('client-contract-form').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -2369,15 +2393,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const address       = document.getElementById('cc-address').value.trim();
     const email         = document.getElementById('cc-email').value.trim();
     const phone         = document.getElementById('cc-phone').value.trim();
-    const start         = document.getElementById('cc-start-time').value;
-    const end           = document.getElementById('cc-end-time').value;
+    const startInput    = document.getElementById('cc-start-time').value;
+    const endInput      = document.getElementById('cc-end-time').value;
+    const startTbd      = document.getElementById('cc-start-time-tbd').checked;
+    const endTbd        = document.getElementById('cc-end-time-tbd').checked;
+    const start         = startTbd ? 'TBD' : startInput;
+    const end           = endTbd   ? 'TBD' : endInput;
     const venue         = document.getElementById('cc-venue').value.trim();
     const dressCode     = document.querySelector('input[name="dress-code"]:checked');
     const paymentMethod = document.querySelector('input[name="payment-method"]:checked');
     const consent       = document.querySelector('input[name="consent"]:checked');
     const sigDate       = document.getElementById('cc-sig-date').value;
 
-    if (!start || !end)    { showToast('Please enter the performance start and end times.'); return; }
+    if (!start || !end)    { showToast('Please enter the performance start and end times, or check TBD.'); return; }
     if (!venue)            { showToast('Please enter the venue / location.'); return; }
     if (!contactName || !address || !email || !phone) { showToast('Please fill in all contact fields (Section 22).'); return; }
     if (!paymentMethod)    { showToast('Please select a payment method (Section 5).'); return; }
