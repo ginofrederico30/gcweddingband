@@ -452,7 +452,7 @@ function renderAdminDash() {
       <tr>
         <td>
           <div class="table-client-name">${escHtml(c.name)}</div>
-          <div style="font-size:11px;color:#aaa;font-family:var(--font-sans)">${escHtml(c.email)}</div>
+          <div class="table-client-email">${escHtml(c.email)}</div>
           <div class="table-client-date-mobile">${fmtDate(c.eventDate) || '—'}</div>
         </td>
         <td>${fmtDate(c.eventDate) || '—'}</td>

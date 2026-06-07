@@ -505,6 +505,11 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     font-weight: 600;
     color: var(--navy);
 }
+.table-client-email {
+    font-size: 11px;
+    color: #aaa;
+    font-family: var(--font-sans);
+}
 
 .table-action-btn {
     background: none;
@@ -2464,8 +2469,16 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
         background: transparent !important;
     }
 
-    /* Client cell grows to fill */
-    .data-table tbody tr:not(.year-header-row) td:nth-child(1) { flex: 1; min-width: 0; }
+    /* Client cell grows to fill; children truncate so they can't bleed into badge/button */
+    .data-table tbody tr:not(.year-header-row) td:nth-child(1) { flex: 1; min-width: 0; overflow: hidden; }
+    .table-client-name,
+    .table-client-email,
+    .table-client-date-mobile {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
 
     /* Hide: Event Date, Songs, Checklist, Ceremony */
     .data-table tbody tr:not(.year-header-row) td:nth-child(2),
