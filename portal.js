@@ -1291,8 +1291,17 @@ function toggleContractFieldsReadonly(signed, cl) {
   const pmSigned  = document.getElementById('payment-method-signed-display');
   const pmLabelU  = document.getElementById('payment-method-label-unsigned');
   const pmLabelS  = document.getElementById('payment-method-label-signed');
+  const PAYMENT_INSTRUCTIONS = {
+    'Check':  'Check made payable to <strong>Work-Men Music, LLC</strong> and mailed to 176 N 20th St, Columbus, OH 43203.',
+    'Venmo':  'Venmo payment made to <strong>@ginofred</strong> (last 4 digits of phone number is 2128 for verification).',
+    'Zelle':  'Zelle payment made to <strong>gino@gcweddingband.com</strong>.'
+  };
   if (pmOptions) pmOptions.classList.toggle('hidden', signed);
-  if (pmSigned)  { pmSigned.classList.toggle('hidden', !signed); pmSigned.textContent = cl.paymentMethod || '—'; }
+  if (pmSigned) {
+    pmSigned.classList.toggle('hidden', !signed);
+    pmSigned.innerHTML = PAYMENT_INSTRUCTIONS[cl.paymentMethod]
+      || (cl.paymentMethod ? escHtml(cl.paymentMethod) : '—');
+  }
   if (pmLabelU)  pmLabelU.classList.toggle('hidden', signed);
   if (pmLabelS)  pmLabelS.classList.toggle('hidden', !signed);
 
