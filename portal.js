@@ -443,17 +443,17 @@ function renderAdminDash() {
   }
   noMsg.classList.add('hidden');
 
-  tbody.innerHTML = filtered.map(c => {
+  function clientRow(c) {
     const cs       = contractStatus(c.id);
     const selCount = countSelectedSongs(c.id);
     const clProg   = checklistProgress(c.id);
     const cerProg  = ceremonyProgress(c.id);
-
     return `
       <tr>
         <td>
           <div class="table-client-name">${escHtml(c.name)}</div>
           <div style="font-size:11px;color:#aaa;font-family:var(--font-sans)">${escHtml(c.email)}</div>
+          <div class="table-client-date-mobile">${fmtDate(c.eventDate) || '—'}</div>
         </td>
         <td>${fmtDate(c.eventDate) || '—'}</td>
         <td><span class="status-badge ${cs.cls}">${cs.label}</span></td>
@@ -471,9 +471,23 @@ function renderAdminDash() {
           </div>
         </td>
         <td><button class="table-action-btn" onclick="openClientDetail('${c.id}')">View <i class="fas fa-chevron-right"></i></button></td>
-      </tr>
-    `;
-  }).join('');
+      </tr>`;
+  }
+
+  // Group by year, render year header rows between groups
+  const byYear = {};
+  filtered.forEach(c => {
+    const year = (c.eventDate || '').slice(0, 4) || 'TBD';
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push(c);
+  });
+
+  let html = '';
+  Object.keys(byYear).sort().forEach(year => {
+    html += `<tr class="year-header-row"><td colspan="7">${year === 'TBD' ? 'Date TBD' : year}</td></tr>`;
+    html += byYear[year].map(clientRow).join('');
+  });
+  tbody.innerHTML = html;
 }
 
 /* ============================================
