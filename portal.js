@@ -634,7 +634,10 @@ function openClientDetail(clientId) {
     if (viewClientDate) viewClientDate.textContent = 'Signed: ' + new Date(contract.signedAt).toLocaleDateString();
     // Pre-fill today's date in admin sig date field
     const adminSigDateEl = document.getElementById('admin-sig-date');
-    if (adminSigDateEl && !adminSigDateEl.value) adminSigDateEl.value = new Date().toISOString().slice(0,10);
+    if (adminSigDateEl && !adminSigDateEl.value) {
+      const _t = new Date();
+      adminSigDateEl.value = _t.getFullYear() + '-' + String(_t.getMonth()+1).padStart(2,'0') + '-' + String(_t.getDate()).padStart(2,'0');
+    }
     initAdminSigCanvas();
   } else {
     countersignCard.classList.add('hidden');
@@ -1448,7 +1451,8 @@ async function adminCounterSign(clientId) {
 
   const contract              = DB.getContract(clientId);
   contract.adminSignatureData = sigUrl;
-  contract.adminSignedAt      = new Date(sigDate).getTime() || Date.now();
+  // Parse date-only string as local midnight, not UTC midnight (avoids off-by-one in US timezones)
+  contract.adminSignedAt      = sigDate ? new Date(sigDate + 'T00:00:00').getTime() : Date.now();
   DB.setContract(clientId, contract);
 
   showToast('Agreement fully executed!');
