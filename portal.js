@@ -502,13 +502,13 @@ function renderPresignedEditFields(clientId) {
   const cl = contract.client || {};
   const g  = id => document.getElementById(id);
   const client2 = DB.getClients().find(c => c.id === clientId) || {};
-  if (g('ps-event-date'))   g('ps-event-date').value   = a.eventDate      || '';
-  if (g('ps-venue'))        g('ps-venue').value         = cl.venue         || '';
-  if (g('ps-start-time'))   g('ps-start-time').value   = cl.startTime     || '';
-  if (g('ps-end-time'))     g('ps-end-time').value     = cl.endTime       || '';
-  if (g('ps-contact-name')) g('ps-contact-name').value = cl.contactName   || '';
+  if (g('ps-event-date'))   g('ps-event-date').value   = a.eventDate        || client2.eventDate   || '';
+  if (g('ps-venue'))        g('ps-venue').value         = cl.venue           || '';
+  if (g('ps-start-time'))   g('ps-start-time').value   = cl.startTime       || '';
+  if (g('ps-end-time'))     g('ps-end-time').value     = cl.endTime         || '';
+  if (g('ps-contact-name')) g('ps-contact-name').value = cl.contactName     || client2.name        || '';
   if (g('ps-spouse-name'))  g('ps-spouse-name').value  = client2.spouseName || '';
-  if (g('ps-phone'))        g('ps-phone').value         = cl.phone         || '';
+  if (g('ps-phone'))        g('ps-phone').value         = cl.phone           || client2.phone       || '';
   if (g('ps-dress-code'))   g('ps-dress-code').value   = cl.dressCode     || '';
   const saved = a.scopeOfServices || [];
   document.querySelectorAll('input[name="ps-scope-service"]').forEach(cb => {
