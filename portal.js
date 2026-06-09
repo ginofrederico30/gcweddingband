@@ -496,6 +496,7 @@ function renderAdminDash() {
 let currentAdminClientId = null;
 let _checklistClientId = null;
 let _editingDanceId    = null;
+let _editingSpeechId   = null;
 
 function renderPresignedEditFields(clientId) {
   const contract = DB.getContract(clientId);
@@ -2039,32 +2040,82 @@ function renderSpeeches(clientId) {
       <span class="speech-time">${s.time ? escHtml(fmtTime12(s.time)) : '—'}</span>
       <span class="speech-speaker">${escHtml(s.speaker)}</span>
       <span class="speech-relation">${escHtml(s.relation)}</span>
-      <button class="speech-delete-btn" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
+      <button type="button" class="speech-edit-btn" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+      <button type="button" class="speech-delete-btn" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
     </div>`).join('');
 }
 
+function _clearSpeechForm() {
+  const spSpeaker = document.getElementById('sp-speaker');
+  const spTime    = document.getElementById('sp-time');
+  const relSel    = document.getElementById('sp-relation');
+  const relOther  = document.getElementById('sp-relation-other');
+  if (spSpeaker) spSpeaker.value = '';
+  if (spTime)    spTime.value    = '';
+  if (relSel)    relSel.value    = '';
+  if (relOther)  { relOther.value = ''; relOther.classList.add('hidden'); }
+  const btn    = document.getElementById('btn-add-speech');
+  const cancel = document.getElementById('btn-cancel-speech-edit');
+  if (btn)    btn.innerHTML = '<i class="fas fa-plus"></i> Add Speech';
+  if (cancel) cancel.classList.add('hidden');
+  _editingSpeechId = null;
+}
+
 function addSpeech(clientId) {
-  const speaker      = (document.getElementById('sp-speaker')       || {}).value?.trim() || '';
-  const relSel       = document.getElementById('sp-relation');
-  const relOther     = document.getElementById('sp-relation-other');
-  const relVal       = relSel ? relSel.value : '';
-  const relation     = relVal === 'Other' ? (relOther ? relOther.value.trim() : '') : relVal;
-  const time         = (document.getElementById('sp-time') || {}).value || '';
+  const speaker  = (document.getElementById('sp-speaker') || {}).value?.trim() || '';
+  const relSel   = document.getElementById('sp-relation');
+  const relOther = document.getElementById('sp-relation-other');
+  const relVal   = relSel ? relSel.value : '';
+  const relation = relVal === 'Other' ? (relOther ? relOther.value.trim() : '') : relVal;
+  const time     = (document.getElementById('sp-time') || {}).value || '';
   if (!speaker) { showToast('Please enter a speaker name.'); return; }
   const gcp = DB.getGCP(clientId);
-  (gcp.speeches = gcp.speeches || []).push({ id: uid(), time, speaker, relation });
+  gcp.speeches = gcp.speeches || [];
+  if (_editingSpeechId) {
+    const idx = gcp.speeches.findIndex(s => s.id === _editingSpeechId);
+    if (idx !== -1) gcp.speeches[idx] = { ...gcp.speeches[idx], time, speaker, relation };
+  } else {
+    gcp.speeches.push({ id: uid(), time, speaker, relation });
+  }
   DB.setGCP(clientId, gcp);
-  document.getElementById('sp-speaker').value = '';
-  if (relSel)   { relSel.value = ''; }
-  if (relOther) { relOther.value = ''; relOther.classList.add('hidden'); }
-  document.getElementById('sp-time').value = '';
+  _clearSpeechForm();
   renderSpeeches(clientId);
+}
+
+function editSpeech(clientId, speechId) {
+  const gcp    = DB.getGCP(clientId);
+  const speech = (gcp.speeches || []).find(s => s.id === speechId);
+  if (!speech) return;
+  const spSpeaker = document.getElementById('sp-speaker');
+  const spTime    = document.getElementById('sp-time');
+  const relSel    = document.getElementById('sp-relation');
+  const relOther  = document.getElementById('sp-relation-other');
+  if (spSpeaker) spSpeaker.value = speech.speaker || '';
+  if (spTime)    spTime.value    = speech.time     || '';
+  const knownRelations = ['Best Man','Maid of Honor','Matron of Honor','Father of the Bride','Mother of the Bride','Father of the Groom','Mother of the Groom','Bride/Groom','Officiant','Bridesmaid','Groomsman','Other'];
+  if (relSel) {
+    if (knownRelations.includes(speech.relation)) {
+      relSel.value = speech.relation;
+      if (relOther) relOther.classList.toggle('hidden', speech.relation !== 'Other');
+    } else if (speech.relation) {
+      relSel.value = 'Other';
+      if (relOther) { relOther.value = speech.relation; relOther.classList.remove('hidden'); }
+    }
+  }
+  _editingSpeechId = speechId;
+  const btn    = document.getElementById('btn-add-speech');
+  const cancel = document.getElementById('btn-cancel-speech-edit');
+  if (btn)    btn.innerHTML = '<i class="fas fa-save"></i> Update Speech';
+  if (cancel) cancel.classList.remove('hidden');
+  const addBox = document.querySelector('#speeches-list')?.closest('.field-group')?.querySelector('.speech-add-box');
+  if (addBox) addBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function deleteSpeech(clientId, speechId) {
   const gcp = DB.getGCP(clientId);
   gcp.speeches = (gcp.speeches || []).filter(s => s.id !== speechId);
   DB.setGCP(clientId, gcp);
+  if (_editingSpeechId === speechId) _clearSpeechForm();
   renderSpeeches(clientId);
 }
 
@@ -2087,8 +2138,8 @@ function renderSpecialDances(clientId) {
       <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
       <span class="speech-speaker">${escHtml(d.name)}${d.withRelation ? ' (' + escHtml(d.withRelation) + ')' : ''}</span>
       <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}${lengthPart}</span>
-      <button class="speech-edit-btn" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
-      <button class="speech-delete-btn" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
+      <button type="button" class="speech-edit-btn" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+      <button type="button" class="speech-delete-btn" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
 }
@@ -2742,6 +2793,8 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-add-speech').addEventListener('click', function() {
     if (_checklistClientId) addSpeech(_checklistClientId);
   });
+  const btnCancelSpeech = document.getElementById('btn-cancel-speech-edit');
+  if (btnCancelSpeech) btnCancelSpeech.addEventListener('click', _clearSpeechForm);
   document.getElementById('sp-relation').addEventListener('change', function() {
     const other = document.getElementById('sp-relation-other');
     if (other) other.classList.toggle('hidden', this.value !== 'Other');
