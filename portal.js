@@ -780,6 +780,9 @@ function renderAdminPlanningDetails(clientId) {
   const row = (label, val) => val
     ? `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val">${escHtml(val)}</span></div>`
     : '';
+  const rowLink = (label, val) => val
+    ? `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val"><a href="${escHtml(val)}" target="_blank" rel="noopener" class="admin-detail-link"><i class="fab fa-spotify"></i> ${escHtml(val)}</a></span></div>`
+    : '';
 
   // Helper: section header
   const section = title => `<div class="admin-detail-section">${escHtml(title)}</div>`;
@@ -811,7 +814,7 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Power / Electricity',    cl['cl-cocktail-electric']);
     html += row('Start Time',             cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '');
     html += row('End Time',               cl['cl-cocktail-end']   ? fmtTime12(cl['cl-cocktail-end'])   : '');
-    html += row('Spotify Playlist',       cl['cl-cocktail-spotify']);
+    html += rowLink('Spotify Playlist',    cl['cl-cocktail-spotify']);
   }
 
   // RECEPTION DETAILS
@@ -826,10 +829,10 @@ function renderAdminPlanningDetails(clientId) {
   html += row('Announce Wedding Party',        cl['cl-announce-party']);
   html += row('How Announced',                 cl['cl-announce-party-how']);
   html += row('Wedding Party Names',           cl['cl-party-names']);
-  html += row('Spotify — Wedding Party',       cl['cl-spotify-party']);
+  html += rowLink('Spotify — Wedding Party',   cl['cl-spotify-party']);
   html += row('Grand Entrance',                cl['cl-grand-entrance']);
   html += row('Announcement Script',           cl['cl-couple-announce']);
-  html += row('Spotify — Grand Entrance',      cl['cl-spotify-couple']);
+  html += rowLink('Spotify — Grand Entrance',  cl['cl-spotify-couple']);
 
   // FIRST DANCE
   if (cl['cl-first-dance'] || cl['cl-first-dance-song']) {
@@ -838,7 +841,7 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Song',                          cl['cl-first-dance-song']);
     html += row('Artist',                        cl['cl-first-dance-artist']);
     html += row('Length',                        cl['cl-first-dance-length']);
-    html += row('Spotify',                       cl['cl-first-dance-spotify']);
+    html += rowLink('Spotify',                   cl['cl-first-dance-spotify']);
   }
 
   // SPECIAL & PARENT DANCES
@@ -850,7 +853,7 @@ function renderAdminPlanningDetails(clientId) {
       const label = [who, with_ ? '& ' + with_ : ''].filter(Boolean).join(' ');
       const song  = [d.song, d.artist].filter(Boolean).join(' — ');
       html += row(label || 'Dance', [d.time ? fmtTime12(d.time) : '', song].filter(Boolean).join(' · '));
-      if (d.spotify) html += row('Spotify', d.spotify);
+      if (d.spotify) html += rowLink('Spotify', d.spotify);
     });
   }
 
