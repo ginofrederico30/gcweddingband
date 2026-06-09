@@ -2233,7 +2233,7 @@ function editSpecialDance(clientId, danceId) {
   const cancel = g('btn-cancel-dance-edit');
   if (btn)    btn.innerHTML = '<i class="fas fa-save"></i> Update Dance';
   if (cancel) cancel.classList.remove('hidden');
-  const addBox = document.querySelector('.speech-add-box');
+  const addBox = document.getElementById('special-dances-list')?.closest('.field-group')?.querySelector('.speech-add-box');
   if (addBox) addBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
