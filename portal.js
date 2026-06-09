@@ -495,6 +495,7 @@ function renderAdminDash() {
    ============================================ */
 let currentAdminClientId = null;
 let _checklistClientId = null;
+let _editingDanceId    = null;
 
 function renderPresignedEditFields(clientId) {
   const contract = DB.getContract(clientId);
@@ -852,7 +853,7 @@ function renderAdminPlanningDetails(clientId) {
       const with_ = [d.withName, d.title ? '(' + d.title + ')' : ''].filter(Boolean).join(' ');
       const label = [who, with_ ? '& ' + with_ : ''].filter(Boolean).join(' ');
       const song  = [d.song, d.artist].filter(Boolean).join(' — ');
-      html += row(label || 'Dance', [d.time ? fmtTime12(d.time) : '', song].filter(Boolean).join(' · '));
+      html += row(label || 'Dance', [d.time ? fmtTime12(d.time) : '', song, d.length || ''].filter(Boolean).join(' · '));
       if (d.spotify) html += rowLink('Spotify', d.spotify);
     });
   }
@@ -2079,48 +2080,117 @@ function renderSpecialDances(clientId) {
     return;
   }
   el.innerHTML = dances.map(d => {
-    const songPart = d.song ? ` &mdash; <em>${escHtml(d.song)}${d.artist ? ' / ' + escHtml(d.artist) : ''}</em>` : '';
+    const songPart    = d.song   ? ` &mdash; <em>${escHtml(d.song)}${d.artist ? ' / ' + escHtml(d.artist) : ''}</em>` : '';
+    const lengthPart  = d.length ? ` <span class="sd-length-badge">${escHtml(d.length)}</span>` : '';
     return `
     <div class="speech-item">
       <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
       <span class="speech-speaker">${escHtml(d.name)}${d.withRelation ? ' (' + escHtml(d.withRelation) + ')' : ''}</span>
-      <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}</span>
+      <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}${lengthPart}</span>
+      <button class="speech-edit-btn" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
       <button class="speech-delete-btn" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
 }
 
-function addSpecialDance(clientId) {
-  const name          = (document.getElementById('sd-name')                 || {}).value?.trim() || '';
-  const withRelSel    = document.getElementById('sd-with-relation');
-  const withRelOther  = document.getElementById('sd-with-relation-other');
-  const withRelVal    = withRelSel ? withRelSel.value : '';
-  const withRelation  = withRelVal === 'Other' ? (withRelOther ? withRelOther.value.trim() : '') : withRelVal;
-  const withName      = (document.getElementById('sd-with-name')            || {}).value?.trim() || '';
-  const titleSel      = document.getElementById('sd-title');
-  const titleOther    = document.getElementById('sd-title-other');
-  const titleVal      = titleSel ? titleSel.value : '';
-  const title         = titleVal === 'Other' ? (titleOther ? titleOther.value.trim() : '') : titleVal;
-  const time          = (document.getElementById('sd-time')                 || {}).value || '';
-  const song          = (document.getElementById('sd-song')                 || {}).value?.trim() || '';
-  const artist        = (document.getElementById('sd-artist')               || {}).value?.trim() || '';
-  const spotify       = (document.getElementById('sd-spotify')              || {}).value?.trim() || '';
-  if (!name) { showToast('Please enter a name.'); return; }
-  const gcp = DB.getGCP(clientId);
-  (gcp.specialDances = gcp.specialDances || []).push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify });
-  DB.setGCP(clientId, gcp);
+function _clearDanceForm() {
   ['sd-name','sd-with-name','sd-song','sd-artist','sd-spotify','sd-with-relation-other','sd-title-other'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['sd-title','sd-with-relation'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  [withRelOther, titleOther].forEach(el => { if (el) el.classList.add('hidden'); });
+  ['sd-title','sd-with-relation','sd-length'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const timeEl = document.getElementById('sd-time');
   if (timeEl) timeEl.value = '';
+  const withRelOther = document.getElementById('sd-with-relation-other');
+  const titleOther   = document.getElementById('sd-title-other');
+  if (withRelOther) withRelOther.classList.add('hidden');
+  if (titleOther)   titleOther.classList.add('hidden');
+  const btn    = document.getElementById('btn-add-special-dance');
+  const cancel = document.getElementById('btn-cancel-dance-edit');
+  if (btn)    { btn.innerHTML = '<i class="fas fa-plus"></i> Add Dance'; }
+  if (cancel) { cancel.classList.add('hidden'); }
+  _editingDanceId = null;
+}
+
+function addSpecialDance(clientId) {
+  const name         = (document.getElementById('sd-name')                || {}).value?.trim() || '';
+  const withRelSel   = document.getElementById('sd-with-relation');
+  const withRelOther = document.getElementById('sd-with-relation-other');
+  const withRelVal   = withRelSel ? withRelSel.value : '';
+  const withRelation = withRelVal === 'Other' ? (withRelOther ? withRelOther.value.trim() : '') : withRelVal;
+  const withName     = (document.getElementById('sd-with-name')           || {}).value?.trim() || '';
+  const titleSel     = document.getElementById('sd-title');
+  const titleOther   = document.getElementById('sd-title-other');
+  const titleVal     = titleSel ? titleSel.value : '';
+  const title        = titleVal === 'Other' ? (titleOther ? titleOther.value.trim() : '') : titleVal;
+  const time         = (document.getElementById('sd-time')                || {}).value || '';
+  const song         = (document.getElementById('sd-song')                || {}).value?.trim() || '';
+  const artist       = (document.getElementById('sd-artist')              || {}).value?.trim() || '';
+  const spotify      = (document.getElementById('sd-spotify')             || {}).value?.trim() || '';
+  const length       = (document.getElementById('sd-length')              || {}).value || '';
+  if (!name) { showToast('Please enter a name.'); return; }
+  const gcp = DB.getGCP(clientId);
+  gcp.specialDances = gcp.specialDances || [];
+  if (_editingDanceId) {
+    const idx = gcp.specialDances.findIndex(d => d.id === _editingDanceId);
+    if (idx !== -1) {
+      gcp.specialDances[idx] = { ...gcp.specialDances[idx], time, name, withRelation, withName, title, song, artist, spotify, length };
+    }
+  } else {
+    gcp.specialDances.push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify, length });
+  }
+  DB.setGCP(clientId, gcp);
+  _clearDanceForm();
   renderSpecialDances(clientId);
+}
+
+function editSpecialDance(clientId, danceId) {
+  const gcp   = DB.getGCP(clientId);
+  const dance = (gcp.specialDances || []).find(d => d.id === danceId);
+  if (!dance) return;
+  const g = id => document.getElementById(id);
+  if (g('sd-time'))    g('sd-time').value    = dance.time    || '';
+  if (g('sd-name'))    g('sd-name').value    = dance.name    || '';
+  if (g('sd-with-name'))  g('sd-with-name').value  = dance.withName || '';
+  if (g('sd-song'))    g('sd-song').value    = dance.song    || '';
+  if (g('sd-artist'))  g('sd-artist').value  = dance.artist  || '';
+  if (g('sd-spotify')) g('sd-spotify').value = dance.spotify || '';
+  if (g('sd-length'))  g('sd-length').value  = dance.length  || '';
+  const withRelSel   = g('sd-with-relation');
+  const withRelOther = g('sd-with-relation-other');
+  if (withRelSel) {
+    const knownRels = ['Bride','Groom','Other'];
+    if (knownRels.includes(dance.withRelation)) {
+      withRelSel.value = dance.withRelation;
+      if (withRelOther) withRelOther.classList.toggle('hidden', dance.withRelation !== 'Other');
+    } else if (dance.withRelation) {
+      withRelSel.value = 'Other';
+      if (withRelOther) { withRelOther.value = dance.withRelation; withRelOther.classList.remove('hidden'); }
+    }
+  }
+  const titleSel   = g('sd-title');
+  const titleOther = g('sd-title-other');
+  const knownTitles = ['Father','Mother','Step-Father','Step-Mother','Grandfather','Grandmother','Parent','Guardian','Other'];
+  if (titleSel) {
+    if (knownTitles.includes(dance.title)) {
+      titleSel.value = dance.title;
+      if (titleOther) titleOther.classList.toggle('hidden', dance.title !== 'Other');
+    } else if (dance.title) {
+      titleSel.value = 'Other';
+      if (titleOther) { titleOther.value = dance.title; titleOther.classList.remove('hidden'); }
+    }
+  }
+  _editingDanceId = danceId;
+  const btn    = g('btn-add-special-dance');
+  const cancel = g('btn-cancel-dance-edit');
+  if (btn)    btn.innerHTML = '<i class="fas fa-save"></i> Update Dance';
+  if (cancel) cancel.classList.remove('hidden');
+  const addBox = document.querySelector('.speech-add-box');
+  if (addBox) addBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function deleteSpecialDance(clientId, danceId) {
   const gcp = DB.getGCP(clientId);
   gcp.specialDances = (gcp.specialDances || []).filter(d => d.id !== danceId);
   DB.setGCP(clientId, gcp);
+  if (_editingDanceId === danceId) _clearDanceForm();
   renderSpecialDances(clientId);
 }
 
@@ -2707,6 +2777,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnAddDance) btnAddDance.addEventListener('click', function() {
     if (_checklistClientId) addSpecialDance(_checklistClientId);
   });
+  const btnCancelDance = document.getElementById('btn-cancel-dance-edit');
+  if (btnCancelDance) btnCancelDance.addEventListener('click', _clearDanceForm);
   const sdWithRelSel = document.getElementById('sd-with-relation');
   if (sdWithRelSel) sdWithRelSel.addEventListener('change', function() {
     const other = document.getElementById('sd-with-relation-other');

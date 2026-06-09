@@ -1186,11 +1186,21 @@
                                     <label>Artist</label>
                                     <input type="text" id="sd-artist" placeholder="Artist" autocomplete="off">
                                 </div>
+                                <div class="field-group">
+                                    <label>Length Preference <small style="font-weight:400;opacity:.7">(optional)</small></label>
+                                    <select id="sd-length">
+                                        <option value="">Select…</option>
+                                        <option>Full song</option>
+                                        <option>Shortened</option>
+                                        <option>Intro only</option>
+                                    </select>
+                                </div>
                                 <div class="field-group sd-full">
                                     <label>Spotify Reference <small style="font-weight:400;opacity:.7">(optional)</small></label>
                                     <input type="text" id="sd-spotify" placeholder="Spotify link or playlist" autocomplete="off">
                                 </div>
                                 <div class="sd-full sd-add-btn-row">
+                                    <button type="button" id="btn-cancel-dance-edit" class="btn-secondary hidden"><i class="fas fa-times"></i> Cancel</button>
                                     <button type="button" id="btn-add-special-dance" class="btn-primary"><i class="fas fa-plus"></i> Add Dance</button>
                                 </div>
                             </div>
