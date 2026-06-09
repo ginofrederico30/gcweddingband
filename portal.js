@@ -675,6 +675,7 @@ function openClientDetail(clientId) {
   `;
 
   renderAdminSchedule(clientId);
+  renderAdminPlanningDetails(clientId);
   renderAdminSongSelections(clientId);
   showView('view-admin-client');
   setNavSection('Admin Portal');
@@ -758,6 +759,131 @@ function renderAdminSchedule(clientId) {
       <div class="artist-timeline-label">${escHtml(r.label)}</div>
       <div class="artist-timeline-val">${escHtml(r.val)}</div>
     </div>`).join('');
+}
+
+function renderAdminPlanningDetails(clientId) {
+  const card      = document.getElementById('admin-planning-card');
+  const container = document.getElementById('admin-planning-details');
+  if (!card || !container) return;
+
+  const gcp      = DB.getGCP(clientId);
+  const cl       = gcp.checklist    || {};
+  const cer      = gcp.ceremony     || {};
+  const speeches = gcp.speeches     || [];
+  const dances   = gcp.specialDances || [];
+  const contract = DB.getContract(clientId);
+  const scope    = (contract.admin && contract.admin.scopeOfServices) || [];
+  const hasCeremony = scope.some(s => s.includes('Ceremony') || s.includes('ceremony'));
+  const hasCocktail = scope.includes('Jazz Cocktail Band');
+
+  // Helper: one label-value row (skip if val empty)
+  const row = (label, val) => val
+    ? `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val">${escHtml(val)}</span></div>`
+    : '';
+
+  // Helper: section header
+  const section = title => `<div class="admin-detail-section">${escHtml(title)}</div>`;
+
+  let html = '<div class="admin-detail-grid">';
+
+  // LOGISTICS
+  html += section('Logistics & Venue');
+  html += row('Load-in Location',         cl['cl-loadinlocation']);
+  html += row('Parking',                  cl['cl-parking']);
+  html += row('Parking Payment',          cl['cl-parking-payment']);
+  html += row('Dressing Room / Green Room', cl['cl-dressing-room']);
+  html += row('Outdoor Reception',        cl['cl-outdoor']);
+  html += row('Power Circuits Available', cl['cl-power']);
+  html += row('Stage / Performance Area', cl['cl-stage-size']);
+  html += row('Venue WiFi Network',       cl['cl-wifi-name']);
+  html += row('Venue WiFi Password',      cl['cl-wifi-pass']);
+  html += row('Day-of Coordinator',       cl['cl-coordinator']);
+  html += row('Coordinator Phone',        cl['cl-coordinator-phone']);
+  html += row('Dress Code',               cl['cl-dress-code']);
+  html += row('Estimated Attendance',     cl['cl-attendance']);
+
+  // COCKTAIL HOUR
+  if (hasCocktail || cl['cl-cocktail-sep']) {
+    html += section('Cocktail Hour');
+    html += row('Separate from Reception', cl['cl-cocktail-sep']);
+    html += row('Location',               cl['cl-cocktail-sep-location'] || cl['cl-cocktail-location']);
+    html += row('Outdoor',                cl['cl-cocktail-outdoor']);
+    html += row('Power / Electricity',    cl['cl-cocktail-electric']);
+    html += row('Start Time',             cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '');
+    html += row('End Time',               cl['cl-cocktail-end']   ? fmtTime12(cl['cl-cocktail-end'])   : '');
+    html += row('Spotify Playlist',       cl['cl-cocktail-spotify']);
+  }
+
+  // RECEPTION DETAILS
+  html += section('Reception Details');
+  html += row('Dinner Service Style',          cl['cl-dinner-style']);
+  html += row('Table Announcements by Band',   cl['cl-table-announce']);
+  html += row('Meals Confirmed for Band',      cl['cl-meals']);
+  html += row('Band Eats Where',               cl['cl-band-eat']);
+
+  // ENTRANCES & ANNOUNCEMENTS
+  html += section('Entrances & Announcements');
+  html += row('Announce Wedding Party',        cl['cl-announce-party']);
+  html += row('How Announced',                 cl['cl-announce-party-how']);
+  html += row('Wedding Party Names',           cl['cl-party-names']);
+  html += row('Spotify — Wedding Party',       cl['cl-spotify-party']);
+  html += row('Grand Entrance',                cl['cl-grand-entrance']);
+  html += row('Announcement Script',           cl['cl-couple-announce']);
+  html += row('Spotify — Grand Entrance',      cl['cl-spotify-couple']);
+
+  // FIRST DANCE
+  if (cl['cl-first-dance'] || cl['cl-first-dance-song']) {
+    html += section('First Dance');
+    html += row('Time',                          cl['cl-first-dance']        ? fmtTime12(cl['cl-first-dance']) : '');
+    html += row('Song',                          cl['cl-first-dance-song']);
+    html += row('Artist',                        cl['cl-first-dance-artist']);
+    html += row('Length',                        cl['cl-first-dance-length']);
+    html += row('Spotify',                       cl['cl-first-dance-spotify']);
+  }
+
+  // SPECIAL & PARENT DANCES
+  if (dances.length) {
+    html += section('Special & Parent Dances');
+    dances.forEach(d => {
+      const who  = [d.name, d.withRelation ? '(' + d.withRelation + ')' : ''].filter(Boolean).join(' ');
+      const with_ = [d.withName, d.title ? '(' + d.title + ')' : ''].filter(Boolean).join(' ');
+      const label = [who, with_ ? '& ' + with_ : ''].filter(Boolean).join(' ');
+      const song  = [d.song, d.artist].filter(Boolean).join(' — ');
+      html += row(label || 'Dance', [d.time ? fmtTime12(d.time) : '', song].filter(Boolean).join(' · '));
+      if (d.spotify) html += row('Spotify', d.spotify);
+    });
+  }
+
+  // SPEECHES
+  if (speeches.length) {
+    html += section('Speeches');
+    speeches.forEach(s => {
+      const label = [s.speaker, s.relation].filter(Boolean).join(', ');
+      html += row(label || 'Speaker', s.time ? fmtTime12(s.time) : '');
+    });
+  }
+
+  // CEREMONY PLANNER
+  if (hasCeremony && Object.keys(cer).some(k => cer[k])) {
+    html += section('Ceremony Planner');
+    html += row('Ceremony Start',          cer['cer-start'] ? fmtTime12(cer['cer-start']) : '');
+    html += row('Ceremony End',            cer['cer-end']   ? fmtTime12(cer['cer-end'])   : '');
+    html += row('Officiant Mic Needed',    cer['cer-officiant-mic']);
+    html += row('Readers Mic Needed',      cer['cer-readers-mic']);
+    html += row('Outdoor Ceremony',        cer['cer-outdoor']);
+    html += row('Power Available',         cer['cer-power']);
+    html += row('Ceremony Location',       cer['cer-sep-location']);
+    html += row('Distance to Venue',       cer['cer-distance']);
+    html += row('Seating Music Genre',     cer['cer-seating-genre']);
+    html += row('Family Seating Song',     [cer['cer-live-family-song'] || cer['cer-duties-family-link'], cer['cer-live-family-artist'] || cer['cer-duties-family-artist']].filter(Boolean).join(' — '));
+    html += row('Bride Processional Song', [cer['cer-live-bride-song'] || cer['cer-duties-bride-link'], cer['cer-live-bride-artist'] || cer['cer-duties-bride-artist']].filter(Boolean).join(' — '));
+    html += row('Recessional Song',        [cer['cer-live-exit-song'] || cer['cer-duties-exit-link'], cer['cer-live-exit-artist'] || cer['cer-duties-exit-artist']].filter(Boolean).join(' — '));
+    html += row('Notes',                   cer['cer-live-notes'] || cer['cer-duties-notes'] || cer['cer-notes']);
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+  card.classList.remove('hidden');
 }
 
 function renderAdminSongSelections(clientId) {

@@ -883,6 +883,47 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     border: 1px solid #e8e6e0;
 }
 
+/* Admin Planning Details card */
+.admin-detail-grid { padding: 4px 0 12px; }
+.admin-detail-section {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #aaa;
+    padding: 16px 24px 6px;
+    border-top: 1px solid #f0efec;
+    margin-top: 4px;
+}
+.admin-detail-section:first-child { border-top: none; margin-top: 0; }
+.admin-detail-row {
+    display: flex;
+    gap: 16px;
+    padding: 8px 24px;
+    border-bottom: 1px solid #f7f6f3;
+    font-family: var(--font-sans);
+    font-size: 13px;
+}
+.admin-detail-row:last-child { border-bottom: none; }
+.admin-detail-label {
+    width: 200px;
+    flex-shrink: 0;
+    color: #888;
+    font-size: 12px;
+}
+.admin-detail-val {
+    color: var(--navy);
+    font-weight: 600;
+    flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+@media (max-width: 600px) {
+    .admin-detail-row { flex-direction: column; gap: 2px; }
+    .admin-detail-label { width: auto; }
+}
+
 .gcp-overview-item h4 {
     font-family: var(--font-sans);
     font-size: 11px;
