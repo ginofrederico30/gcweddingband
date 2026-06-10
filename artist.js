@@ -1232,21 +1232,28 @@ function downloadSetlistPDF() {
 document.addEventListener('DOMContentLoaded', function() {
 
   /* Firebase auth state drives all routing */
+  const _adminBypass = new URLSearchParams(window.location.search).get('admin') === '1';
+
   _auth.onAuthStateChanged(async function(user) {
-    if (!user || user.email !== ARTIST_EMAIL) {
-      // Only redirect to login if we haven't already successfully loaded the dashboard.
-      // This prevents a spurious null-state callback from bouncing the user out.
+    const isArtist = user && user.email === ARTIST_EMAIL;
+    const isAdmin  = user && user.email === ADMIN_EMAIL;
+    const allowed  = isArtist || (isAdmin && _adminBypass);
+
+    if (!allowed) {
       if (!_gigsDashLoaded) {
         document.getElementById('pnav-logout').classList.add('hidden');
+        document.getElementById('pnav-back-to-admin').classList.add('hidden');
         showView('view-login');
       }
       return;
     }
-    if (_gigsDashLoaded) return; // already showing gigs — ignore token-refresh re-fires
+    if (_gigsDashLoaded) return;
     try {
       await ADB.loadAll();
       _gigsDashLoaded = true;
-      document.getElementById('pnav-logout').classList.remove('hidden');
+      document.getElementById('pnav-logout').classList.toggle('hidden', isAdmin && _adminBypass);
+      const backBtn = document.getElementById('pnav-back-to-admin');
+      if (isAdmin && _adminBypass) backBtn.classList.remove('hidden');
       renderGigsDash();
       showView('view-gigs');
     } catch(err) {

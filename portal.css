@@ -163,6 +163,28 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     border-color: rgba(255,255,255,0.6);
 }
 
+.pnav-artist-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.85);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    text-decoration: none;
+    transition: background var(--ease), border-color var(--ease), color var(--ease);
+}
+.pnav-artist-link:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.6);
+    color: #fff;
+}
+
 /* ============================================
    Views
    ============================================ */

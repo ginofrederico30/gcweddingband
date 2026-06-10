@@ -157,18 +157,21 @@ function showView(id) {
 }
 
 function updateNav(session) {
-  const section  = document.getElementById('pnav-section');
-  const userEl   = document.getElementById('pnav-user');
-  const logoutEl = document.getElementById('pnav-logout');
+  const section     = document.getElementById('pnav-section');
+  const userEl      = document.getElementById('pnav-user');
+  const logoutEl    = document.getElementById('pnav-logout');
+  const artistLink  = document.getElementById('pnav-artist-view');
   if (!session) {
     section.textContent = '';
     userEl.textContent  = '';
     logoutEl.classList.add('hidden');
+    if (artistLink) artistLink.classList.add('hidden');
     return;
   }
   section.textContent = session.role === 'admin' ? 'Admin Portal' : 'Client Portal';
   userEl.textContent  = session.email;
   logoutEl.classList.remove('hidden');
+  if (artistLink) artistLink.classList.toggle('hidden', session.role !== 'admin');
 }
 
 function setNavSection(text) {
