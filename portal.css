@@ -86,8 +86,8 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     top: 0; left: 0;
     width: 100%;
     z-index: 200;
-    background: var(--gold);
-    color: var(--navy);
+    background: #b59410;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -100,7 +100,7 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
 }
 #impersonate-banner.hidden { display: none; }
 #impersonate-banner button {
-    background: var(--navy);
+    background: #153147;
     color: #fff;
     border: none;
     border-radius: 20px;
