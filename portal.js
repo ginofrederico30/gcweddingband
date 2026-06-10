@@ -132,11 +132,37 @@ function initSeedData() {
    AUTH — Firebase-backed
    ============================================ */
 let _currentSession = null; // { role, email, clientId }
+let _adminSession   = null; // saved admin session while impersonating a client
 function getSession() { return _currentSession; }
 
 function logout() {
   _currentSession = null;
+  _adminSession   = null;
   _auth.signOut().then(() => { showView('view-login'); updateNav(null); });
+}
+
+function impersonateClient(clientId) {
+  const client = DB.getClients().find(c => c.id === clientId);
+  if (!client) return;
+  _adminSession   = _currentSession;
+  _currentSession = { role: 'client', email: client.email, clientId };
+  const displayName = client.spouseName ? client.name + ' & ' + client.spouseName : client.name;
+  document.getElementById('impersonate-banner-name').textContent = displayName;
+  document.getElementById('impersonate-banner').classList.remove('hidden');
+  updateNav(_currentSession);
+  renderClientDash(clientId);
+  showView('view-client-dash');
+  setNavSection('Client Portal');
+}
+
+function exitImpersonation() {
+  _currentSession = _adminSession;
+  _adminSession   = null;
+  document.getElementById('impersonate-banner').classList.add('hidden');
+  updateNav(_currentSession);
+  renderAdminDash();
+  showView('view-admin-dash');
+  setNavSection('Admin Portal');
 }
 
 /* ============================================
@@ -157,10 +183,10 @@ function showView(id) {
 }
 
 function updateNav(session) {
-  const section     = document.getElementById('pnav-section');
-  const userEl      = document.getElementById('pnav-user');
-  const logoutEl    = document.getElementById('pnav-logout');
-  const artistLink  = document.getElementById('pnav-artist-view');
+  const section    = document.getElementById('pnav-section');
+  const userEl     = document.getElementById('pnav-user');
+  const logoutEl   = document.getElementById('pnav-logout');
+  const artistLink = document.getElementById('pnav-artist-view');
   if (!session) {
     section.textContent = '';
     userEl.textContent  = '';
@@ -168,10 +194,18 @@ function updateNav(session) {
     if (artistLink) artistLink.classList.add('hidden');
     return;
   }
-  section.textContent = session.role === 'admin' ? 'Admin Portal' : 'Client Portal';
-  userEl.textContent  = session.email;
-  logoutEl.classList.remove('hidden');
-  if (artistLink) artistLink.classList.toggle('hidden', session.role !== 'admin');
+  if (_adminSession) {
+    // Impersonating a client — hide logout/artist link to prevent accidental signout
+    section.textContent = 'Client Portal';
+    userEl.textContent  = _adminSession.email;
+    logoutEl.classList.add('hidden');
+    if (artistLink) artistLink.classList.add('hidden');
+  } else {
+    section.textContent = session.role === 'admin' ? 'Admin Portal' : 'Client Portal';
+    userEl.textContent  = session.email;
+    logoutEl.classList.remove('hidden');
+    if (artistLink) artistLink.classList.toggle('hidden', session.role !== 'admin');
+  }
 }
 
 function setNavSection(text) {
@@ -2600,6 +2634,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('admin-client-back').addEventListener('click', function() {
     renderAdminDash(); showView('view-admin-dash'); setNavSection('Admin Portal');
   });
+
+  document.getElementById('btn-view-as-client').addEventListener('click', function() {
+    if (currentAdminClientId) impersonateClient(currentAdminClientId);
+  });
+
+  document.getElementById('btn-exit-impersonate').addEventListener('click', exitImpersonation);
 
   /* ---- Admin: delete client ---- */
   document.getElementById('btn-delete-client').addEventListener('click', function() {
