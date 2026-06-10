@@ -868,6 +868,15 @@ function renderAdminPlanningDetails(clientId) {
     });
   }
 
+  // BACKGROUND MUSIC
+  const dinnerPlaylist = cl['cl-spotify-dinner'];
+  const breakPlaylist  = cl['cl-spotify-break'];
+  if (dinnerPlaylist || breakPlaylist) {
+    html += section('Background Music');
+    if (dinnerPlaylist) html += rowLink('Dinner Music', dinnerPlaylist);
+    if (breakPlaylist)  html += rowLink('Band Break Music', breakPlaylist);
+  }
+
   // CEREMONY PLANNER
   if (hasCeremony && Object.keys(cer).some(k => cer[k])) {
     html += section('Ceremony Planner');
