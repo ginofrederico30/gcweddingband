@@ -483,10 +483,18 @@ function renderAdminDash() {
   noMsg.classList.add('hidden');
 
   function clientRow(c) {
-    const cs       = contractStatus(c.id);
-    const selCount = countSelectedSongs(c.id);
-    const clProg   = checklistProgress(c.id);
-    const cerProg  = ceremonyProgress(c.id);
+    const cs          = contractStatus(c.id);
+    const selCount    = countSelectedSongs(c.id);
+    const clProg      = checklistProgress(c.id);
+    const cScope      = (DB.getContract(c.id).admin && DB.getContract(c.id).admin.scopeOfServices) || [];
+    const hasCeremony = cScope.includes('Live Ceremony Music') || cScope.includes('Ceremony Duties');
+    const cerProg     = hasCeremony ? ceremonyProgress(c.id) : null;
+    const cerCell     = hasCeremony
+      ? `<div style="display:flex;align-items:center;gap:8px">
+           <div class="gcp-progress-bar" style="width:80px"><div class="gcp-progress-fill" style="width:${cerProg}%"></div></div>
+           <span style="font-size:11px;color:#999;font-family:var(--font-sans)">${cerProg}%</span>
+         </div>`
+      : `<span style="font-size:11px;color:#bbb;font-family:var(--font-sans);font-style:italic">N/A</span>`;
     return `
       <tr>
         <td>
@@ -503,12 +511,7 @@ function renderAdminDash() {
             <span style="font-size:11px;color:#999;font-family:var(--font-sans)">${clProg}%</span>
           </div>
         </td>
-        <td>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="gcp-progress-bar" style="width:80px"><div class="gcp-progress-fill" style="width:${cerProg}%"></div></div>
-            <span style="font-size:11px;color:#999;font-family:var(--font-sans)">${cerProg}%</span>
-          </div>
-        </td>
+        <td>${cerCell}</td>
         <td><button class="table-action-btn" onclick="openClientDetail('${c.id}')">View <i class="fas fa-chevron-right"></i></button></td>
       </tr>`;
   }
@@ -691,11 +694,12 @@ function openClientDetail(clientId) {
   if (!contract.preSignedOutsidePortal) renderLangEditor(clientId);
 
   // GCP overview
-  const gcp    = DB.getGCP(clientId);
-  const reqCnt = (gcp.songRequests || []).length;
-  const selCnt = countSelectedSongs(clientId);
-  const clProg = checklistProgress(clientId);
-  const cerProg = ceremonyProgress(clientId);
+  const gcp         = DB.getGCP(clientId);
+  const reqCnt      = (gcp.songRequests || []).length;
+  const selCnt      = countSelectedSongs(clientId);
+  const clProg      = checklistProgress(clientId);
+  const hasCeremony = savedServices.some(s => s.includes('Ceremony'));
+  const cerProg     = hasCeremony ? ceremonyProgress(clientId) : null;
 
   document.getElementById('admin-gcp-overview').innerHTML = `
     <div class="gcp-overview-item">
@@ -710,8 +714,9 @@ function openClientDetail(clientId) {
     </div>
     <div class="gcp-overview-item">
       <h4>Ceremony Planner</h4>
-      <div>${cerProg}% complete</div>
-      <div class="gcp-progress-bar" style="margin-top:8px"><div class="gcp-progress-fill" style="width:${cerProg}%"></div></div>
+      ${hasCeremony
+        ? `<div>${cerProg}% complete</div><div class="gcp-progress-bar" style="margin-top:8px"><div class="gcp-progress-fill" style="width:${cerProg}%"></div></div>`
+        : `<div style="color:#aaa;font-style:italic;font-size:13px">Not included in scope</div>`}
     </div>
   `;
 
