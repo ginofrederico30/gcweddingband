@@ -116,8 +116,8 @@ textarea.auto-grow { resize: none; overflow: hidden; line-height: 1.5; }
     transition: opacity var(--ease);
 }
 #impersonate-banner button:hover { opacity: 0.85; }
-body:has(#impersonate-banner:not(.hidden)) { padding-top: calc(64px + 40px); }
-body:has(#impersonate-banner:not(.hidden)) #portal-nav { top: 40px; }
+body.is-impersonating { padding-top: calc(64px + 40px); }
+body.is-impersonating #portal-nav { top: 40px; }
 
 #portal-nav {
     position: fixed;

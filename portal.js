@@ -149,6 +149,7 @@ function impersonateClient(clientId) {
   const displayName = client.spouseName ? client.name + ' & ' + client.spouseName : client.name;
   document.getElementById('impersonate-banner-name').textContent = displayName;
   document.getElementById('impersonate-banner').classList.remove('hidden');
+  document.body.classList.add('is-impersonating');
   updateNav(_currentSession);
   renderClientDash(clientId);
   showView('view-client-dash');
@@ -159,6 +160,7 @@ function exitImpersonation() {
   _currentSession = _adminSession;
   _adminSession   = null;
   document.getElementById('impersonate-banner').classList.add('hidden');
+  document.body.classList.remove('is-impersonating');
   updateNav(_currentSession);
   renderAdminDash();
   showView('view-admin-dash');
