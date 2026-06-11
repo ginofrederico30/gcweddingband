@@ -2627,11 +2627,15 @@ document.addEventListener('DOMContentLoaded', function() {
       scopeOfServices: checkedServices
     };
     DB.setContract(currentAdminClientId, contract);
-    // Sync spouse name to client record
+    // Sync event date and spouse name back to client record so dashboard stays current
     const spouseVal = document.getElementById('ac-spouse-name').value.trim();
     const _clients  = DB.getClients();
     const _client   = _clients.find(c => c.id === currentAdminClientId);
-    if (_client) { _client.spouseName = spouseVal; DB.setClients(_clients); }
+    if (_client) {
+      _client.spouseName = spouseVal;
+      if (contract.admin.eventDate) _client.eventDate = contract.admin.eventDate;
+      DB.setClients(_clients);
+    }
     showToast('Contract info saved.');
     renderAdminDash();
     showView('view-admin-dash');
