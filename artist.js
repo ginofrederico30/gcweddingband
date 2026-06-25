@@ -230,6 +230,7 @@ function renderRehearsalTable() {
       const sl = setlists[c.id];
       if (!sl || (!sl.sets[0].length && !sl.sets[1].length)) return;
       const eventDate = (ADB.getContract(c.id).admin || {}).eventDate || c.eventDate || '';
+      if (eventDate && eventDate < today) return;
       [...(sl.sets[0] || []), ...(sl.sets[1] || [])].filter(s => s.source === 'request').forEach(s => {
         if (!s.id || !s.title) return;
         const master  = byId[s.id];
