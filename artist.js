@@ -207,6 +207,65 @@ function generateSetlist(clientId) {
 }
 
 /* ============================================
+   REHEARSAL PREP TABLE
+   ============================================ */
+function renderRehearsalTable() {
+  const panel = document.getElementById('rehearsal-panel');
+  if (!panel) return;
+
+  const today    = new Date().toISOString().slice(0,10);
+  const clients  = ADB.getClients();
+  const setlists = ADB.getSetlists();
+  const catalog  = ADB.getMasterSongs();
+  const byId     = {};
+  catalog.forEach(s => { byId[s.id] = s; });
+
+  // songId → { title, lead, dates[] } — deduplicated across all setlist-ready upcoming gigs
+  const songMap = {};
+
+  clients
+    .filter(c => !c.eventDate || c.eventDate >= today)
+    .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'))
+    .forEach(c => {
+      const sl = setlists[c.id];
+      if (!sl || (!sl.sets[0].length && !sl.sets[1].length)) return;
+      const eventDate = (ADB.getContract(c.id).admin || {}).eventDate || c.eventDate || '';
+      [...(sl.sets[0] || []), ...(sl.sets[1] || [])].forEach(s => {
+        if (!s.id || !s.title) return;
+        const master = byId[s.id];
+        const lead   = s.lead || (master && master.lead) || ARTIST_LEAD_BY_TITLE[(s.title || '').toLowerCase()] || '';
+        if (!songMap[s.id]) songMap[s.id] = { title: s.title, lead, dates: [] };
+        if (eventDate && !songMap[s.id].dates.includes(eventDate)) {
+          songMap[s.id].dates.push(eventDate);
+        }
+      });
+    });
+
+  const songs = Object.values(songMap);
+  if (!songs.length) { panel.classList.add('hidden'); return; }
+
+  panel.classList.remove('hidden');
+  document.getElementById('rehearsal-count').textContent = songs.length + ' song' + (songs.length !== 1 ? 's' : '');
+
+  songs.sort((a, b) => {
+    const da = (a.dates[0] || '9999'), db = (b.dates[0] || '9999');
+    return da !== db ? da.localeCompare(db) : a.title.localeCompare(b.title);
+  });
+
+  const rows = songs.map(s => {
+    const dateStr = s.dates.slice(0, 2).map(d => fmtDateShort(d)).join(', ') + (s.dates.length > 2 ? ` +${s.dates.length - 2}` : '');
+    const leadHtml = s.lead ? `<span class="rehearsal-lead">${escHtml(s.lead)}</span>` : '<span class="rehearsal-no-lead">—</span>';
+    return `<tr><td class="rehearsal-song">${escHtml(s.title)}</td><td>${leadHtml}</td><td class="rehearsal-date-cell">${escHtml(dateStr)}</td></tr>`;
+  }).join('');
+
+  document.getElementById('rehearsal-table-wrap').innerHTML = `
+    <table class="rehearsal-table">
+      <thead><tr><th>Song</th><th>Lead</th><th>Needed By</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+/* ============================================
    GIGS DASHBOARD
    ============================================ */
 function renderGigsDash() {
@@ -305,6 +364,8 @@ function renderGigsDash() {
   container.querySelectorAll('.artist-gig-card').forEach(card => {
     card.addEventListener('click', () => renderGigDetail(card.dataset.clientId));
   });
+
+  renderRehearsalTable();
 }
 
 /* ============================================
@@ -1280,6 +1341,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* Logout */
   document.getElementById('pnav-logout').addEventListener('click', artistLogout);
+
+  /* Rehearsal panel collapse toggle */
+  document.getElementById('rehearsal-toggle').addEventListener('click', function() {
+    const body    = document.getElementById('rehearsal-body');
+    const icon    = this.querySelector('i');
+    const collapsed = body.classList.toggle('hidden');
+    icon.className  = collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+    this.setAttribute('aria-expanded', String(!collapsed));
+  });
 
   /* Back to gigs */
   document.getElementById('btn-back-to-gigs').addEventListener('click', () => {

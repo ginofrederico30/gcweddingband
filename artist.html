@@ -51,6 +51,24 @@
                 <h2>Upcoming Gigs</h2>
             </div>
         </div>
+        <!-- Rehearsal prep panel — shown when any upcoming gig has a saved setlist -->
+        <div id="rehearsal-panel" class="hidden">
+            <div class="rehearsal-header">
+                <div class="rehearsal-header-left">
+                    <i class="fas fa-guitar"></i>
+                    <span>Rehearsal Prep</span>
+                    <span id="rehearsal-count" class="rehearsal-count"></span>
+                </div>
+                <button type="button" id="rehearsal-toggle" class="rehearsal-toggle" aria-expanded="true">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            <div id="rehearsal-body">
+                <p class="rehearsal-subtitle">Songs needed across all upcoming setlist-ready gigs</p>
+                <div id="rehearsal-table-wrap"></div>
+            </div>
+        </div>
+
         <div id="gigs-list"></div>
         <p id="no-gigs-msg" class="empty-state hidden">No gigs scheduled yet.</p>
     </div>
