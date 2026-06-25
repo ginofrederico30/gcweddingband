@@ -670,7 +670,10 @@
     font-size: 12px;
     white-space: nowrap;
 }
+.rehearsal-artist-cell { color: rgba(255,255,255,0.55); font-size: 12px; }
 @media (max-width: 600px) {
+    .rehearsal-table thead th:nth-child(2),
+    .rehearsal-table td:nth-child(2),
     .rehearsal-table thead th:last-child,
     .rehearsal-table td:last-child { display: none; }
     .rehearsal-table td { padding: 10px 14px; }

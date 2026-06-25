@@ -232,9 +232,10 @@ function renderRehearsalTable() {
       const eventDate = (ADB.getContract(c.id).admin || {}).eventDate || c.eventDate || '';
       [...(sl.sets[0] || []), ...(sl.sets[1] || [])].filter(s => s.source === 'request').forEach(s => {
         if (!s.id || !s.title) return;
-        const master = byId[s.id];
-        const lead   = s.lead || (master && master.lead) || ARTIST_LEAD_BY_TITLE[(s.title || '').toLowerCase()] || '';
-        if (!songMap[s.id]) songMap[s.id] = { title: s.title, lead, dates: [] };
+        const master  = byId[s.id];
+        const lead    = s.lead    || (master && master.lead)    || ARTIST_LEAD_BY_TITLE[(s.title || '').toLowerCase()] || '';
+        const spotify = s.spotify || (master && master.spotify) || '';
+        if (!songMap[s.id]) songMap[s.id] = { title: s.title, artist: s.artist || '', lead, spotify, dates: [] };
         if (eventDate && !songMap[s.id].dates.includes(eventDate)) {
           songMap[s.id].dates.push(eventDate);
         }
@@ -253,14 +254,18 @@ function renderRehearsalTable() {
   });
 
   const rows = songs.map(s => {
-    const dateStr = s.dates.slice(0, 2).map(d => fmtDateShort(d)).join(', ') + (s.dates.length > 2 ? ` +${s.dates.length - 2}` : '');
+    const dateStr  = s.dates.slice(0, 2).map(d => fmtDateShort(d)).join(', ') + (s.dates.length > 2 ? ` +${s.dates.length - 2}` : '');
     const leadHtml = s.lead ? `<span class="rehearsal-lead">${escHtml(s.lead)}</span>` : '<span class="rehearsal-no-lead">—</span>';
-    return `<tr><td class="rehearsal-song">${escHtml(s.title)}</td><td>${leadHtml}</td><td class="rehearsal-date-cell">${escHtml(dateStr)}</td></tr>`;
+    const titleHtml = s.spotify
+      ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link rehearsal-song">${escHtml(s.title)} <i class="fab fa-spotify"></i></a>`
+      : `<span class="rehearsal-song">${escHtml(s.title)}</span>`;
+    const artistHtml = s.artist ? escHtml(s.artist) : '<span class="rehearsal-no-lead">—</span>';
+    return `<tr><td>${titleHtml}</td><td class="rehearsal-artist-cell">${artistHtml}</td><td>${leadHtml}</td><td class="rehearsal-date-cell">${escHtml(dateStr)}</td></tr>`;
   }).join('');
 
   document.getElementById('rehearsal-table-wrap').innerHTML = `
     <table class="rehearsal-table">
-      <thead><tr><th>Song</th><th>Lead</th><th>Needed By</th></tr></thead>
+      <thead><tr><th>Song</th><th>Artist</th><th>Lead</th><th>Needed By</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }
