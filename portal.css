@@ -2713,6 +2713,11 @@ body.is-impersonating #portal-nav { top: 40px; }
 .speech-delete-btn { color: #ccc; }
 .speech-edit-btn:hover   { color: var(--navy); background: #e8edf4; }
 .speech-delete-btn:hover { color: #c0392b;    background: #fde8e8; }
+.length-custom-input {
+    margin-top: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
 .sd-length-badge {
     display: inline-block;
     font-size: 10px;

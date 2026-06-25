@@ -2200,6 +2200,8 @@ function renderSpecialDances(clientId) {
 function _clearDanceForm() {
   ['sd-name','sd-with-name','sd-song','sd-artist','sd-spotify','sd-with-relation-other','sd-title-other'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['sd-title','sd-with-relation','sd-length'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const sdCustom = document.getElementById('sd-length-custom');
+  if (sdCustom) { sdCustom.value = ''; sdCustom.classList.add('hidden'); }
   const timeEl = document.getElementById('sd-time');
   if (timeEl) timeEl.value = '';
   const withRelOther = document.getElementById('sd-with-relation-other');
@@ -2228,7 +2230,7 @@ function addSpecialDance(clientId) {
   const song         = (document.getElementById('sd-song')                || {}).value?.trim() || '';
   const artist       = (document.getElementById('sd-artist')              || {}).value?.trim() || '';
   const spotify      = (document.getElementById('sd-spotify')             || {}).value?.trim() || '';
-  const length       = (document.getElementById('sd-length')              || {}).value || '';
+  const length       = _resolveLengthValue('sd-length', 'sd-length-custom');
   if (!name) { showToast('Please enter a name.'); return; }
   const gcp = DB.getGCP(clientId);
   gcp.specialDances = gcp.specialDances || [];
@@ -2256,7 +2258,7 @@ function editSpecialDance(clientId, danceId) {
   if (g('sd-song'))    g('sd-song').value    = dance.song    || '';
   if (g('sd-artist'))  g('sd-artist').value  = dance.artist  || '';
   if (g('sd-spotify')) g('sd-spotify').value = dance.spotify || '';
-  if (g('sd-length'))  g('sd-length').value  = dance.length  || '';
+  _applyLengthCustom('sd-length', 'sd-length-custom', dance.length || '');
   const withRelSel   = g('sd-with-relation');
   const withRelOther = g('sd-with-relation-other');
   if (withRelSel) {
@@ -2311,10 +2313,36 @@ function initAutoGrow(container) {
   });
 }
 
+const LENGTH_PRESETS = new Set(['Full Song','Fade ~30 sec','Fade ~1 min','Fade ~1.5 min','Fade ~2 min','Custom','']);
+
+function _applyLengthCustom(selectId, customId, savedValue) {
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(customId);
+  if (!sel || !inp) return;
+  if (!savedValue || LENGTH_PRESETS.has(savedValue)) {
+    sel.value = savedValue || '';
+    inp.classList.add('hidden');
+    inp.value = '';
+  } else {
+    sel.value = 'Custom';
+    inp.value = savedValue;
+    inp.classList.remove('hidden');
+  }
+}
+
+function _resolveLengthValue(selectId, customId) {
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(customId);
+  if (!sel) return '';
+  return sel.value === 'Custom' ? (inp ? inp.value.trim() : '') : sel.value;
+}
+
 function loadChecklist(clientId) {
   _checklistClientId = clientId;
   const cl = DB.getGCP(clientId).checklist || {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cl[id] !== undefined) el.value = cl[id]; });
+  // Restore custom length inputs
+  _applyLengthCustom('cl-first-dance-length', 'cl-first-dance-length-custom', cl['cl-first-dance-length'] || '');
   // Seed dress code from contract if not yet set in checklist
   const dcEl = document.getElementById('cl-dress-code');
   if (dcEl && !dcEl.value) {
@@ -2331,6 +2359,8 @@ function saveChecklist(clientId) {
   const gcp = DB.getGCP(clientId);
   const cl  = {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
+  // Resolve custom length: replace the "Custom" placeholder with the typed text
+  cl['cl-first-dance-length'] = _resolveLengthValue('cl-first-dance-length', 'cl-first-dance-length-custom');
   gcp.checklist = cl;
   DB.setGCP(clientId, gcp);
   // Sync dress code back to contract.client so it appears in the contract view
@@ -2904,6 +2934,16 @@ document.addEventListener('DOMContentLoaded', function() {
   if (sdTitleSel) sdTitleSel.addEventListener('change', function() {
     const other = document.getElementById('sd-title-other');
     if (other) other.classList.toggle('hidden', this.value !== 'Other');
+  });
+  const sdLengthSel = document.getElementById('sd-length');
+  if (sdLengthSel) sdLengthSel.addEventListener('change', function() {
+    const inp = document.getElementById('sd-length-custom');
+    if (inp) { inp.classList.toggle('hidden', this.value !== 'Custom'); if (this.value !== 'Custom') inp.value = ''; }
+  });
+  const fdLengthSel = document.getElementById('cl-first-dance-length');
+  if (fdLengthSel) fdLengthSel.addEventListener('change', function() {
+    const inp = document.getElementById('cl-first-dance-length-custom');
+    if (inp) { inp.classList.toggle('hidden', this.value !== 'Custom'); if (this.value !== 'Custom') inp.value = ''; }
   });
 
   /* ---- Admin: ceremony service mutual exclusivity (regular + presigned forms) ---- */
