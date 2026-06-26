@@ -2694,7 +2694,14 @@ body.is-impersonating #portal-nav { top: 40px; }
 .speech-main-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    min-width: 0;
+}
+.speech-main-row .speech-speaker,
+.speech-main-row .speech-relation {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .speech-notes {
     font-size: 12px;
@@ -2710,20 +2717,32 @@ body.is-impersonating #portal-nav { top: 40px; }
 }
 .speech-speaker { font-weight: 600; color: #333; flex-shrink: 0; }
 .speech-relation { color: #888; flex: 1; }
-.speech-edit-btn, .speech-delete-btn {
-    background: none;
+.item-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+.item-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
     border: none;
+    border-radius: 6px;
+    background: transparent;
     cursor: pointer;
     font-size: 12px;
-    padding: 4px 6px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    transition: color var(--ease), background var(--ease);
+    transition: background 0.15s, color 0.15s;
 }
-.speech-edit-btn   { color: #aaa; }
-.speech-delete-btn { color: #ccc; }
-.speech-edit-btn:hover   { color: var(--navy); background: #e8edf4; }
-.speech-delete-btn:hover { color: #c0392b;    background: #fde8e8; }
+.item-action-btn--edit   { color: #999; }
+.item-action-btn--delete { color: #bbb; }
+.item-action-btn--edit:hover   { color: var(--navy); background: #e8edf4; }
+.item-action-btn--delete:hover { color: #c0392b;     background: #fde8e8; }
+@media (max-width: 600px) {
+    .item-action-btn { width: 36px; height: 36px; font-size: 13px; }
+}
 .length-custom-input {
     margin-top: 6px;
     width: 100%;

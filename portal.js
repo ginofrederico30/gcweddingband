@@ -2096,8 +2096,10 @@ function renderSpeeches(clientId) {
         <span class="speech-time">${s.time ? escHtml(fmtTime12(s.time)) : '—'}</span>
         <span class="speech-speaker">${escHtml(s.speaker)}</span>
         <span class="speech-relation">${escHtml(s.relation)}</span>
-        <button type="button" class="speech-edit-btn" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
-        <button type="button" class="speech-delete-btn" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
+        <div class="item-actions">
+          <button type="button" class="item-action-btn item-action-btn--edit" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+          <button type="button" class="item-action-btn item-action-btn--delete" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
+        </div>
       </div>${s.notes ? `<div class="speech-notes">${escHtml(s.notes)}</div>` : ''}
     </div>`).join('');
 }
@@ -2197,11 +2199,15 @@ function renderSpecialDances(clientId) {
     const lengthPart  = d.length ? ` <span class="sd-length-badge">${escHtml(d.length)}</span>` : '';
     return `
     <div class="speech-item">
-      <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
-      <span class="speech-speaker">${escHtml(d.name)}${d.withRelation ? ' (' + escHtml(d.withRelation) + ')' : ''}</span>
-      <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}${lengthPart}</span>
-      <button type="button" class="speech-edit-btn" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
-      <button type="button" class="speech-delete-btn" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
+      <div class="speech-main-row">
+        <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
+        <span class="speech-speaker">${escHtml(d.name)}${d.withRelation ? ' (' + escHtml(d.withRelation) + ')' : ''}</span>
+        <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}${lengthPart}</span>
+        <div class="item-actions">
+          <button type="button" class="item-action-btn item-action-btn--edit" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+          <button type="button" class="item-action-btn item-action-btn--delete" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
