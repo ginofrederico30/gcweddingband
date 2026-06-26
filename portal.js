@@ -908,7 +908,8 @@ function renderAdminPlanningDetails(clientId) {
     html += section('Speeches');
     speeches.forEach(s => {
       const label = [s.speaker, s.relation].filter(Boolean).join(', ');
-      html += row(label || 'Speaker', s.time ? fmtTime12(s.time) : '');
+      const val   = [s.time ? fmtTime12(s.time) : '', s.notes].filter(Boolean).join(' — ');
+      html += row(label || 'Speaker', val || '');
     });
   }
 
@@ -1207,7 +1208,8 @@ function renderClientBandSchedule(clientId) {
   const schedSpeeches = (DB.getGCP(clientId).speeches || []).filter(s => s.time);
   schedSpeeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
-    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time);
+    const val   = [fmtTime12(s.time), s.notes].filter(Boolean).join(' — ');
+    addRow('fa-microphone-alt', 'Speech: ' + label, val, s.time);
   });
 
   // Special / parent dances with a time set
@@ -2090,11 +2092,13 @@ function renderSpeeches(clientId) {
   }
   el.innerHTML = speeches.map(s => `
     <div class="speech-item">
-      <span class="speech-time">${s.time ? escHtml(fmtTime12(s.time)) : '—'}</span>
-      <span class="speech-speaker">${escHtml(s.speaker)}</span>
-      <span class="speech-relation">${escHtml(s.relation)}</span>
-      <button type="button" class="speech-edit-btn" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
-      <button type="button" class="speech-delete-btn" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
+      <div class="speech-main-row">
+        <span class="speech-time">${s.time ? escHtml(fmtTime12(s.time)) : '—'}</span>
+        <span class="speech-speaker">${escHtml(s.speaker)}</span>
+        <span class="speech-relation">${escHtml(s.relation)}</span>
+        <button type="button" class="speech-edit-btn" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+        <button type="button" class="speech-delete-btn" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
+      </div>${s.notes ? `<div class="speech-notes">${escHtml(s.notes)}</div>` : ''}
     </div>`).join('');
 }
 
@@ -2103,10 +2107,12 @@ function _clearSpeechForm() {
   const spTime    = document.getElementById('sp-time');
   const relSel    = document.getElementById('sp-relation');
   const relOther  = document.getElementById('sp-relation-other');
+  const spNotes   = document.getElementById('sp-notes');
   if (spSpeaker) spSpeaker.value = '';
   if (spTime)    spTime.value    = '';
   if (relSel)    relSel.value    = '';
   if (relOther)  { relOther.value = ''; relOther.classList.add('hidden'); }
+  if (spNotes)   spNotes.value   = '';
   const btn    = document.getElementById('btn-add-speech');
   const cancel = document.getElementById('btn-cancel-speech-edit');
   if (btn)    btn.innerHTML = '<i class="fas fa-plus"></i> Add Speech';
@@ -2121,14 +2127,15 @@ function addSpeech(clientId) {
   const relVal   = relSel ? relSel.value : '';
   const relation = relVal === 'Other' ? (relOther ? relOther.value.trim() : '') : relVal;
   const time     = (document.getElementById('sp-time') || {}).value || '';
+  const notes    = (document.getElementById('sp-notes') || {}).value?.trim() || '';
   if (!speaker) { showToast('Please enter a speaker name.'); return; }
   const gcp = DB.getGCP(clientId);
   gcp.speeches = gcp.speeches || [];
   if (_editingSpeechId) {
     const idx = gcp.speeches.findIndex(s => s.id === _editingSpeechId);
-    if (idx !== -1) gcp.speeches[idx] = { ...gcp.speeches[idx], time, speaker, relation };
+    if (idx !== -1) gcp.speeches[idx] = { ...gcp.speeches[idx], time, speaker, relation, notes };
   } else {
-    gcp.speeches.push({ id: uid(), time, speaker, relation });
+    gcp.speeches.push({ id: uid(), time, speaker, relation, notes });
   }
   DB.setGCP(clientId, gcp);
   _clearSpeechForm();
@@ -2145,6 +2152,8 @@ function editSpeech(clientId, speechId) {
   const relOther  = document.getElementById('sp-relation-other');
   if (spSpeaker) spSpeaker.value = speech.speaker || '';
   if (spTime)    spTime.value    = speech.time     || '';
+  const spNotes = document.getElementById('sp-notes');
+  if (spNotes)   spNotes.value   = speech.notes   || '';
   const knownRelations = ['Best Man','Maid of Honor','Matron of Honor','Father of the Bride','Mother of the Bride','Father of the Groom','Mother of the Groom','Bride/Groom','Officiant','Bridesmaid','Groomsman','Other'];
   if (relSel) {
     if (knownRelations.includes(speech.relation)) {
