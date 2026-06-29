@@ -603,6 +603,10 @@ function openClientDetail(clientId) {
   // Date created (auto from client record)
   document.getElementById('ac-date-created-display').textContent = fmtDateFromTimestamp(client.createdAt);
 
+  // Admin notes (admin-only)
+  const adminNotesEl = document.getElementById('ac-admin-notes');
+  if (adminNotesEl) adminNotesEl.value = (contract.admin || {}).adminNotes || '';
+
   // Admin fields
   const a = contract.admin || {};
   document.getElementById('ac-client-name').value     = a.clientName    || client.name;
@@ -2681,7 +2685,8 @@ document.addEventListener('DOMContentLoaded', function() {
       totalCost:       fee + trans + lodge,
       deposit:         (fee + trans + lodge) * 0.25,
       finalBalance:    (fee + trans + lodge) * 0.75,
-      scopeOfServices: checkedServices
+      scopeOfServices: checkedServices,
+      adminNotes:      (contract.admin || {}).adminNotes || ''
     };
     DB.setContract(currentAdminClientId, contract);
     // Sync event date and spouse name back to client record so dashboard stays current
@@ -2697,6 +2702,25 @@ document.addEventListener('DOMContentLoaded', function() {
     renderAdminDash();
     showView('view-admin-dash');
   });
+
+  /* ---- Admin notes: auto-save on input (debounced) ---- */
+  let _adminNotesSaveTimer = null;
+  const adminNotesTextarea = document.getElementById('ac-admin-notes');
+  if (adminNotesTextarea) {
+    adminNotesTextarea.addEventListener('input', function() {
+      clearTimeout(_adminNotesSaveTimer);
+      const savedMsg = document.getElementById('admin-notes-saved-msg');
+      if (savedMsg) savedMsg.classList.add('hidden');
+      _adminNotesSaveTimer = setTimeout(() => {
+        if (!currentAdminClientId) return;
+        const contract = DB.getContract(currentAdminClientId);
+        if (!contract.admin) contract.admin = {};
+        contract.admin.adminNotes = adminNotesTextarea.value;
+        DB.setContract(currentAdminClientId, contract);
+        if (savedMsg) { savedMsg.classList.remove('hidden'); setTimeout(() => savedMsg.classList.add('hidden'), 2000); }
+      }, 800);
+    });
+  }
 
   /* ---- Admin: back from client detail ---- */
   document.getElementById('admin-client-back').addEventListener('click', function() {
