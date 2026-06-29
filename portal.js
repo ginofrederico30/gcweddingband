@@ -883,10 +883,14 @@ function renderAdminPlanningDetails(clientId) {
   html += row('Announce Wedding Party',        cl['cl-announce-party']);
   html += row('How Announced',                 cl['cl-announce-party-how']);
   html += row('Wedding Party Names',           cl['cl-party-names']);
-  html += rowLink('Spotify — Wedding Party',   cl['cl-spotify-party'],  cl['cl-spotify-party-title']);
+  html += row('Wedding Party Song',            cl['cl-spotify-party-song']);
+  html += row('Wedding Party Song Artist',     cl['cl-spotify-party-artist']);
+  html += rowLink('Spotify — Wedding Party',   cl['cl-spotify-party'],  [cl['cl-spotify-party-song'], cl['cl-spotify-party-artist']].filter(Boolean).join(' — '));
   html += row('Grand Entrance',                cl['cl-grand-entrance']);
   html += row('Announcement Script',           cl['cl-couple-announce']);
-  html += rowLink('Spotify — Grand Entrance',  cl['cl-spotify-couple'], cl['cl-spotify-couple-title']);
+  html += row('Couple Entrance Song',          cl['cl-spotify-couple-song']);
+  html += row('Couple Entrance Artist',        cl['cl-spotify-couple-artist']);
+  html += rowLink('Spotify — Grand Entrance',  cl['cl-spotify-couple'], [cl['cl-spotify-couple-song'], cl['cl-spotify-couple-artist']].filter(Boolean).join(' — '));
 
   // FIRST DANCE
   if (cl['cl-first-dance'] || cl['cl-first-dance-song']) {
@@ -2043,8 +2047,8 @@ const CHECKLIST_FIELDS = [
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
   'cl-attendance','cl-loadout',
-  'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party-title','cl-spotify-party',
-  'cl-grand-entrance','cl-couple-announce','cl-spotify-couple-title','cl-spotify-couple',
+  'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party-song','cl-spotify-party-artist','cl-spotify-party',
+  'cl-grand-entrance','cl-couple-announce','cl-spotify-couple-song','cl-spotify-couple-artist','cl-spotify-couple',
   'cl-first-dance','cl-first-dance-length','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-spotify',
   'cl-spotify-dinner-title','cl-spotify-dinner','cl-spotify-break-title','cl-spotify-break',
   'cl-notes'
@@ -2072,7 +2076,7 @@ function _applyChecklistVisibility(clientId) {
   // Wedding party entrance
   const announceParty = document.getElementById('cl-announce-party');
   const showParty = announceParty && announceParty.value === 'Yes';
-  ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap'].forEach(id => {
+  ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !showParty);
   });
@@ -2080,7 +2084,7 @@ function _applyChecklistVisibility(clientId) {
   // Couple grand entrance
   const grandEntrance = document.getElementById('cl-grand-entrance');
   const showCouple = grandEntrance && grandEntrance.value === 'Yes';
-  ['cl-couple-announce-wrap','cl-spotify-couple-wrap'].forEach(id => {
+  ['cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !showCouple);
   });
@@ -2930,8 +2934,8 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
-  clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap']);
-  clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap']);
+  clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap']);
+  clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap']);
   // Cocktail separate location: show text field when Yes
   const cocktailSepSel = document.getElementById('cl-cocktail-sep');
   if (cocktailSepSel) {
