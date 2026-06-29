@@ -826,9 +826,17 @@ function renderAdminPlanningDetails(clientId) {
   const row = (label, val) => val
     ? `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val">${escHtml(val)}</span></div>`
     : '';
-  const rowLink = (label, val) => val
-    ? `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val"><a href="${escHtml(val)}" target="_blank" rel="noopener" class="admin-detail-link"><i class="fab fa-spotify"></i> ${escHtml(val)}</a></span></div>`
-    : '';
+  const rowLink = (label, url, displayName) => {
+    if (!url && !displayName) return '';
+    const isUrl = url && /^https?:\/\//.test(url.trim());
+    if (isUrl) {
+      const text = displayName || 'Open in Spotify';
+      return `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val"><a href="${escHtml(url)}" target="_blank" rel="noopener" class="admin-detail-link"><i class="fab fa-spotify"></i> ${escHtml(text)}</a></span></div>`;
+    }
+    // Legacy: value was plain text (name typed directly in the link field)
+    const text = displayName || url;
+    return `<div class="admin-detail-row"><span class="admin-detail-label">${escHtml(label)}</span><span class="admin-detail-val">${escHtml(text)}</span></div>`;
+  };
 
   // Helper: section header
   const section = title => `<div class="admin-detail-section">${escHtml(title)}</div>`;
@@ -860,7 +868,7 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Power / Electricity',    cl['cl-cocktail-electric']);
     html += row('Start Time',             cl['cl-cocktail-start'] ? fmtTime12(cl['cl-cocktail-start']) : '');
     html += row('End Time',               cl['cl-cocktail-end']   ? fmtTime12(cl['cl-cocktail-end'])   : '');
-    html += rowLink('Spotify Playlist',    cl['cl-cocktail-spotify']);
+    html += rowLink('Spotify Playlist',    cl['cl-cocktail-spotify'], cl['cl-cocktail-spotify-title']);
   }
 
   // RECEPTION DETAILS
@@ -875,10 +883,10 @@ function renderAdminPlanningDetails(clientId) {
   html += row('Announce Wedding Party',        cl['cl-announce-party']);
   html += row('How Announced',                 cl['cl-announce-party-how']);
   html += row('Wedding Party Names',           cl['cl-party-names']);
-  html += rowLink('Spotify — Wedding Party',   cl['cl-spotify-party']);
+  html += rowLink('Spotify — Wedding Party',   cl['cl-spotify-party'],  cl['cl-spotify-party-title']);
   html += row('Grand Entrance',                cl['cl-grand-entrance']);
   html += row('Announcement Script',           cl['cl-couple-announce']);
-  html += rowLink('Spotify — Grand Entrance',  cl['cl-spotify-couple']);
+  html += rowLink('Spotify — Grand Entrance',  cl['cl-spotify-couple'], cl['cl-spotify-couple-title']);
 
   // FIRST DANCE
   if (cl['cl-first-dance'] || cl['cl-first-dance-song']) {
@@ -887,7 +895,7 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Song',                          cl['cl-first-dance-song']);
     html += row('Artist',                        cl['cl-first-dance-artist']);
     html += row('Length',                        cl['cl-first-dance-length']);
-    html += rowLink('Spotify',                   cl['cl-first-dance-spotify']);
+    html += rowLink('Spotify',                   cl['cl-first-dance-spotify'], [cl['cl-first-dance-song'], cl['cl-first-dance-artist']].filter(Boolean).join(' — '));
   }
 
   // SPECIAL & PARENT DANCES
@@ -899,7 +907,7 @@ function renderAdminPlanningDetails(clientId) {
       const label = [who, with_ ? '& ' + with_ : ''].filter(Boolean).join(' ');
       const song  = [d.song, d.artist].filter(Boolean).join(' — ');
       html += row(label || 'Dance', [d.time ? fmtTime12(d.time) : '', song, d.length || ''].filter(Boolean).join(' · '));
-      if (d.spotify) html += rowLink('Spotify', d.spotify);
+      if (d.spotify) html += rowLink('Spotify', d.spotify, [d.song, d.artist].filter(Boolean).join(' — '));
     });
   }
 
@@ -918,8 +926,8 @@ function renderAdminPlanningDetails(clientId) {
   const breakPlaylist  = cl['cl-spotify-break'];
   if (dinnerPlaylist || breakPlaylist) {
     html += section('Background Music');
-    if (dinnerPlaylist) html += rowLink('Dinner Music', dinnerPlaylist);
-    if (breakPlaylist)  html += rowLink('Band Break Music', breakPlaylist);
+    if (dinnerPlaylist) html += rowLink('Dinner Music',     dinnerPlaylist, cl['cl-spotify-dinner-title']);
+    if (breakPlaylist)  html += rowLink('Band Break Music', breakPlaylist,  cl['cl-spotify-break-title']);
   }
 
   // CEREMONY PLANNER
@@ -2029,16 +2037,16 @@ const CHECKLIST_FIELDS = [
   'cl-arrival-time','cl-loadinlocation','cl-parking','cl-parking-payment',
   'cl-dressing-room','cl-guest-arrival','cl-cocktail-sep','cl-cocktail-sep-location',
   'cl-cocktail-outdoor','cl-cocktail-start','cl-cocktail-end',
-  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify',
+  'cl-cocktail-location','cl-cocktail-electric','cl-cocktail-spotify-title','cl-cocktail-spotify',
   'cl-dress-code','cl-coordinator','cl-coordinator-phone',
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
   'cl-attendance','cl-loadout',
-  'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party',
-  'cl-grand-entrance','cl-couple-announce','cl-spotify-couple',
+  'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party-title','cl-spotify-party',
+  'cl-grand-entrance','cl-couple-announce','cl-spotify-couple-title','cl-spotify-couple',
   'cl-first-dance','cl-first-dance-length','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-spotify',
-  'cl-spotify-dinner','cl-spotify-break',
+  'cl-spotify-dinner-title','cl-spotify-dinner','cl-spotify-break-title','cl-spotify-break',
   'cl-notes'
 ];
 
