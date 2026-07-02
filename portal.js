@@ -392,8 +392,9 @@ function _clientHasRequested(clientId, catalogSong) {
 }
 
 function _clientHasStartedSelections(clientId) {
-  const songs = DB.getGCP(clientId).songs || {};
-  return Object.keys(songs).length > 0;
+  // Mirrors the admin "NONE" display: a client has started only when they have
+  // at least one song marked Priority/Yes or at least one song request.
+  return countSelectedSongs(clientId) > 0;
 }
 
 function countNewSongs(clientId) {
