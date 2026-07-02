@@ -381,9 +381,14 @@ function ceremonyProgress(cid) {
 
 function _clientHasRequested(clientId, catalogSong) {
   const requests = DB.getGCP(clientId).songRequests || [];
-  const t = catalogSong.title.trim().toLowerCase();
-  const a = catalogSong.artist.trim().toLowerCase();
-  return requests.some(r => r.title.trim().toLowerCase() === t && r.artist.trim().toLowerCase() === a);
+  const normalize = s => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const t = normalize(catalogSong.title);
+  const a = normalize(catalogSong.artist);
+  return requests.some(r => {
+    if (normalize(r.title) !== t) return false;
+    const ra = normalize(r.artist);
+    return !ra || !a || ra === a;
+  });
 }
 
 function countNewSongs(clientId) {
