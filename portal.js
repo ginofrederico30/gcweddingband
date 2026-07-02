@@ -759,8 +759,8 @@ function renderAdminSchedule(clientId) {
   const hasCocktail = scope.includes('Jazz Cocktail Band');
 
   const rows = [];
-  function addRow(icon, label, val, sortTime) {
-    if (val) rows.push({ icon, label, val, sortTime: sortTime || null });
+  function addRow(icon, label, val, sortTime, notes) {
+    if (val) rows.push({ icon, label, val, sortTime: sortTime || null, notes: notes || '' });
   }
 
   addRow('fa-truck-loading', 'Load-in',          cl['cl-arrival-time']   ? fmtTime12(cl['cl-arrival-time'])   : '', cl['cl-arrival-time']);
@@ -792,7 +792,7 @@ function renderAdminSchedule(clientId) {
   const speeches = (gcp.speeches || []).filter(s => s.time);
   speeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
-    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time);
+    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time, s.notes || '');
   });
 
   const specialDances = (gcp.specialDances || []).filter(d => d.time);
@@ -818,9 +818,12 @@ function renderAdminSchedule(clientId) {
   if (!rows.length) { card.classList.add('hidden'); return; }
   card.classList.remove('hidden');
   container.innerHTML = rows.map(r => `
-    <div class="artist-timeline-row">
+    <div class="artist-timeline-row${r.notes ? ' has-note' : ''}">
       <div class="artist-timeline-icon"><i class="fas ${escHtml(r.icon)}"></i></div>
-      <div class="artist-timeline-label">${escHtml(r.label)}</div>
+      <div class="artist-timeline-label-col">
+        <div class="artist-timeline-label">${escHtml(r.label)}</div>
+        ${r.notes ? `<div class="artist-timeline-note">${escHtml(r.notes)}</div>` : ''}
+      </div>
       <div class="artist-timeline-val">${escHtml(r.val)}</div>
     </div>`).join('');
 }
@@ -1193,8 +1196,8 @@ function renderClientBandSchedule(clientId) {
   const rows = [];
 
   // sortTime stores raw "HH:MM" for chronological ordering
-  function addRow(icon, label, val, sortTime) {
-    if (val) rows.push({ icon, label, val, sortTime: sortTime || null });
+  function addRow(icon, label, val, sortTime, notes) {
+    if (val) rows.push({ icon, label, val, sortTime: sortTime || null, notes: notes || '' });
   }
 
   addRow('fa-truck',        'Band Arrival / Load-in', cl['cl-arrival-time']    ? fmtTime12(cl['cl-arrival-time'])    : '', cl['cl-arrival-time']);
@@ -1238,8 +1241,7 @@ function renderClientBandSchedule(clientId) {
   const schedSpeeches = (DB.getGCP(clientId).speeches || []).filter(s => s.time);
   schedSpeeches.forEach(s => {
     const label = [s.speaker, s.relation].filter(Boolean).join(' — ');
-    const val   = [fmtTime12(s.time), s.notes].filter(Boolean).join(' — ');
-    addRow('fa-microphone-alt', 'Speech: ' + label, val, s.time);
+    addRow('fa-microphone-alt', 'Speech: ' + label, fmtTime12(s.time), s.time, s.notes || '');
   });
 
   // Special / parent dances with a time set
@@ -1271,9 +1273,12 @@ function renderClientBandSchedule(clientId) {
 
   card.classList.remove('hidden');
   container.innerHTML = rows.map(r => `
-    <div class="artist-timeline-row">
+    <div class="artist-timeline-row${r.notes ? ' has-note' : ''}">
       <div class="artist-timeline-icon"><i class="fas ${escHtml(r.icon)}"></i></div>
-      <div class="artist-timeline-label">${escHtml(r.label)}</div>
+      <div class="artist-timeline-label-col">
+        <div class="artist-timeline-label">${escHtml(r.label)}</div>
+        ${r.notes ? `<div class="artist-timeline-note">${escHtml(r.notes)}</div>` : ''}
+      </div>
       <div class="artist-timeline-val">${escHtml(r.val)}</div>
     </div>`).join('');
 }
