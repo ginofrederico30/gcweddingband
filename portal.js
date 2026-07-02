@@ -391,9 +391,15 @@ function _clientHasRequested(clientId, catalogSong) {
   });
 }
 
+function _clientHasStartedSelections(clientId) {
+  const songs = DB.getGCP(clientId).songs || {};
+  return Object.keys(songs).length > 0;
+}
+
 function countNewSongs(clientId) {
   const client = DB.getClients().find(c => c.id === clientId);
   if (!client) return 0;
+  if (!_clientHasStartedSelections(clientId)) return 0;
   const songs = DB.getGCP(clientId).songs || {};
   return DB.getMasterSongs().filter(s =>
     s.addedAt > client.createdAt && !songs[s.id] && !_clientHasRequested(clientId, s)
@@ -1872,7 +1878,8 @@ function renderSongSelector(clientId) {
   const allSongs = DB.getMasterSongs()
     .filter(s => !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query))
     .sort((a, b) => a.title.localeCompare(b.title));
-  const newSongs = allSongs.filter(s => s.addedAt > client.createdAt && !_clientHasRequested(clientId, s));
+  const hasStarted = _clientHasStartedSelections(clientId);
+  const newSongs = hasStarted ? allSongs.filter(s => s.addedAt > client.createdAt && !_clientHasRequested(clientId, s)) : [];
 
   const { total } = _songSelectionCounts(prefs);
   const labelEl = document.getElementById('songs-selected-count');
@@ -1880,7 +1887,7 @@ function renderSongSelector(clientId) {
 
 
   function songHTML(s) {
-    const isNew = s.addedAt > client.createdAt && !_clientHasRequested(clientId, s);
+    const isNew = hasStarted && s.addedAt > client.createdAt && !_clientHasRequested(clientId, s);
     const pref  = prefs[s.id] || '';
     const newBadge = (isNew && !pref) ? ' <span class="song-new-badge">New</span>' : '';
     const chk = (val) => pref === val ? 'checked' : '';
