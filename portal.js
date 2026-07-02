@@ -379,11 +379,20 @@ function ceremonyProgress(cid) {
   return Math.min(100, Math.round((filled / required.length) * 100));
 }
 
+function _clientHasRequested(clientId, catalogSong) {
+  const requests = DB.getGCP(clientId).songRequests || [];
+  const t = catalogSong.title.trim().toLowerCase();
+  const a = catalogSong.artist.trim().toLowerCase();
+  return requests.some(r => r.title.trim().toLowerCase() === t && r.artist.trim().toLowerCase() === a);
+}
+
 function countNewSongs(clientId) {
   const client = DB.getClients().find(c => c.id === clientId);
   if (!client) return 0;
   const songs = DB.getGCP(clientId).songs || {};
-  return DB.getMasterSongs().filter(s => s.addedAt > client.createdAt && !songs[s.id]).length;
+  return DB.getMasterSongs().filter(s =>
+    s.addedAt > client.createdAt && !songs[s.id] && !_clientHasRequested(clientId, s)
+  ).length;
 }
 
 function countSelectedSongs(clientId) {
@@ -1853,7 +1862,7 @@ function renderSongSelector(clientId) {
   const allSongs = DB.getMasterSongs()
     .filter(s => !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query))
     .sort((a, b) => a.title.localeCompare(b.title));
-  const newSongs = allSongs.filter(s => s.addedAt > client.createdAt);
+  const newSongs = allSongs.filter(s => s.addedAt > client.createdAt && !_clientHasRequested(clientId, s));
 
   const { total } = _songSelectionCounts(prefs);
   const labelEl = document.getElementById('songs-selected-count');
@@ -1861,7 +1870,7 @@ function renderSongSelector(clientId) {
 
 
   function songHTML(s) {
-    const isNew = s.addedAt > client.createdAt;
+    const isNew = s.addedAt > client.createdAt && !_clientHasRequested(clientId, s);
     const pref  = prefs[s.id] || '';
     const newBadge = (isNew && !pref) ? ' <span class="song-new-badge">New</span>' : '';
     const chk = (val) => pref === val ? 'checked' : '';
