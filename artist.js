@@ -1179,6 +1179,410 @@ function _renderAddSongList(query) {
 let _pendingAddSong = null;
 
 /* ============================================
+   MC SCHEDULE PREVIEW
+   ============================================ */
+function _buildMCTimeline(clientId) {
+  const gcp  = ADB.getGCP(clientId);
+  const cl   = gcp.checklist || {};
+  const cer  = gcp.ceremony  || {};
+  const contract = ADB.getContract(clientId);
+  const a    = contract.admin  || {};
+  const cl2  = contract.client || {};
+  const scope = a.scopeOfServices || [];
+  const hasCeremony    = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const isLiveCeremony = scope.includes('Live Ceremony Music');
+  const hasCocktail    = scope.includes('Jazz Cocktail Band');
+
+  const items = [];
+  function add(rawTime, icon, label, details) {
+    if (!rawTime) return;
+    items.push({ rawTime, icon, label, details: details || [] });
+  }
+  const info   = t => ({ type: 'info',   text: t });
+  const songD  = t => ({ type: 'song',   text: t });
+  const scrpt  = t => ({ type: 'script', text: t });
+  const names  = t => ({ type: 'names',  text: t });
+  const noteD  = (t, id) => ({ type: 'note', text: t, noteId: id });
+  const cpt    = a => a.filter(Boolean);
+
+  add(cl['cl-arrival-time'], 'fa-truck-loading', 'BAND LOAD-IN', cpt([
+    cl['cl-loadinlocation'] ? info('Load-in: ' + cl['cl-loadinlocation']) : null,
+    cl['cl-parking'] ? info('Parking: ' + cl['cl-parking'] + (cl['cl-parking-payment'] ? ' (' + cl['cl-parking-payment'] + ')' : '')) : null,
+    cl['cl-dressing-room'] ? info('Dressing room: ' + cl['cl-dressing-room']) : null,
+  ]));
+
+  add(subtractMinutes(cl['cl-guest-arrival'], 60), 'fa-microphone', 'SOUNDCHECK');
+  add(cl['cl-guest-arrival'], 'fa-users', 'GUEST ARRIVAL');
+
+  if (hasCeremony && cer['cer-start']) {
+    const cerDetails = [];
+    if (isLiveCeremony) {
+      const fam  = [cer['cer-live-family-song'], cer['cer-live-family-artist']].filter(Boolean).join(' — ');
+      const bride = [cer['cer-live-bride-song'], cer['cer-live-bride-artist']].filter(Boolean).join(' — ');
+      if (cer['cer-seating-genre']) cerDetails.push(info('Seating music: ' + cer['cer-seating-genre']));
+      if (fam)   cerDetails.push(songD('♫ Family / WP Processional: ' + fam));
+      if (bride) cerDetails.push(songD('♫ Bride Entrance: ' + bride));
+    }
+    add(cer['cer-start'], 'fa-ring', 'CEREMONY BEGINS', cerDetails);
+    const exitDetails = [];
+    if (isLiveCeremony) {
+      const exit = [cer['cer-live-exit-song'], cer['cer-live-exit-artist']].filter(Boolean).join(' — ');
+      if (exit) exitDetails.push(songD('♫ Recessional: ' + exit));
+    }
+    add(cer['cer-end'], 'fa-door-open', 'CEREMONY ENDS', exitDetails);
+  }
+
+  if (hasCocktail && cl['cl-cocktail-start']) {
+    const loc = cl['cl-cocktail-sep-location'] || cl['cl-cocktail-location'] || '';
+    add(cl['cl-cocktail-start'], 'fa-cocktail', 'COCKTAIL HOUR', cpt([
+      loc ? info('Location: ' + loc) : null,
+      (cl['cl-cocktail-spotify-title'] || cl['cl-cocktail-spotify']) ? songD('♫ ' + (cl['cl-cocktail-spotify-title'] || 'Cocktail playlist')) : null,
+      cl['cl-cocktail-end'] ? info('Ends: ' + fmtTime12(cl['cl-cocktail-end'])) : null,
+    ]));
+  }
+
+  add(cl['cl-reception-start'], 'fa-glass-cheers', 'RECEPTION BEGINS');
+
+  if (cl['cl-announce-party'] === 'Yes' && cl['cl-reception-start']) {
+    const t = addMinutes(cl['cl-reception-start'], 5);
+    const ps = [cl['cl-spotify-party-song'], cl['cl-spotify-party-artist']].filter(Boolean).join(' — ');
+    add(t, 'fa-users', 'WEDDING PARTY ENTRANCE', cpt([
+      cl['cl-announce-party-how'] ? info('Announced: ' + cl['cl-announce-party-how']) : null,
+      cl['cl-party-names'] ? names(cl['cl-party-names']) : null,
+      ps ? songD('♫ ' + ps) : null,
+    ]));
+  }
+
+  if (cl['cl-grand-entrance'] === 'Yes' && cl['cl-reception-start']) {
+    const t = addMinutes(cl['cl-reception-start'], 6);
+    const cs = [cl['cl-spotify-couple-song'], cl['cl-spotify-couple-artist']].filter(Boolean).join(' — ');
+    add(t, 'fa-star', 'GRAND ENTRANCE', cpt([
+      cl['cl-couple-announce'] ? scrpt(cl['cl-couple-announce']) : null,
+      cs ? songD('♫ ' + cs) : null,
+    ]));
+  }
+
+  if (cl['cl-dinner-time']) {
+    add(cl['cl-dinner-time'], 'fa-utensils', 'DINNER SERVICE', cpt([
+      cl['cl-dinner-style'] ? info('Style: ' + cl['cl-dinner-style']) : null,
+      cl['cl-table-announce'] ? info('Table announcements by band: ' + cl['cl-table-announce']) : null,
+      (cl['cl-spotify-dinner-title'] || cl['cl-spotify-dinner']) ? songD('♫ Dinner music: ' + (cl['cl-spotify-dinner-title'] || 'Playlist')) : null,
+    ]));
+  }
+
+  if (cl['cl-first-dance']) {
+    const fs = [cl['cl-first-dance-song'], cl['cl-first-dance-artist']].filter(Boolean).join(' — ');
+    add(cl['cl-first-dance'], 'fa-heart', 'FIRST DANCE', cpt([
+      fs ? songD('♫ ' + fs) : null,
+      cl['cl-first-dance-length'] ? info('Length: ' + cl['cl-first-dance-length']) : null,
+    ]));
+  }
+
+  (gcp.specialDances || []).filter(d => d.time).forEach(d => {
+    const who  = [d.name, d.withRelation ? '(' + d.withRelation + ')' : ''].filter(Boolean).join(' ');
+    const w2   = [d.withName, d.title ? '(' + d.title + ')' : ''].filter(Boolean).join(' ');
+    const ds   = [d.song, d.artist].filter(Boolean).join(' — ');
+    add(d.time, 'fa-user-friends', 'DANCE: ' + [who, w2 ? '& ' + w2 : ''].filter(Boolean).join(' '), cpt([
+      ds ? songD('♫ ' + ds) : null,
+      d.length ? info('Length: ' + d.length) : null,
+    ]));
+  });
+
+  (gcp.speeches || []).filter(s => s.time).forEach(s => {
+    const who = [s.speaker, s.relation].filter(Boolean).join(' — ');
+    add(s.time, 'fa-microphone-alt', 'SPEECH' + (who ? ': ' + who : ''), cpt([
+      s.notes ? noteD(s.notes, 'speech-' + s.id) : null,
+    ]));
+  });
+
+  add(cl['cl-dance-floor'], 'fa-music', 'DANCE FLOOR OPENS', cpt([
+    (cl['cl-spotify-break-title'] || cl['cl-spotify-break']) ? songD('♫ Band break: ' + (cl['cl-spotify-break-title'] || 'Break playlist')) : null,
+  ]));
+  add(cl['cl-reception-end'],  'fa-flag-checkered', 'RECEPTION ENDS');
+  add(cl['cl-loadout'],        'fa-box',            'LOAD-OUT');
+
+  function toMin(t) {
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    const mins   = h * 60 + m;
+    return mins < 480 ? mins + 1440 : mins;
+  }
+  items.sort((a, b) => {
+    const ma = toMin(a.rawTime), mb = toMin(b.rawTime);
+    if (ma == null && mb == null) return 0;
+    if (ma == null) return 1;
+    if (mb == null) return -1;
+    return ma - mb;
+  });
+  return items;
+}
+
+function _buildScheduleHTML(clientId, base) {
+  const gcp      = ADB.getGCP(clientId);
+  const cl       = gcp.checklist || {};
+  const contract = ADB.getContract(clientId);
+  const a        = contract.admin  || {};
+  const cl2      = contract.client || {};
+  const client   = ADB.getClients().find(c => c.id === clientId);
+
+  const displayName = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : '—';
+  const eventDate   = fmtDate(a.eventDate || (client && client.eventDate) || '');
+  const venue       = cl2.venue || a.venue || '';
+  const adminNotes  = a.adminNotes || '';
+  const clientNotes = cl['cl-notes'] || '';
+  const timeline    = _buildMCTimeline(clientId);
+
+  const untimedSpeeches = (gcp.speeches      || []).filter(s => !s.time);
+  const untimedDances   = (gcp.specialDances || []).filter(d => !d.time);
+
+  const logoBase = base || window.location.origin;
+
+  function rowHTML(item) {
+    const dHtml = item.details.map(d => {
+      if (d.type === 'song')   return `<div class="mcs-d mcs-d-song">${escHtml(d.text)}</div>`;
+      if (d.type === 'script') return `<div class="mcs-d mcs-d-script">${escHtml(d.text)}</div>`;
+      if (d.type === 'names')  return `<div class="mcs-d mcs-d-names">${escHtml(d.text)}</div>`;
+      if (d.type === 'note')   return `<div class="mcs-d mcs-d-note" id="mcs-note-${escHtml(d.noteId || '')}">${escHtml(d.text)}</div>`;
+      return `<div class="mcs-d mcs-d-info">${escHtml(d.text)}</div>`;
+    }).join('');
+    return `<div class="mcs-row">
+      <div class="mcs-time-col">${escHtml(fmtTime12(item.rawTime) || '—')}</div>
+      <div class="mcs-event-col">
+        <div class="mcs-event-label"><i class="fas ${escHtml(item.icon)}"></i> ${escHtml(item.label)}</div>
+        ${dHtml}
+      </div>
+    </div>`;
+  }
+
+  function lgRow(label, val) {
+    if (!val) return '';
+    return `<div class="mcs-lg-row"><span class="mcs-lg-label">${escHtml(label)}</span><span class="mcs-lg-val">${escHtml(val)}</span></div>`;
+  }
+
+  let html = `<div class="mcs-doc">
+  <div class="mcs-header">
+    <img class="mcs-logo" src="${logoBase}/Insta%20Profile.png" alt="Good Company" onerror="this.style.display='none'">
+    <div class="mcs-eyebrow">Good Company Wedding Band</div>
+    <div class="mcs-title">MC Run of Show</div>
+    <div class="mcs-couple">${escHtml(displayName)}</div>
+    ${(eventDate || venue) ? `<div class="mcs-meta">${[eventDate, venue].filter(Boolean).map(escHtml).join(' · ')}</div>` : ''}
+  </div>`;
+
+  if (timeline.length) {
+    html += `<div class="mcs-section">
+      <div class="mcs-section-hdr">Event Timeline</div>
+      <div class="mcs-timeline">${timeline.map(rowHTML).join('')}</div>
+    </div>`;
+  }
+
+  if (untimedSpeeches.length || untimedDances.length) {
+    html += `<div class="mcs-section"><div class="mcs-section-hdr">Additional Scheduled Events</div><div class="mcs-untimed">`;
+    untimedSpeeches.forEach(s => {
+      const who = [s.speaker, s.relation].filter(Boolean).join(' — ');
+      html += `<div class="mcs-untimed-row">
+        <div class="mcs-untimed-label"><i class="fas fa-microphone-alt"></i> SPEECH${who ? ': ' + escHtml(who) : ''}</div>
+        ${s.notes ? `<div class="mcs-d mcs-d-note" id="mcs-note-speech-${escHtml(s.id)}">${escHtml(s.notes)}</div>` : ''}
+      </div>`;
+    });
+    untimedDances.forEach(d => {
+      const who = [d.name, d.withRelation ? '(' + d.withRelation + ')' : ''].filter(Boolean).join(' ');
+      const w2  = [d.withName, d.title ? '(' + d.title + ')' : ''].filter(Boolean).join(' ');
+      const ds  = [d.song, d.artist].filter(Boolean).join(' — ');
+      html += `<div class="mcs-untimed-row">
+        <div class="mcs-untimed-label"><i class="fas fa-user-friends"></i> DANCE: ${escHtml([who, w2 ? '& ' + w2 : ''].filter(Boolean).join(' '))}</div>
+        ${ds ? `<div class="mcs-d mcs-d-song">♫ ${escHtml(ds)}</div>` : ''}
+        ${d.length ? `<div class="mcs-d mcs-d-info">Length: ${escHtml(d.length)}</div>` : ''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  const logHtml = [
+    lgRow('Coordinator', [cl['cl-coordinator'], cl['cl-coordinator-phone']].filter(Boolean).join(' · ')),
+    lgRow('Dress Code',  cl2.dressCode || cl['cl-dress-code'] || ''),
+    lgRow('Attendance',  cl['cl-attendance'] ? cl['cl-attendance'] + ' guests' : ''),
+    lgRow('WiFi',        [cl['cl-wifi-name'], cl['cl-wifi-pass']].filter(Boolean).join(' / ')),
+    lgRow('Parking',     cl['cl-parking']),
+    lgRow('Dressing Room', cl['cl-dressing-room']),
+    lgRow('Meals',       cl['cl-meals'] ? cl['cl-meals'] + (cl['cl-band-eat'] ? ' · ' + cl['cl-band-eat'] : '') : ''),
+    lgRow('Stage Size',  cl['cl-stage-size']),
+  ].join('');
+  if (logHtml) {
+    html += `<div class="mcs-section"><div class="mcs-section-hdr">Logistics</div><div class="mcs-logistics">${logHtml}</div></div>`;
+  }
+
+  if (clientNotes) {
+    html += `<div class="mcs-section">
+      <div class="mcs-section-hdr">Client Notes</div>
+      <div class="mcs-notes-body"><div class="mcs-d mcs-d-note" id="mcs-note-general-notes">${escHtml(clientNotes)}</div></div>
+    </div>`;
+  }
+
+  if (adminNotes) {
+    html += `<div class="mcs-section mcs-internal-section">
+      <div class="mcs-section-hdr mcs-internal-hdr"><i class="fas fa-lock"></i> Admin Notes — Internal</div>
+      <div class="mcs-notes-body"><div class="mcs-d mcs-d-note" id="mcs-note-admin-notes">${escHtml(adminNotes)}</div></div>
+    </div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function _collectNotesSections(clientId) {
+  const gcp      = ADB.getGCP(clientId);
+  const cl       = gcp.checklist || {};
+  const cer      = gcp.ceremony  || {};
+  const contract = ADB.getContract(clientId);
+  const a        = contract.admin || {};
+  const MIN      = 100;
+  const sections = [];
+
+  if ((cl['cl-notes'] || '').length > MIN)
+    sections.push({ id: 'general-notes', text: cl['cl-notes'], role: 'general-client-notes' });
+
+  const cerNotes = cer['cer-live-notes'] || cer['cer-duties-notes'] || '';
+  if (cerNotes.length > MIN)
+    sections.push({ id: 'ceremony-notes', text: cerNotes, role: 'ceremony-notes' });
+
+  (gcp.speeches || []).forEach(s => {
+    if ((s.notes || '').length > MIN)
+      sections.push({ id: 'speech-' + s.id, text: s.notes, role: 'speech-notes' });
+  });
+
+  if ((a.adminNotes || '').length > MIN)
+    sections.push({ id: 'admin-notes', text: a.adminNotes, role: 'admin-notes' });
+
+  return sections;
+}
+
+function _applyAISummaries(sections, summaries) {
+  summaries.forEach(s => {
+    const sec = sections[s.id];
+    if (!sec) return;
+    const el = document.getElementById('mcs-note-' + sec.id);
+    if (!el) return;
+    let html = '<span class="mcs-ai-badge"><i class="fas fa-robot"></i> AI Summary</span>';
+    html += `<div class="mcs-ai-text">${escHtml(s.summary)}</div>`;
+    if (s.times && s.times.length) {
+      html += '<div class="mcs-ai-times">';
+      s.times.forEach(t => {
+        html += `<span class="mcs-ai-time"><i class="fas fa-clock"></i> ${escHtml(t.time)}${t.context ? ' — ' + escHtml(t.context) : ''}</span>`;
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+    el.classList.add('mcs-d-note-summarized');
+  });
+}
+
+async function renderSchedulePreview() {
+  const clientId = _currentClientId;
+  if (!clientId) return;
+
+  const statusEl = document.getElementById('schedule-ai-status');
+  statusEl.classList.add('hidden');
+  document.getElementById('schedule-preview-content').innerHTML = _buildScheduleHTML(clientId, null);
+  showView('view-schedule-preview');
+  window.scrollTo(0, 0);
+
+  const sections = _collectNotesSections(clientId);
+  if (!sections.length || !_functions) return;
+
+  statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating AI summaries…';
+  statusEl.classList.remove('hidden');
+
+  try {
+    const fn      = _functions.httpsCallable('summarizeScheduleNotes');
+    const result  = await fn({ sections });
+    const sumList = result.data.summaries || [];
+    if (sumList.length) {
+      _applyAISummaries(sections, sumList);
+      statusEl.innerHTML = '<i class="fas fa-check"></i> AI summaries applied';
+      setTimeout(() => statusEl.classList.add('hidden'), 2200);
+    } else {
+      statusEl.classList.add('hidden');
+    }
+  } catch (err) {
+    console.warn('AI summarization skipped:', err.message || err);
+    statusEl.classList.add('hidden');
+  }
+}
+
+function downloadSchedulePDF() {
+  const clientId = _currentClientId;
+  if (!clientId) return;
+
+  const client  = ADB.getClients().find(c => c.id === clientId);
+  const contract = ADB.getContract(clientId);
+  const a        = contract.admin || {};
+  const name     = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Schedule';
+  const base     = window.location.origin;
+
+  // Capture current DOM (may already have AI summaries applied)
+  const contentEl = document.getElementById('schedule-preview-content');
+  const bodyHTML  = contentEl ? contentEl.innerHTML : _buildScheduleHTML(clientId, base);
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>${escHtml(name)} — MC Schedule</title>
+<link rel="stylesheet" href="https://kit.fontawesome.com/9d7b870bec.css" crossorigin="anonymous">
+<style>
+  @font-face{font-family:'Montserrat';src:url('${base}/Montserrat-VariableFont_wght.ttf') format('truetype')}
+  @font-face{font-family:'Bitter';src:url('${base}/Bitter-VariableFont_wght.ttf') format('truetype')}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;color:#1a1a1a;padding:24px 32px;font-size:12px;line-height:1.5}
+  .mcs-doc{max-width:760px;margin:0 auto}
+  .mcs-header{text-align:center;padding-bottom:18px;margin-bottom:18px;border-bottom:2px solid #153147}
+  .mcs-logo{width:60px;height:60px;object-fit:contain;display:block;margin:0 auto 8px}
+  .mcs-eyebrow{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#aaa;margin-bottom:4px}
+  .mcs-title{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:5px;color:#153147;margin-bottom:6px}
+  .mcs-couple{font-family:'Bitter',serif;font-size:21px;font-weight:700;color:#153147;margin-bottom:3px}
+  .mcs-meta{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1.5px}
+  .mcs-section{margin-bottom:18px;page-break-inside:avoid}
+  .mcs-section-hdr{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#153147;padding:7px 0 5px;border-bottom:2px solid #153147}
+  .mcs-internal-hdr{color:#8a3a00;border-color:#8a3a00}
+  .mcs-internal-section{background:#fffaf5;padding:8px;border-radius:6px}
+  .mcs-timeline{}
+  .mcs-row{display:flex;gap:16px;padding:8px 0;border-bottom:1px solid #f0ede8;align-items:flex-start}
+  .mcs-row:last-child{border-bottom:none}
+  .mcs-time-col{width:72px;flex-shrink:0;font-size:11px;font-weight:700;color:#153147;padding-top:2px}
+  .mcs-event-col{flex:1;min-width:0}
+  .mcs-event-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#1a1a1a;margin-bottom:3px}
+  .mcs-event-label .fas{color:#153147;margin-right:4px;font-size:10px}
+  .mcs-d{font-size:11px;color:#555;margin-top:3px;line-height:1.5}
+  .mcs-d-song{color:#1a5c2a;font-weight:600}
+  .mcs-d-script{color:#5c3a00;font-style:italic;background:#fff9f0;padding:4px 8px;border-left:3px solid #e0a000;border-radius:2px;margin-top:4px}
+  .mcs-d-names{color:#333;background:#f8f8f8;padding:3px 8px;border-radius:4px;font-size:10px;white-space:pre-wrap}
+  .mcs-d-note{color:#444;background:#f5f5f0;padding:5px 8px;border-radius:4px;border-left:3px solid #ccc;white-space:pre-wrap}
+  .mcs-d-note-summarized{border-left-color:#153147;background:#f0f4f9}
+  .mcs-ai-badge{display:inline-block;background:#153147;color:#fff;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:10px;margin-bottom:4px}
+  .mcs-ai-text{font-size:11px;color:#333;line-height:1.6}
+  .mcs-ai-times{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+  .mcs-ai-time{display:inline-flex;align-items:center;gap:3px;background:#e8f3e8;color:#2a5c2a;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px}
+  .mcs-untimed{padding:4px 0}
+  .mcs-untimed-row{padding:8px 0;border-bottom:1px solid #f0ede8}
+  .mcs-untimed-row:last-child{border-bottom:none}
+  .mcs-untimed-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#1a1a1a;margin-bottom:3px}
+  .mcs-untimed-label .fas{color:#153147;margin-right:4px;font-size:10px}
+  .mcs-logistics{padding:4px 0}
+  .mcs-lg-row{display:flex;gap:16px;padding:5px 0;border-bottom:1px solid #f4f3f0;align-items:baseline}
+  .mcs-lg-row:last-child{border-bottom:none}
+  .mcs-lg-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;width:110px;flex-shrink:0}
+  .mcs-lg-val{font-size:11px;color:#333;flex:1}
+  .mcs-notes-body{padding:6px 0}
+  @media print{body{padding:10px 18px}@page{margin:.6cm;size:letter portrait}}
+</style></head><body>${bodyHTML}</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow pop-ups to download PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.addEventListener('load', () => setTimeout(() => win.print(), 300));
+  setTimeout(() => win.print(), 1200);
+}
+
+/* ============================================
    SETLIST PREVIEW VIEW
    ============================================ */
 function renderSetlistPreview() {
@@ -1362,6 +1766,22 @@ document.addEventListener('DOMContentLoaded', function() {
     renderGigsDash();
     showView('view-gigs');
     window.scrollTo(0, 0);
+  });
+
+  /* View Schedule button */
+  document.getElementById('btn-view-schedule').addEventListener('click', () => {
+    renderSchedulePreview();
+  });
+
+  /* Back from schedule preview */
+  document.getElementById('btn-back-from-schedule').addEventListener('click', () => {
+    showView('view-gig');
+    window.scrollTo(0, 0);
+  });
+
+  /* Download PDF from schedule preview */
+  document.getElementById('btn-print-schedule').addEventListener('click', () => {
+    if (_currentClientId) downloadSchedulePDF();
   });
 
   /* View Setlist button */
