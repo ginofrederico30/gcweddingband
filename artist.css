@@ -685,7 +685,8 @@
     .no-print { display: none !important; }
     #setlist-print-area { box-shadow: none; border: none; padding: 0; }
     #schedule-print-area { box-shadow: none; border: none; padding: 0; }
-    .mcs-section { page-break-inside: avoid; }
+    .mcs-section-hdr { break-after: avoid; }
+    .mcs-row, .mcs-untimed-row { page-break-inside: avoid; }
 }
 
 /* ============================================

@@ -1539,8 +1539,9 @@ function downloadSchedulePDF() {
   .mcs-title{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:5px;color:#153147;margin-bottom:6px}
   .mcs-couple{font-family:'Bitter',serif;font-size:21px;font-weight:700;color:#153147;margin-bottom:3px}
   .mcs-meta{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1.5px}
-  .mcs-section{margin-bottom:18px;page-break-inside:avoid}
-  .mcs-section-hdr{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#153147;padding:7px 0 5px;border-bottom:2px solid #153147}
+  .mcs-section{margin-bottom:18px}
+  .mcs-section-hdr{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#153147;padding:7px 0 5px;border-bottom:2px solid #153147;break-after:avoid}
+  .mcs-row,.mcs-untimed-row{page-break-inside:avoid}
   .mcs-internal-hdr{color:#8a3a00;border-color:#8a3a00}
   .mcs-internal-section{background:#fffaf5;padding:8px;border-radius:6px}
   .mcs-timeline{}
