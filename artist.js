@@ -256,7 +256,7 @@ function renderRehearsalTable() {
         if (!s.id || !s.title) return;
         const master  = byId[s.id];
         const lead    = s.lead    || (master && master.lead)    || ARTIST_LEAD_BY_TITLE[(s.title || '').toLowerCase()] || '';
-        const key     = s.key     || (master && master.key)     || '';
+        const key     = s.key     || (master && master.key)     || _catalogKeyByTitle(s.title) || '';
         const spotify = s.spotify || (master && master.spotify) || '';
         if (!songMap[s.id]) songMap[s.id] = { title: s.title, artist: s.artist || '', lead, key, spotify, dates: [] };
         if (eventDate && !songMap[s.id].dates.includes(eventDate)) {
