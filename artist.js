@@ -113,13 +113,17 @@ const ARTIST_LEAD_BY_TITLE = {
   "you make my dreams (come true)":"Matt","you sexy thing":"Ian",
 };
 
-/* Formats elapsed set time for every-5-song timestamp markers */
-function _setTimeLabel(songIndex) {
-  if (songIndex === 0) return 'Start';
-  const totalMin = songIndex * AVG_SONG_MIN;
-  const h = Math.floor(totalMin / 60);
-  const m = Math.round(totalMin % 60);
-  return h > 0 ? `~${h}h ${m}min` : `~${m} min`;
+/* Returns absolute clock time for a song at position songIndex (0-based), given HH:MM reception start */
+function _songClockTime(songIndex, receptionStart) {
+  if (!receptionStart) return '';
+  const parts = receptionStart.split(':');
+  const baseMin = (+parts[0]) * 60 + (+parts[1]);
+  const totalMin = baseMin + Math.round(songIndex * AVG_SONG_MIN);
+  const h24 = Math.floor(totalMin / 60) % 24;
+  const m   = totalMin % 60;
+  const period = h24 >= 12 ? 'pm' : 'am';
+  const h12   = h24 % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')}${period}`;
 }
 
 /* Key lookup helper — returns key from setlist entry or falls back to master catalog */
@@ -1628,23 +1632,24 @@ function downloadSchedulePDF() {
    SETLIST PREVIEW VIEW
    ============================================ */
 function renderSetlistPreview() {
-  const client   = ADB.getClients().find(c => c.id === _currentClientId);
-  const contract = ADB.getContract(_currentClientId);
-  const a        = contract.admin || {};
-  const name     = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
-  const date     = fmtDate(a.eventDate || (client && client.eventDate) || '');
-  const hasSet2  = _setlistSets[1].length > 0;
-  const base     = window.location.origin;
+  const client         = ADB.getClients().find(c => c.id === _currentClientId);
+  const contract       = ADB.getContract(_currentClientId);
+  const a              = contract.admin || {};
+  const name           = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
+  const date           = fmtDate(a.eventDate || (client && client.eventDate) || '');
+  const hasSet2        = _setlistSets[1].length > 0;
+  const base           = window.location.origin;
+  const receptionStart = (ADB.getGCP(_currentClientId).checklist || {})['cl-reception-start'] || '';
 
   function buildSongs(songs) {
     if (!songs.length) return '<div class="slp-empty">No songs in this set.</div>';
     return songs.map((s, i) => {
-      const key = _songKey(s);
-      const marker = i % 5 === 0
-        ? `<div class="slp-time-marker"><span>${_setTimeLabel(i)}</span></div>`
-        : '';
-      return `${marker}<div class="slp-song">
-          <span class="slp-title">${escHtml(s.title)}${key ? ' <span class="slp-key">(' + escHtml(key) + ')</span>' : ''}</span>
+      const key  = _songKey(s);
+      const time = (i % 5 === 0) ? _songClockTime(i, receptionStart) : '';
+      return `<div class="slp-song">
+          <div class="slp-song-left">
+            <span class="slp-title">${escHtml(s.title)}${key ? ' <span class="slp-key">(' + escHtml(key) + ')</span>' : ''}</span>${time ? `<span class="slp-song-time">${escHtml(time)}</span>` : ''}
+          </div>
           ${s.lead ? `<span class="slp-lead">${escHtml(s.lead)}</span>` : ''}
         </div>`;
     }).join('');
@@ -1674,21 +1679,20 @@ function renderSetlistPreview() {
    PDF DOWNLOAD
    ============================================ */
 function downloadSetlistPDF() {
-  const client   = ADB.getClients().find(c => c.id === _currentClientId);
-  const contract = ADB.getContract(_currentClientId);
-  const a        = contract.admin || {};
-  const name     = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
-  const date     = fmtDate(a.eventDate || (client && client.eventDate) || '');
-  const base     = window.location.origin;
-  const hasSet2  = _setlistSets[1].length > 0;
+  const client         = ADB.getClients().find(c => c.id === _currentClientId);
+  const contract       = ADB.getContract(_currentClientId);
+  const a              = contract.admin || {};
+  const name           = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
+  const date           = fmtDate(a.eventDate || (client && client.eventDate) || '');
+  const base           = window.location.origin;
+  const hasSet2        = _setlistSets[1].length > 0;
+  const receptionStart = (ADB.getGCP(_currentClientId).checklist || {})['cl-reception-start'] || '';
 
   function buildSongs(songs) {
     return songs.map((s, i) => {
-      const key = _songKey(s);
-      const marker = i % 5 === 0
-        ? `<div class="sl-time-marker"><span>${_setTimeLabel(i)}</span></div>`
-        : '';
-      return `${marker}<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}</div>`;
+      const key  = _songKey(s);
+      const time = (i % 5 === 0) ? _songClockTime(i, receptionStart) : '';
+      return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}${time ? `<span class="sl-song-time">${time}</span>` : ''}</div>`;
     }).join('');
   }
 
@@ -1717,8 +1721,7 @@ function downloadSetlistPDF() {
     padding:7px 4px;border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
-  .sl-time-marker{display:flex;align-items:center;gap:8px;margin:10px 0 2px;color:#153147;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:2px}
-  .sl-time-marker::before,.sl-time-marker::after{content:'';flex:1;height:1px;background:#c8cfd8}
+  .sl-song-time{font-size:10px;font-weight:400;color:#999;text-transform:none;letter-spacing:0;margin-left:6px;vertical-align:middle}
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}

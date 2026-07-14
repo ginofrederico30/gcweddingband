@@ -559,24 +559,22 @@
     letter-spacing: 0;
     text-transform: none;
 }
-.slp-time-marker {
+.slp-song-left {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 10px 0 2px;
-    color: #153147;
-    font-family: var(--font-sans);
-    font-size: 9px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-.slp-time-marker::before,
-.slp-time-marker::after {
-    content: '';
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
     flex: 1;
-    height: 1px;
-    background: #c8cfd8;
+}
+.slp-song-time {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 400;
+    color: #aaa;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-transform: none;
+    letter-spacing: 0;
 }
 .slp-empty {
     font-family: var(--font-sans);
