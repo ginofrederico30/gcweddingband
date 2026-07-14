@@ -1675,7 +1675,7 @@ function downloadSetlistPDF() {
   function buildSongs(songs) {
     return songs.map(s => {
       const key = _songKey(s);
-      return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400">(' + escHtml(key) + ')</span>' : ''}</div>`;
+      return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}</div>`;
     }).join('');
   }
 
