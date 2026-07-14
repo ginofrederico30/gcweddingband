@@ -113,6 +113,15 @@ const ARTIST_LEAD_BY_TITLE = {
   "you make my dreams (come true)":"Matt","you sexy thing":"Ian",
 };
 
+/* Formats elapsed set time for every-5-song timestamp markers */
+function _setTimeLabel(songIndex) {
+  if (songIndex === 0) return 'Start';
+  const totalMin = songIndex * AVG_SONG_MIN;
+  const h = Math.floor(totalMin / 60);
+  const m = Math.round(totalMin % 60);
+  return h > 0 ? `~${h}h ${m}min` : `~${m} min`;
+}
+
 /* Key lookup helper — returns key from setlist entry or falls back to master catalog */
 function _songKey(s) {
   if (s.key) return s.key;
@@ -1628,16 +1637,17 @@ function renderSetlistPreview() {
   const base     = window.location.origin;
 
   function buildSongs(songs) {
-    return songs.length
-      ? songs.map(s => {
-          const key = _songKey(s);
-          return `
-        <div class="slp-song">
+    if (!songs.length) return '<div class="slp-empty">No songs in this set.</div>';
+    return songs.map((s, i) => {
+      const key = _songKey(s);
+      const marker = i % 5 === 0
+        ? `<div class="slp-time-marker"><span>${_setTimeLabel(i)}</span></div>`
+        : '';
+      return `${marker}<div class="slp-song">
           <span class="slp-title">${escHtml(s.title)}${key ? ' <span class="slp-key">(' + escHtml(key) + ')</span>' : ''}</span>
           ${s.lead ? `<span class="slp-lead">${escHtml(s.lead)}</span>` : ''}
         </div>`;
-        }).join('')
-      : '<div class="slp-empty">No songs in this set.</div>';
+    }).join('');
   }
 
   document.getElementById('setlist-preview-content').innerHTML = `
@@ -1673,9 +1683,12 @@ function downloadSetlistPDF() {
   const hasSet2  = _setlistSets[1].length > 0;
 
   function buildSongs(songs) {
-    return songs.map(s => {
+    return songs.map((s, i) => {
       const key = _songKey(s);
-      return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}</div>`;
+      const marker = i % 5 === 0
+        ? `<div class="sl-time-marker"><span>${_setTimeLabel(i)}</span></div>`
+        : '';
+      return `${marker}<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}</div>`;
     }).join('');
   }
 
@@ -1704,6 +1717,8 @@ function downloadSetlistPDF() {
     padding:7px 4px;border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
+  .sl-time-marker{display:flex;align-items:center;gap:8px;margin:10px 0 2px;color:#153147;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:2px}
+  .sl-time-marker::before,.sl-time-marker::after{content:'';flex:1;height:1px;background:#c8cfd8}
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}
