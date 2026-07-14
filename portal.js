@@ -90,6 +90,35 @@ const SEED_SONGS = [
 const LEAD_BY_TITLE = {};
 SEED_SONGS.forEach(s => { LEAD_BY_TITLE[s.title.toLowerCase()] = s.lead; });
 
+/* Key lookup by title — used to seed key field onto existing songs */
+const KEY_BY_TITLE = {
+  "1999":"F","ain't it fun":"E","ain't no mountain high enough":"Bm -> Cm",
+  "all night long":"Ab","all the small things":"C","all your'n":"B",
+  "are you gonna be my girl":"A","blame it on the boogie":"Eb","boogie shoes":"B",
+  "brick house":"Am","bust a move":"Em","cake by the ocean":"Em","canned heat":"Dm",
+  "celebration":"Ab","come and get your love":"D","come on eileen":"F -> C -> D",
+  "crazy in love":"Dm","dancing in the moonlight":"Eb","dancing on the ceiling":"C -> D",
+  "dancing queen":"A","december 1963 (oh, what a night)":"C","don't start now":"Bm",
+  "dreams":"F","funkytown":"C","get down on it":"Em","gimme! gimme! gimme!":"Dm",
+  "give it to me baby":"C#m","give it up":"Eb","heaven":"F#","hot stuff":"Gm",
+  "hot to go!":"F#","how bizarre":"C","i wanna be your lover":"Bb",
+  "i wanna dance with somebody":"E -> F#","i wish":"Ebm","if i ain't got you":"G",
+  "le freak":"Am","levitating":"Bm","lil boo thang":"C","love story":"D -> E",
+  "man i need":"Db","man! i feel like a woman":"Bb","mr. brightside":"Db",
+  "music for a sushi restaurant":"F#","my girl":"C -> D","pick up the pieces":"Fm",
+  "pink pony club":"F#","play that funky music":"Em -> Gm -> Am",
+  "reelin' in the years":"A","rich girl":"F","semi-charmed life":"G","september":"A",
+  "shake your body (down to the ground)":"G","shining star":"E",
+  "signed, sealed, delivered (i'm yours)":"F","sir duke":"B","stayin' alive":"Fm",
+  "sunday morning":"C","superstition":"Ebm","tennessee whiskey":"A","tequila":"F",
+  "the impressions that i get":"E","the real slim shady":"Cm",
+  "this will be (an everlasting love)":"G -> Bb","treasure":"G","unwritten":"F",
+  "uptown funk":"Dm","valerie":"Eb","we are family":"A","what a wonderful world":"D",
+  "where is my husband!":"Bbm","you are the best thing":"Bb","you can call me al":"F",
+  "you make me feel like dancing":"E -> F#","you make my dreams (come true)":"E",
+  "you sexy thing":"F",
+};
+
 /* DB is defined in firebase-db.js (Firestore-backed cache layer) */
 
 /* ============================================
@@ -114,6 +143,12 @@ function initSeedData() {
       const lead = LEAD_BY_TITLE[s.title.toLowerCase()];
       s.lead = (lead !== undefined) ? lead : '';
       changed = true;
+    });
+
+    // Migrate: fill in missing key fields
+    songs.filter(s => s.key === undefined).forEach(s => {
+      const key = KEY_BY_TITLE[s.title.toLowerCase()];
+      if (key !== undefined) { s.key = key; changed = true; }
     });
 
     // Migrate: correct known title typos (safe — client selections use id, not title)
@@ -1069,7 +1104,7 @@ function renderMasterSongList() {
   container.innerHTML = songs.map(s => `
     <div class="song-item">
       <div class="song-info">
-        <div class="song-title">${escHtml(s.title)}</div>
+        <div class="song-title">${escHtml(s.title)}${s.key ? ' <span class="song-key-tag">(' + escHtml(s.key) + ')</span>' : ''}</div>
         <div class="song-artist">${escHtml(s.artist)}${s.lead ? ' <span class="song-lead-tag">' + escHtml(s.lead) + '</span>' : ''}</div>
       </div>
       ${s.addedAt > 1 ? '<span class="song-new-badge">New</span>' : ''}
@@ -1083,11 +1118,11 @@ function renderMasterSongList() {
   `).join('');
 }
 
-function addSong(title, artist, lead) {
+function addSong(title, artist, lead, key) {
   const songs = DB.getMasterSongs();
   const dup = songs.find(s => s.title.toLowerCase() === title.toLowerCase() && s.artist.toLowerCase() === artist.toLowerCase());
   if (dup) return false;
-  songs.push({ id: uid(), title: title.trim(), artist: artist.trim(), lead: (lead || '').trim(), addedAt: Date.now() });
+  songs.push({ id: uid(), title: title.trim(), artist: artist.trim(), lead: (lead || '').trim(), key: (key || '').trim(), addedAt: Date.now() });
   DB.setMasterSongs(songs);
   return true;
 }
@@ -2795,9 +2830,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const title  = document.getElementById('new-song-title').value.trim();
     const artist = document.getElementById('new-song-artist').value.trim();
     const lead   = document.getElementById('new-song-lead').value.trim();
+    const key    = document.getElementById('new-song-key').value.trim();
     const errEl  = document.getElementById('add-song-error');
     if (!title || !artist) { errEl.textContent='Title and artist are required.'; errEl.classList.remove('hidden'); return; }
-    if (!addSong(title, artist, lead)) { errEl.textContent='That song is already in the list.'; errEl.classList.remove('hidden'); return; }
+    if (!addSong(title, artist, lead, key)) { errEl.textContent='That song is already in the list.'; errEl.classList.remove('hidden'); return; }
     closeModal('modal-add-song');
     renderMasterSongList();
     showToast('"' + title + '" added to catalog.');

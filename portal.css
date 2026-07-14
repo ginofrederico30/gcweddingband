@@ -1113,6 +1113,12 @@ body.is-impersonating #portal-nav { top: 40px; }
     margin-left: 6px;
     vertical-align: middle;
 }
+.song-key-tag {
+    font-size: 0.82em;
+    font-weight: 400;
+    color: #8a9ab0;
+    margin-left: 2px;
+}
 .song-new-badge {
     flex-shrink: 0;
     font-family: var(--font-sans);

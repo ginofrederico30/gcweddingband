@@ -113,6 +113,27 @@ const ARTIST_LEAD_BY_TITLE = {
   "you make my dreams (come true)":"Matt","you sexy thing":"Ian",
 };
 
+/* Key lookup helper — returns key from setlist entry or falls back to master catalog */
+function _songKey(s) {
+  if (s.key) return s.key;
+  const m = ADB.getMasterSongs().find(ms => ms.id === s.id);
+  return (m && m.key) || '';
+}
+
+/* Catalog key lookup by title — for client requests that match the catalog */
+function _catalogKeyByTitle(title) {
+  const t = (title || '').toLowerCase();
+  const m = ADB.getMasterSongs().find(ms => ms.title.toLowerCase() === t);
+  return (m && m.key) || '';
+}
+
+/* Renders song title with optional key tag — supports optional Spotify link wrapping */
+function _titleWithKeyHtml(title, key, spotify) {
+  const label = escHtml(title) + (key ? ' <span class="key-tag">(' + escHtml(key) + ')</span>' : '');
+  if (!spotify) return label;
+  return `<a href="${escHtml(spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${label} ${refLinkIcon(spotify)}</a>`;
+}
+
 /* ============================================
    SETLIST GENERATION
    ============================================ */
@@ -235,8 +256,9 @@ function renderRehearsalTable() {
         if (!s.id || !s.title) return;
         const master  = byId[s.id];
         const lead    = s.lead    || (master && master.lead)    || ARTIST_LEAD_BY_TITLE[(s.title || '').toLowerCase()] || '';
+        const key     = s.key     || (master && master.key)     || '';
         const spotify = s.spotify || (master && master.spotify) || '';
-        if (!songMap[s.id]) songMap[s.id] = { title: s.title, artist: s.artist || '', lead, spotify, dates: [] };
+        if (!songMap[s.id]) songMap[s.id] = { title: s.title, artist: s.artist || '', lead, key, spotify, dates: [] };
         if (eventDate && !songMap[s.id].dates.includes(eventDate)) {
           songMap[s.id].dates.push(eventDate);
         }
@@ -256,10 +278,11 @@ function renderRehearsalTable() {
 
   const rows = songs.map(s => {
     const dateStr  = s.dates.slice(0, 2).map(d => fmtDateShort(d)).join(', ') + (s.dates.length > 2 ? ` +${s.dates.length - 2}` : '');
-    const leadHtml = s.lead ? `<span class="rehearsal-lead">${escHtml(s.lead)}</span>` : '<span class="rehearsal-no-lead">—</span>';
+    const leadHtml  = s.lead ? `<span class="rehearsal-lead">${escHtml(s.lead)}</span>` : '<span class="rehearsal-no-lead">—</span>';
+    const keyTag    = s.key ? ` <span class="key-tag">(${escHtml(s.key)})</span>` : '';
     const titleHtml = s.spotify
-      ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link rehearsal-song">${escHtml(s.title)} <i class="fab fa-spotify"></i></a>`
-      : `<span class="rehearsal-song">${escHtml(s.title)}</span>`;
+      ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link rehearsal-song">${escHtml(s.title)}${keyTag} <i class="fab fa-spotify"></i></a>`
+      : `<span class="rehearsal-song">${escHtml(s.title)}${keyTag}</span>`;
     const artistHtml = s.artist ? escHtml(s.artist) : '<span class="rehearsal-no-lead">—</span>';
     return `<tr><td>${titleHtml}</td><td class="rehearsal-artist-cell">${artistHtml}</td><td>${leadHtml}</td><td class="rehearsal-date-cell">${escHtml(dateStr)}</td></tr>`;
   }).join('');
@@ -414,12 +437,13 @@ function renderGigDetail(clientId) {
   if (songsToLearn.length) {
     stlCard.classList.remove('hidden');
     stlEl.innerHTML = songsToLearn.map(s => {
+      const key = _songKey(s);
       const artistDisplay = s.spotify
         ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link">${escHtml(s.artist || '—')} <i class="fab fa-spotify"></i></a>`
         : escHtml(s.artist || '—');
       return `
       <div class="artist-info-row">
-        <div class="artist-info-label">${escHtml(s.title)}</div>
+        <div class="artist-info-label">${escHtml(s.title)}${key ? ' <span class="key-tag">(' + escHtml(key) + ')</span>' : ''}</div>
         <div class="artist-info-val">${artistDisplay}</div>
       </div>`;
     }).join('');
@@ -725,12 +749,14 @@ function _renderSetlistUI() {
          </div>`
       : '';
 
-    const rows = songs.map((s, i) => `
+    const rows = songs.map((s, i) => {
+      const key = _songKey(s);
+      return `
       <div class="setlist-row" draggable="true" data-set="${si}" data-idx="${i}">
         <div class="setlist-drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
-          <div class="setlist-title">${s.spotify ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(s.title)} ${refLinkIcon(s.spotify)}</a>` : escHtml(s.title)}</div>
+          <div class="setlist-title">${_titleWithKeyHtml(s.title, key, s.spotify)}</div>
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
         ${s.lead ? `<span class="status-badge setlist-lead-badge" style="font-size:9px;flex-shrink:0">${escHtml(s.lead)}</span>` : ''}
@@ -739,7 +765,8 @@ function _renderSetlistUI() {
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
           <i class="fas fa-times"></i>
         </button>
-      </div>`).join('') ||
+      </div>`;
+    }).join('') ||
       `<div class="setlist-empty">No songs in this set — use "Add Song" to add some.</div>`;
 
     return `
@@ -985,12 +1012,13 @@ function _addRequestToSet(reqId, setIndex) {
     source:   'request',
     priority: req.type === 'Priority',
   };
-  // Pre-select known lead if available
+  // Pre-select known lead and key if available
   const knownLead = ARTIST_LEAD_BY_TITLE[req.title.toLowerCase()] || '';
   document.getElementById('add-song-lead-title').textContent = req.title + (req.artist ? ' — ' + req.artist : '');
   const leadSel = document.getElementById('add-song-lead-select');
   leadSel.value = knownLead || '';
   document.getElementById('add-song-lead-other').classList.add('hidden');
+  document.getElementById('add-song-key-input').value = _catalogKeyByTitle(req.title);
   // Override set index radio
   document.querySelector(`input[name="add-to-set"][value="${setIndex}"]`).checked = true;
   // Show modal with only lead picker visible
@@ -1020,9 +1048,8 @@ function _renderUnplacedRequests() {
       </div>
       ${unplaced.map(r => {
         const lead = ARTIST_LEAD_BY_TITLE[r.title.toLowerCase()] || '';
-        const titleHtml = r.spotify
-          ? `<a href="${escHtml(r.spotify)}" target="_blank" rel="noopener" class="setlist-title-link">${escHtml(r.title)} ${refLinkIcon(r.spotify)}</a>`
-          : escHtml(r.title);
+        const reqKey = _catalogKeyByTitle(r.title);
+        const titleHtml = _titleWithKeyHtml(r.title, reqKey, r.spotify);
         return `
           <div class="unplaced-request-row" data-reqid="${escHtml(r.id)}">
             <div class="setlist-info">
@@ -1115,6 +1142,7 @@ function _renderAddSongList(query) {
 
   list.innerHTML = available.map(s => {
     const lead = s.lead || ARTIST_LEAD_BY_TITLE[s.title.toLowerCase()] || '';
+    const key  = s.key  || '';
     return `
     <div class="add-song-item${s.dim ? ' dim' : ''}"
          data-id="${escHtml(s.id)}"
@@ -1123,9 +1151,10 @@ function _renderAddSongList(query) {
          data-source="${s.source}"
          data-spotify="${escHtml(s.spotify||'')}"
          data-lead="${escHtml(lead)}"
+         data-key="${escHtml(key)}"
          data-priority="${s.priority ? '1' : ''}">
       <div style="min-width:0;flex:1">
-        <div style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.title)}</div>
+        <div style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.title)}${key ? ' <span class="key-tag" style="font-size:11px">(' + escHtml(key) + ')</span>' : ''}</div>
         <div style="font-family:var(--font-sans);font-size:12px;color:#999">${escHtml(s.artist)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -1140,7 +1169,7 @@ function _renderAddSongList(query) {
     item.addEventListener('click', function() {
       const source = this.dataset.source;
       if (source === 'request') {
-        // Show lead picker step for requested songs
+        // Show lead & key picker step for requested songs
         _pendingAddSong = {
           id:       this.dataset.id,
           title:    this.dataset.title,
@@ -1153,12 +1182,14 @@ function _renderAddSongList(query) {
         document.getElementById('add-song-lead-select').value = '';
         document.getElementById('add-song-lead-other').value = '';
         document.getElementById('add-song-lead-other').classList.add('hidden');
+        // Pre-populate key from catalog if known
+        document.getElementById('add-song-key-input').value = _catalogKeyByTitle(this.dataset.title);
         document.getElementById('add-song-lead-step').classList.remove('hidden');
         document.getElementById('add-song-list').style.display = 'none';
         document.getElementById('add-song-search').style.display = 'none';
         return;
       }
-      // Catalog song — add directly with lead from data attribute
+      // Catalog song — add directly with lead and key from data attributes
       const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
       _setlistSets[setIndex].push({
         id:       this.dataset.id,
@@ -1167,6 +1198,7 @@ function _renderAddSongList(query) {
         source:   'catalog',
         spotify:  this.dataset.spotify || '',
         lead:     this.dataset.lead || '',
+        key:      this.dataset.key  || '',
         priority: this.dataset.priority === '1',
       });
       document.getElementById('modal-add-song').classList.add('hidden');
@@ -1597,11 +1629,14 @@ function renderSetlistPreview() {
 
   function buildSongs(songs) {
     return songs.length
-      ? songs.map(s => `
+      ? songs.map(s => {
+          const key = _songKey(s);
+          return `
         <div class="slp-song">
-          <span class="slp-title">${escHtml(s.title)}</span>
+          <span class="slp-title">${escHtml(s.title)}${key ? ' <span class="slp-key">(' + escHtml(key) + ')</span>' : ''}</span>
           ${s.lead ? `<span class="slp-lead">${escHtml(s.lead)}</span>` : ''}
-        </div>`).join('')
+        </div>`;
+        }).join('')
       : '<div class="slp-empty">No songs in this set.</div>';
   }
 
@@ -1638,7 +1673,10 @@ function downloadSetlistPDF() {
   const hasSet2  = _setlistSets[1].length > 0;
 
   function buildSongs(songs) {
-    return songs.map(s => `<div class="sl-song">${escHtml(s.title)}</div>`).join('');
+    return songs.map(s => {
+      const key = _songKey(s);
+      return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400">(' + escHtml(key) + ')</span>' : ''}</div>`;
+    }).join('');
   }
 
   const html = `<!DOCTYPE html>
@@ -1838,9 +1876,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const lead = sel === 'Multiple'
       ? (document.getElementById('add-song-lead-other').value.trim() || sel)
       : sel === 'N/A (Instrumental)' ? 'N/A' : sel;
+    const key = document.getElementById('add-song-key-input').value.trim();
 
     const setIndex = +document.querySelector('input[name="add-to-set"]:checked').value;
-    _setlistSets[setIndex].push({ ..._pendingAddSong, lead });
+    _setlistSets[setIndex].push({ ..._pendingAddSong, lead, key });
     showToast(`Added to Set ${setIndex + 1}`);
     closeAddSongModal();
     _renderSetlistUI();
