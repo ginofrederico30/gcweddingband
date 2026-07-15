@@ -113,17 +113,20 @@ const ARTIST_LEAD_BY_TITLE = {
   "you make my dreams (come true)":"Matt","you sexy thing":"Ian",
 };
 
-/* Returns absolute clock time for a song at position songIndex (0-based), given HH:MM reception start */
-function _songClockTime(songIndex, receptionStart) {
-  if (!receptionStart) return '';
-  const parts = receptionStart.split(':');
-  const baseMin = (+parts[0]) * 60 + (+parts[1]);
-  const totalMin = baseMin + Math.round(songIndex * AVG_SONG_MIN);
+/* Converts minutes-from-midnight to "8:00pm" style string */
+function _minToClockStr(totalMin) {
   const h24 = Math.floor(totalMin / 60) % 24;
-  const m   = totalMin % 60;
+  const m   = Math.round(totalMin % 60);
   const period = h24 >= 12 ? 'pm' : 'am';
   const h12   = h24 % 12 || 12;
   return `${h12}:${String(m).padStart(2, '0')}${period}`;
+}
+
+/* Parses "HH:MM" to minutes from midnight, returns null if invalid */
+function _parseTimeMin(t) {
+  if (!t) return null;
+  const [h, m] = t.split(':').map(Number);
+  return isNaN(h) ? null : h * 60 + m;
 }
 
 /* Key lookup helper — returns key from setlist entry or falls back to master catalog */
@@ -1639,13 +1642,19 @@ function renderSetlistPreview() {
   const date           = fmtDate(a.eventDate || (client && client.eventDate) || '');
   const hasSet2        = _setlistSets[1].length > 0;
   const base           = window.location.origin;
-  const receptionStart = (ADB.getGCP(_currentClientId).checklist || {})['cl-reception-start'] || '';
+  const chk           = ADB.getGCP(_currentClientId).checklist || {};
+  const set1StartMin  = _parseTimeMin(chk['cl-dance-floor']);
+  const set2StartMin  = set1StartMin !== null
+    ? set1StartMin + Math.round(_setlistSets[0].length * AVG_SONG_MIN) + 30
+    : null;
 
-  function buildSongs(songs) {
+  function buildSongs(songs, setStartMin) {
     if (!songs.length) return '<div class="slp-empty">No songs in this set.</div>';
     return songs.map((s, i) => {
       const key  = _songKey(s);
-      const time = (i % 5 === 0) ? _songClockTime(i, receptionStart) : '';
+      const time = (i % 4 === 0 && setStartMin !== null)
+        ? _minToClockStr(setStartMin + Math.round(i * AVG_SONG_MIN))
+        : '';
       return `<div class="slp-song">
           <div class="slp-song-left">
             <span class="slp-title">${escHtml(s.title)}${key ? ' <span class="slp-key">(' + escHtml(key) + ')</span>' : ''}</span>${time ? `<span class="slp-song-time">${escHtml(time)}</span>` : ''}
@@ -1662,11 +1671,11 @@ function renderSetlistPreview() {
     <div class="slp-body${hasSet2 ? ' two-col' : ' one-col'}">
       <div class="slp-set">
         <div class="slp-set-header">Set 1</div>
-        ${buildSongs(_setlistSets[0])}
+        ${buildSongs(_setlistSets[0], set1StartMin)}
       </div>
       ${hasSet2 ? `<div class="slp-set">
         <div class="slp-set-header">Set 2</div>
-        ${buildSongs(_setlistSets[1])}
+        ${buildSongs(_setlistSets[1], set2StartMin)}
       </div>` : ''}
     </div>
     <div class="slp-footer">
@@ -1686,12 +1695,18 @@ function downloadSetlistPDF() {
   const date           = fmtDate(a.eventDate || (client && client.eventDate) || '');
   const base           = window.location.origin;
   const hasSet2        = _setlistSets[1].length > 0;
-  const receptionStart = (ADB.getGCP(_currentClientId).checklist || {})['cl-reception-start'] || '';
+  const pdfChk        = ADB.getGCP(_currentClientId).checklist || {};
+  const pdfSet1Start  = _parseTimeMin(pdfChk['cl-dance-floor']);
+  const pdfSet2Start  = pdfSet1Start !== null
+    ? pdfSet1Start + Math.round(_setlistSets[0].length * AVG_SONG_MIN) + 30
+    : null;
 
-  function buildSongs(songs) {
+  function buildSongs(songs, setStartMin) {
     return songs.map((s, i) => {
       const key  = _songKey(s);
-      const time = (i % 5 === 0) ? _songClockTime(i, receptionStart) : '';
+      const time = (i % 4 === 0 && setStartMin !== null)
+        ? _minToClockStr(setStartMin + Math.round(i * AVG_SONG_MIN))
+        : '';
       return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}${time ? `<span class="sl-song-time">${time}</span>` : ''}</div>`;
     }).join('');
   }
@@ -1721,7 +1736,7 @@ function downloadSetlistPDF() {
     padding:7px 4px;border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
-  .sl-song-time{font-size:10px;font-weight:400;color:#999;text-transform:none;letter-spacing:0;margin-left:6px;vertical-align:middle}
+  .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#333;text-transform:none;letter-spacing:0;margin-left:7px;vertical-align:middle}
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}
@@ -1733,11 +1748,11 @@ function downloadSetlistPDF() {
   <div class="sl-body ${hasSet2 ? 'two-col' : 'one-col'}">
     <div>
       <div class="sl-set-header">Set 1</div>
-      ${buildSongs(_setlistSets[0])}
+      ${buildSongs(_setlistSets[0], pdfSet1Start)}
     </div>
     ${hasSet2 ? `<div>
       <div class="sl-set-header">Set 2</div>
-      ${buildSongs(_setlistSets[1])}
+      ${buildSongs(_setlistSets[1], pdfSet2Start)}
     </div>` : ''}
   </div>
   <div class="sl-footer">

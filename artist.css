@@ -569,8 +569,9 @@
 .slp-song-time {
     font-family: var(--font-sans);
     font-size: 10px;
-    font-weight: 400;
-    color: #aaa;
+    font-style: italic;
+    font-weight: 600;
+    color: #333;
     white-space: nowrap;
     flex-shrink: 0;
     text-transform: none;
