@@ -92,10 +92,14 @@ const DB = {
     gcpSnap.docs.forEach(d => { this._cache.gcp[d.id]       = d.data(); });
     slSnap.docs.forEach(d  => {
       const raw = d.data();
-      // Reconstruct sets array from flat set0/set1 fields (Firestore cannot store arrays-of-arrays)
-      this._cache.setlists[d.id] = raw.sets
-        ? raw
-        : { sets: [raw.set0 || [], raw.set1 || []], savedAt: raw.savedAt };
+      // Reconstruct sets array from flat set0/set1/set2 fields (Firestore cannot store arrays-of-arrays)
+      if (raw.sets) {
+        this._cache.setlists[d.id] = raw;
+      } else {
+        const sets = [raw.set0 || [], raw.set1 || []];
+        if (raw.set2) sets.push(raw.set2);
+        this._cache.setlists[d.id] = { sets, savedAt: raw.savedAt };
+      }
     });
     const msDoc = cfgSnap.docs.find(d => d.id === 'masterSongs');
     const mcDoc = cfgSnap.docs.find(d => d.id === 'masterContract');
@@ -203,10 +207,14 @@ const ADB = {
     gcpSnap.docs.forEach(d => { this._cache.gcp[d.id]       = d.data(); });
     slSnap.docs.forEach(d  => {
       const raw = d.data();
-      // Reconstruct sets array from flat set0/set1 fields (Firestore cannot store arrays-of-arrays)
-      this._cache.setlists[d.id] = raw.sets
-        ? raw
-        : { sets: [raw.set0 || [], raw.set1 || []], savedAt: raw.savedAt };
+      // Reconstruct sets array from flat set0/set1/set2 fields (Firestore cannot store arrays-of-arrays)
+      if (raw.sets) {
+        this._cache.setlists[d.id] = raw;
+      } else {
+        const sets = [raw.set0 || [], raw.set1 || []];
+        if (raw.set2) sets.push(raw.set2);
+        this._cache.setlists[d.id] = { sets, savedAt: raw.savedAt };
+      }
     });
     this._cache.masterSongs = msDoc.exists ? (msDoc.data().songs || []) : [];
   },
@@ -228,6 +236,7 @@ const ADB = {
     const doc = {
       set0: JSON.parse(JSON.stringify(data.sets[0] || [])),
       set1: JSON.parse(JSON.stringify(data.sets[1] || [])),
+      ...(data.sets[2] ? { set2: JSON.parse(JSON.stringify(data.sets[2])) } : {}),
       savedAt: data.savedAt || Date.now(),
     };
     return _db.doc('setlists/' + cid).set(doc);

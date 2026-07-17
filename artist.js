@@ -155,7 +155,7 @@ function _titleWithKeyHtml(title, key, spotify) {
    ============================================ */
 const AVG_SONG_MIN = 4.25; // average song length used for duration estimates
 
-let _setStructure = { totalMin: 180, breakMin: 30, songsPerSet: 18, sets: 2 };
+let _setStructure = { totalMin: 180, breakMin: 30, breaks: [30], songsPerSet: 18, sets: 2 };
 
 function calcSetStructure(clientId) {
   const gcp = ADB.getGCP(clientId);
@@ -167,16 +167,27 @@ function calcSetStructure(clientId) {
   }
   const danceMin = toMin(chk['cl-dance-floor']);
   const endMin   = toMin(chk['cl-reception-end']);
+  const danceStr = chk['cl-dance-floor'] || null;
+  const endStr   = chk['cl-reception-end'] || null;
   if (!danceMin || !endMin) {
-    return { totalMin: 180, breakMin: 30, songsPerSet: 18, sets: 2, danceStr: null, endStr: null };
+    return { totalMin: 180, breakMin: 30, breaks: [30], songsPerSet: 18, sets: 2, danceStr: null, endStr: null };
   }
   let totalMin = endMin - danceMin;
-  if (totalMin <= 0) totalMin += 1440; // handle midnight wrap
-  // Break scales linearly with block length, clamped to 15–30 min. No break for blocks under 90 min.
+  if (totalMin <= 0) totalMin += 1440;
+
+  // 3-set custom configuration
+  if (parseInt(chk['cl-set-count']) === 3) {
+    const b1 = Math.max(5, parseInt(chk['cl-break1-min']) || 20);
+    const b2 = Math.max(5, parseInt(chk['cl-break2-min']) || 25);
+    const sps = Math.max(6, Math.round((totalMin - b1 - b2) / 3 / AVG_SONG_MIN));
+    return { totalMin, breakMin: b1, breaks: [b1, b2], songsPerSet: sps, sets: 3, danceStr, endStr };
+  }
+
+  // Standard 1- or 2-set structure
   const breakMin = totalMin < 90 ? 0 : Math.max(15, Math.min(30, Math.round((totalMin - 90) / 3)));
   const sets = breakMin > 0 ? 2 : 1;
   const songsPerSet = Math.max(8, Math.round((totalMin - breakMin) / sets / AVG_SONG_MIN));
-  return { totalMin, breakMin, songsPerSet, sets, danceStr: chk['cl-dance-floor'], endStr: chk['cl-reception-end'] };
+  return { totalMin, breakMin, breaks: [breakMin], songsPerSet, sets, danceStr, endStr };
 }
 
 function generateSetlist(clientId) {
@@ -228,6 +239,22 @@ function generateSetlist(clientId) {
     ...s1Middle,
     ...(tequila   ? [tequila]   : []),
   ];
+
+  if (_setStructure.sets === 3) {
+    // Set 2: [Pink Pony Club] [...middle...] (no closing anchors — save them for set 3)
+    const s2Middle = pool.splice(0, Math.max(0, sps - (ppc ? 1 : 0)));
+    const set2 = [...(ppc ? [ppc] : []), ...s2Middle];
+    // Set 3: [...middle...] [Hot To Go!] [Mr. Brightside] [Are You Gonna Be My Girl]
+    const s3Pinned = [hotToGo, mrBrightside, areYouGonna].filter(Boolean).length;
+    const s3Middle = pool.splice(0, Math.max(0, sps - s3Pinned));
+    const set3 = [
+      ...s3Middle,
+      ...(hotToGo      ? [hotToGo]      : []),
+      ...(mrBrightside ? [mrBrightside] : []),
+      ...(areYouGonna  ? [areYouGonna]  : []),
+    ];
+    return { sets: [set1, set2, set3], savedAt: Date.now() };
+  }
 
   // Set 2: [Pink Pony Club] [...middle...] [Hot To Go!] [Mr. Brightside] [Are You Gonna Be My Girl]
   const s2Pinned = [ppc, hotToGo, mrBrightside, areYouGonna].filter(Boolean).length;
@@ -719,20 +746,22 @@ function loadAndRenderSetlist(clientId) {
   _setStructure = calcSetStructure(clientId);
   const setlists = ADB.getSetlists();
   if (setlists[clientId]) {
-    _setlistSets = [
-      _enrichFromCatalog((setlists[clientId].sets[0] || []).map(sanitizeSong)),
-      _enrichFromCatalog((setlists[clientId].sets[1] || []).map(sanitizeSong)),
-    ];
+    const saved = setlists[clientId].sets;
+    _setlistSets = Array.from({ length: _setStructure.sets }, (_, i) =>
+      _enrichFromCatalog((saved[i] || []).map(sanitizeSong))
+    );
   } else {
     const gen = generateSetlist(clientId);
     _setlistSets = gen.sets;
+    // Ensure we have the right number of set arrays
+    while (_setlistSets.length < _setStructure.sets) _setlistSets.push([]);
   }
   _renderSetlistUI();
 }
 
 function _renderSetlistUI() {
   const container = document.getElementById('setlist-container');
-  const { songsPerSet, breakMin, sets, totalMin, danceStr, endStr } = _setStructure;
+  const { songsPerSet, breaks, sets, totalMin, danceStr, endStr } = _setStructure;
 
   // Timing summary banner
   const targetDur = fmtSetDuration(songsPerSet);
@@ -740,11 +769,12 @@ function _renderSetlistUI() {
   if (danceStr && endStr) {
     const totalH = Math.floor(totalMin / 60), totalM = totalMin % 60;
     const totalLabel = totalM === 0 ? totalH + ' hr' : totalH + ' hr ' + totalM + ' min';
+    const breakStr = breaks.filter(b => b > 0).map(b => `${b}-min`).join(' + ') + ' break';
     timingBanner = `<div class="setlist-timing-banner">
       <i class="fas fa-clock"></i>
       <strong>${fmtTime12(danceStr)} – ${fmtTime12(endStr)}</strong>
       <span class="setlist-timing-sep">·</span> ${totalLabel} performance block
-      <span class="setlist-timing-sep">·</span> ${breakMin}-min break
+      <span class="setlist-timing-sep">·</span> ${breakStr}
       <span class="setlist-timing-sep">·</span> target <strong>${songsPerSet} songs/set</strong> (~${targetDur})
     </div>`;
   } else {
@@ -799,16 +829,17 @@ function _renderSetlistUI() {
       </div>`;
   }
 
-  const breakLabel = breakMin > 0 ? `${breakMin}-Minute Break` : 'No Break';
-  const set2HTML = sets > 1
-    ? `<div class="setlist-break-divider">
+  let html = timingBanner + buildSetHTML(0);
+  for (let si = 1; si < sets; si++) {
+    const bMin = breaks[si - 1] || 0;
+    const breakLabel = bMin > 0 ? `${bMin}-Minute Break` : 'No Break';
+    html += `<div class="setlist-break-divider">
         <div class="setlist-break-line"></div>
         <span class="setlist-break-label">${breakLabel}</span>
         <div class="setlist-break-line"></div>
-      </div>` + buildSetHTML(1)
-    : '';
-
-  container.innerHTML = timingBanner + buildSetHTML(0) + set2HTML;
+      </div>` + buildSetHTML(si);
+  }
+  container.innerHTML = html;
 
   _attachSetlistEvents();
   _renderLeadCounts();
@@ -989,24 +1020,24 @@ function _renderLeadCounts() {
   _setlistSets.forEach((set, si) => {
     set.forEach(s => {
       const lead = s.lead || '—';
-      if (!counts[lead]) counts[lead] = [0, 0];
+      if (!counts[lead]) counts[lead] = new Array(_setlistSets.length).fill(0);
       counts[lead][si]++;
     });
   });
   const rows = Object.entries(counts)
-    .map(([lead, c]) => ({ lead, s0: c[0], s1: c[1], total: c[0] + c[1] }))
+    .map(([lead, c]) => ({ lead, cols: c, total: c.reduce((a, b) => a + b, 0) }))
     .sort((a, b) => b.total - a.total);
   if (!rows.length) { el.innerHTML = ''; return; }
+  const setHeaders = _setlistSets.map((_, i) => `<th>Set ${i + 1}</th>`).join('');
   el.innerHTML = `
     <div class="lead-count-wrap">
       <div class="lead-count-title">Song Count by Lead</div>
       <table class="lead-count-table">
-        <thead><tr><th>Lead</th><th>Set 1</th><th>Set 2</th><th>Total</th></tr></thead>
+        <thead><tr><th>Lead</th>${setHeaders}<th>Total</th></tr></thead>
         <tbody>${rows.map(r => `
           <tr>
             <td class="lead-count-name">${escHtml(r.lead)}</td>
-            <td>${r.s0 || '—'}</td>
-            <td>${r.s1 || '—'}</td>
+            ${r.cols.map(c => `<td>${c || '—'}</td>`).join('')}
             <td><strong>${r.total}</strong></td>
           </tr>`).join('')}
         </tbody>
@@ -1035,8 +1066,8 @@ function _addRequestToSet(reqId, setIndex) {
   leadSel.value = knownLead || '';
   document.getElementById('add-song-lead-other').classList.add('hidden');
   document.getElementById('add-song-key-input').value = _catalogKeyByTitle(req.title);
-  // Override set index radio
-  document.querySelector(`input[name="add-to-set"][value="${setIndex}"]`).checked = true;
+  // Render set radios and pre-select the target set
+  _renderSetRadios(setIndex);
   // Show modal with only lead picker visible
   document.getElementById('add-song-list').style.display = 'none';
   document.getElementById('add-song-search').style.display = 'none';
@@ -1052,7 +1083,7 @@ function _renderUnplacedRequests() {
   const reqs = gcp.songRequests || [];
   if (!reqs.length) { el.innerHTML = ''; return; }
 
-  const inSetlist = new Set([..._setlistSets[0], ..._setlistSets[1]].map(s => s.id));
+  const inSetlist = new Set(_setlistSets.flat().map(s => s.id));
   const unplaced  = reqs.filter(r => !inSetlist.has(r.id));
   if (!unplaced.length) { el.innerHTML = ''; return; }
 
@@ -1066,6 +1097,9 @@ function _renderUnplacedRequests() {
         const lead = ARTIST_LEAD_BY_TITLE[r.title.toLowerCase()] || '';
         const reqKey = _catalogKeyByTitle(r.title);
         const titleHtml = _titleWithKeyHtml(r.title, reqKey, r.spotify);
+        const addBtns = _setlistSets.map((_, si) =>
+          `<button class="unplaced-add-btn" data-reqid="${escHtml(r.id)}" data-set="${si}">+ Set ${si + 1}</button>`
+        ).join('');
         return `
           <div class="unplaced-request-row" data-reqid="${escHtml(r.id)}">
             <div class="setlist-info">
@@ -1077,8 +1111,7 @@ function _renderUnplacedRequests() {
               ${r.type === 'Priority'
                 ? `<span class="status-badge status-alert" style="font-size:9px">Priority</span>`
                 : `<span class="status-badge status-pending" style="font-size:9px">Request</span>`}
-              <button class="unplaced-add-btn" data-reqid="${escHtml(r.id)}" data-set="0">+ Set 1</button>
-              <button class="unplaced-add-btn" data-reqid="${escHtml(r.id)}" data-set="1">+ Set 2</button>
+              ${addBtns}
             </div>
           </div>`;
       }).join('')}
@@ -1123,12 +1156,24 @@ function _autoSaveSetlist() {
 /* ============================================
    ADD SONG MODAL
    ============================================ */
+function _renderSetRadios(selectedIdx) {
+  const container = document.getElementById('add-to-set-radios');
+  if (!container) return;
+  const labelStyle = 'display:flex;align-items:center;gap:7px;font-family:var(--font-sans);font-size:13px;cursor:pointer;color:#444';
+  container.innerHTML = _setlistSets.map((_, si) =>
+    `<label style="${labelStyle}">
+      <input type="radio" name="add-to-set" value="${si}"${si === (selectedIdx ?? 0) ? ' checked' : ''} style="accent-color:var(--navy)"> Set ${si + 1}
+    </label>`
+  ).join('');
+}
+
 function openAddSongModal() {
   document.getElementById('add-song-search').value = '';
   document.getElementById('add-song-search').style.display = '';
   document.getElementById('add-song-list').style.display = '';
   document.getElementById('add-song-lead-step').classList.add('hidden');
   _pendingAddSong = null;
+  _renderSetRadios(0);
   _renderAddSongList('');
   document.getElementById('modal-add-song').classList.remove('hidden');
   setTimeout(() => document.getElementById('add-song-search').focus(), 50);
@@ -1139,7 +1184,7 @@ function _renderAddSongList(query) {
   const gcp      = ADB.getGCP(_currentClientId);
   const prefs    = gcp.songs || {};
   const reqs     = gcp.songRequests || [];
-  const inSetlist = new Set([..._setlistSets[0], ..._setlistSets[1]].map(s => s.id));
+  const inSetlist = new Set(_setlistSets.flat().map(s => s.id));
 
   const q = query.toLowerCase().trim();
 
@@ -1652,13 +1697,19 @@ function renderSetlistPreview() {
   const a              = contract.admin || {};
   const name           = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
   const date           = fmtDate(a.eventDate || (client && client.eventDate) || '');
-  const hasSet2        = _setlistSets[1].length > 0;
   const base           = window.location.origin;
   const chk           = ADB.getGCP(_currentClientId).checklist || {};
-  const set1StartMin  = _parseTimeMin(chk['cl-dance-floor']);
-  const set2StartMin  = set1StartMin !== null
-    ? set1StartMin + Math.round(_setlistSets[0].length * AVG_SONG_MIN) + 30
-    : null;
+  // Compute start time for each set: set[i] starts after set[i-1] ends + break[i-1]
+  const _setStartMins = (() => {
+    const s0 = _parseTimeMin(chk['cl-dance-floor']);
+    const starts = [s0];
+    for (let i = 1; i < _setlistSets.length; i++) {
+      const prev = starts[i - 1];
+      const bMin = _setStructure.breaks[i - 1] || 30;
+      starts.push(prev !== null ? prev + Math.round(_setlistSets[i - 1].length * AVG_SONG_MIN) + bMin : null);
+    }
+    return starts;
+  })();
 
   function buildSongs(songs, setStartMin) {
     if (!songs.length) return '<div class="slp-empty">No songs in this set.</div>';
@@ -1676,20 +1727,18 @@ function renderSetlistPreview() {
     }).join('');
   }
 
+  const colClass = _setlistSets.length >= 3 ? 'three-col' : _setlistSets.length === 2 ? 'two-col' : 'one-col';
+  const setsHtml = _setlistSets.map((songs, si) => `
+    <div class="slp-set">
+      <div class="slp-set-header">Set ${si + 1}</div>
+      ${buildSongs(songs, _setStartMins[si])}
+    </div>`).join('');
+
   document.getElementById('setlist-preview-content').innerHTML = `
     <div class="slp-header">
       <img class="slp-logo" src="${base}/Insta%20Profile.png" alt="Good Company">
     </div>
-    <div class="slp-body${hasSet2 ? ' two-col' : ' one-col'}">
-      <div class="slp-set">
-        <div class="slp-set-header">Set 1</div>
-        ${buildSongs(_setlistSets[0], set1StartMin)}
-      </div>
-      ${hasSet2 ? `<div class="slp-set">
-        <div class="slp-set-header">Set 2</div>
-        ${buildSongs(_setlistSets[1], set2StartMin)}
-      </div>` : ''}
-    </div>
+    <div class="slp-body ${colClass}">${setsHtml}</div>
     <div class="slp-footer">
       <div class="slp-client-name">${escHtml(name)}</div>
       ${date ? `<div class="slp-event-date">${escHtml(date)}</div>` : ''}
@@ -1706,12 +1755,17 @@ function downloadSetlistPDF() {
   const name           = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Client';
   const date           = fmtDate(a.eventDate || (client && client.eventDate) || '');
   const base           = window.location.origin;
-  const hasSet2        = _setlistSets[1].length > 0;
-  const pdfChk        = ADB.getGCP(_currentClientId).checklist || {};
-  const pdfSet1Start  = _parseTimeMin(pdfChk['cl-dance-floor']);
-  const pdfSet2Start  = pdfSet1Start !== null
-    ? pdfSet1Start + Math.round(_setlistSets[0].length * AVG_SONG_MIN) + 30
-    : null;
+  const pdfChk      = ADB.getGCP(_currentClientId).checklist || {};
+  const pdfStartMins = (() => {
+    const s0 = _parseTimeMin(pdfChk['cl-dance-floor']);
+    const starts = [s0];
+    for (let i = 1; i < _setlistSets.length; i++) {
+      const prev = starts[i - 1];
+      const bMin = _setStructure.breaks[i - 1] || 30;
+      starts.push(prev !== null ? prev + Math.round(_setlistSets[i - 1].length * AVG_SONG_MIN) + bMin : null);
+    }
+    return starts;
+  })();
 
   function buildSongs(songs, setStartMin) {
     return songs.map((s, i) => {
@@ -1723,6 +1777,12 @@ function downloadSetlistPDF() {
     }).join('');
   }
 
+  const setCount    = _setlistSets.length;
+  const pdfColClass = setCount >= 3 ? 'three-col' : setCount === 2 ? 'two-col' : 'one-col';
+  const pdfSetsHtml = _setlistSets.map((songs, si) =>
+    `<div><div class="sl-set-header">Set ${si + 1}</div>${buildSongs(songs, pdfStartMins[si])}</div>`
+  ).join('');
+
   const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <title>${escHtml(name)} — Setlist</title>
@@ -1733,8 +1793,9 @@ function downloadSetlistPDF() {
   body{font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;color:#1a1a1a;padding:20px 28px;font-size:13px}
   .sl-header{text-align:center;margin-bottom:18px}
   .sl-logo{width:90px;height:90px;object-fit:contain;display:block;margin:0 auto}
-  .sl-body{display:grid;gap:36px;align-items:start;margin-bottom:16px}
+  .sl-body{display:grid;gap:28px;align-items:start;margin-bottom:16px}
   .sl-body.two-col{grid-template-columns:1fr 1fr}
+  .sl-body.three-col{grid-template-columns:1fr 1fr 1fr}
   .sl-body.one-col{grid-template-columns:1fr;max-width:380px;margin:0 auto 16px}
   .sl-set-header{
     text-align:center;font-family:'Montserrat',sans-serif;
@@ -1744,29 +1805,20 @@ function downloadSetlistPDF() {
   }
   .sl-song{
     text-align:center;font-family:'Montserrat',sans-serif;
-    font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-    padding:7px 4px;border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
+    font-size:${setCount >= 3 ? '11px' : '14px'};font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+    padding:${setCount >= 3 ? '5px 2px' : '7px 4px'};border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
   .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#333;text-transform:none;letter-spacing:0;margin-left:7px;vertical-align:middle}
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}
-  @media print{body{padding:10px 18px}@page{margin:0.5cm;size:letter portrait}}
+  @media print{body{padding:10px 18px}@page{margin:0.5cm;size:letter landscape}}
 </style></head><body>
   <div class="sl-header">
     <img class="sl-logo" src="${base}/Insta%20Profile.png" alt="Good Company Wedding Band">
   </div>
-  <div class="sl-body ${hasSet2 ? 'two-col' : 'one-col'}">
-    <div>
-      <div class="sl-set-header">Set 1</div>
-      ${buildSongs(_setlistSets[0], pdfSet1Start)}
-    </div>
-    ${hasSet2 ? `<div>
-      <div class="sl-set-header">Set 2</div>
-      ${buildSongs(_setlistSets[1], pdfSet2Start)}
-    </div>` : ''}
-  </div>
+  <div class="sl-body ${pdfColClass}">${pdfSetsHtml}</div>
   <div class="sl-footer">
     <div class="sl-client-name">${escHtml(name)}</div>
     <div class="sl-event-date">${escHtml(date)}</div>

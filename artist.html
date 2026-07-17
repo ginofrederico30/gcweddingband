@@ -196,7 +196,8 @@
             style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:var(--font-sans);outline:none;margin-bottom:14px;display:block">
         <div style="margin-bottom:14px">
             <label style="font-family:var(--font-sans);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;display:block;margin-bottom:8px">Add to</label>
-            <div style="display:flex;gap:20px">
+            <div id="add-to-set-radios" style="display:flex;gap:20px;flex-wrap:wrap">
+                <!-- populated dynamically by _renderSetRadios() -->
                 <label style="display:flex;align-items:center;gap:7px;font-family:var(--font-sans);font-size:13px;cursor:pointer;color:#444">
                     <input type="radio" name="add-to-set" value="0" checked style="accent-color:var(--navy)"> Set 1
                 </label>

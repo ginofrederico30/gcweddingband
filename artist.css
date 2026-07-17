@@ -508,10 +508,11 @@
     align-items: start;
     margin-bottom: 24px;
 }
-.slp-body.two-col { grid-template-columns: 1fr 1fr; }
-.slp-body.one-col { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto 24px; }
+.slp-body.two-col   { grid-template-columns: 1fr 1fr; }
+.slp-body.three-col { grid-template-columns: 1fr 1fr 1fr; }
+.slp-body.one-col   { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto 24px; }
 @media (max-width: 600px) {
-    .slp-body.two-col { grid-template-columns: 1fr; gap: 32px; }
+    .slp-body.two-col, .slp-body.three-col { grid-template-columns: 1fr; gap: 32px; }
 }
 .slp-set-header {
     text-align: center;
