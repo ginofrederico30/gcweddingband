@@ -1146,6 +1146,18 @@ body.is-impersonating #portal-nav { top: 40px; }
 
 .song-delete-btn:hover { color: #c0392b; }
 
+.song-edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color var(--ease);
+    flex-shrink: 0;
+}
+.song-edit-btn:hover { color: var(--navy); }
+
 .songs-section-label {
     font-family: var(--font-sans);
     font-size: 11px;

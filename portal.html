@@ -1390,6 +1390,24 @@
     </div>
 </div>
 
+<div id="modal-edit-song" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header"><h3>Edit Song</h3><button class="modal-close" data-modal="modal-edit-song"><i class="fas fa-times"></i></button></div>
+        <form id="edit-song-form" novalidate>
+            <input type="hidden" id="edit-song-id">
+            <div class="field-group"><label>Song Title</label><input type="text" id="edit-song-title" placeholder="Song title" required></div>
+            <div class="field-group"><label>Artist</label><input type="text" id="edit-song-artist" placeholder="Artist name" required></div>
+            <div class="field-group"><label>Lead <span style="font-weight:400;color:#999">(vocalist)</span></label><input type="text" id="edit-song-lead" placeholder="e.g. Ian, Savannah, Matt"></div>
+            <div class="field-group"><label>Key <span style="font-weight:400;color:#999">(optional)</span></label><input type="text" id="edit-song-key" placeholder="e.g. C, Bb, E -> F#"></div>
+            <p id="edit-song-error" class="form-error hidden"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary modal-close" data-modal="modal-edit-song">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="modal-confirm" class="modal-overlay hidden">
     <div class="modal modal-sm">
         <div class="modal-header"><h3 id="confirm-title">Confirm</h3><button class="modal-close" data-modal="modal-confirm"><i class="fas fa-times"></i></button></div>

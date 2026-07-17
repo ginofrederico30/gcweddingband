@@ -1111,6 +1111,9 @@ function renderMasterSongList() {
       <span style="font-size:11px;color:#ccc;font-family:var(--font-sans);margin-left:auto;padding-right:8px">
         ${s.addedAt > 1 ? 'Added ' + new Date(s.addedAt).toLocaleDateString() : 'Original catalog'}
       </span>
+      <button class="song-edit-btn" onclick="openEditSong('${s.id}')" title="Edit song">
+        <i class="fas fa-pencil-alt"></i>
+      </button>
       <button class="song-delete-btn" onclick="confirmDeleteSong('${s.id}')" title="Remove song">
         <i class="fas fa-trash-alt"></i>
       </button>
@@ -1140,6 +1143,18 @@ function deleteSong(songId) {
   DB.setMasterSongs(DB.getMasterSongs().filter(s => s.id !== songId));
   renderMasterSongList();
   showToast('Song removed.');
+}
+
+function openEditSong(songId) {
+  const song = DB.getMasterSongs().find(s => s.id === songId);
+  if (!song) return;
+  document.getElementById('edit-song-id').value    = songId;
+  document.getElementById('edit-song-title').value  = song.title;
+  document.getElementById('edit-song-artist').value = song.artist;
+  document.getElementById('edit-song-lead').value   = song.lead  || '';
+  document.getElementById('edit-song-key').value    = song.key   || '';
+  document.getElementById('edit-song-error').classList.add('hidden');
+  openModal('modal-edit-song');
 }
 
 /* ============================================
@@ -2839,6 +2854,29 @@ document.addEventListener('DOMContentLoaded', function() {
     showToast('"' + title + '" added to catalog.');
   });
   document.getElementById('song-search').addEventListener('input', renderMasterSongList);
+
+  /* ---- Admin: edit song ---- */
+  document.getElementById('edit-song-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const id     = document.getElementById('edit-song-id').value;
+    const title  = document.getElementById('edit-song-title').value.trim();
+    const artist = document.getElementById('edit-song-artist').value.trim();
+    const lead   = document.getElementById('edit-song-lead').value.trim();
+    const key    = document.getElementById('edit-song-key').value.trim();
+    const errEl  = document.getElementById('edit-song-error');
+    if (!title || !artist) { errEl.textContent = 'Title and artist are required.'; errEl.classList.remove('hidden'); return; }
+    const songs  = DB.getMasterSongs();
+    const song   = songs.find(s => s.id === id);
+    if (!song) return;
+    song.title  = title;
+    song.artist = artist;
+    song.lead   = lead;
+    song.key    = key;
+    DB.setMasterSongs(songs);
+    closeModal('modal-edit-song');
+    renderMasterSongList();
+    showToast('Song updated.');
+  });
 
   /* ---- Client: back buttons ---- */
   document.querySelectorAll('.client-back').forEach(btn => {
