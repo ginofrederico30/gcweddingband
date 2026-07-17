@@ -698,7 +698,7 @@ function renderGigDetail(clientId) {
 let _setlistSets = [[], []]; // in-memory working copy
 
 function sanitizeSong(s) {
-  return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority, lead:s.lead||'' };
+  return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority, lead:s.lead||'', key:s.key||'' };
 }
 
 /* Enrich saved setlist songs with lead/spotify from the current master catalog.
@@ -1109,6 +1109,17 @@ async function saveSetlist(clientId) {
   }
 }
 
+/* Silent background save — updates cache + Firestore without touching the save button or toasts.
+   Called automatically after any song is added so the rehearsal panel stays current. */
+function _autoSaveSetlist() {
+  if (!_currentClientId) return;
+  const setlists = ADB.getSetlists();
+  setlists[_currentClientId] = { sets: _setlistSets, savedAt: Date.now() };
+  ADB.setSetlist(_currentClientId, setlists[_currentClientId]).catch(err =>
+    console.warn('Auto-save failed:', err)
+  );
+}
+
 /* ============================================
    ADD SONG MODAL
    ============================================ */
@@ -1220,6 +1231,7 @@ function _renderAddSongList(query) {
       document.getElementById('modal-add-song').classList.add('hidden');
       _renderSetlistUI();
       showToast(`Added to Set ${setIndex + 1}`);
+      _autoSaveSetlist();
     });
   });
 }
@@ -1916,6 +1928,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showToast(`Added to Set ${setIndex + 1}`);
     closeAddSongModal();
     _renderSetlistUI();
+    _autoSaveSetlist();
   });
 
   /* Add Song search */
