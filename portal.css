@@ -2613,9 +2613,19 @@ body.is-impersonating #portal-nav { top: 40px; }
     .stats-row { grid-template-columns: 1fr 1fr; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
     .page-header h2 { font-size: 26px; }
-    .page-header-actions { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+    /* Page header actions: stack full-width on mobile so pill text never wraps */
+    .page-header-actions { width: 100%; display: flex; flex-direction: column; gap: 8px; }
     .page-header-actions .btn-primary,
-    .page-header-actions .btn-secondary { flex: 1; min-width: 0; justify-content: center; text-align: center; font-size: 11px; padding: 9px 12px; }
+    .page-header-actions .btn-secondary,
+    .page-header-actions .btn-danger {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        font-size: 12px;
+        padding: 12px 16px;
+        letter-spacing: 1px;
+        white-space: nowrap;
+    }
 
     .login-wrap { padding: 36px 24px; }
 
@@ -2687,11 +2697,38 @@ body.is-impersonating #portal-nav { top: 40px; }
         max-width: 160px;
         align-self: flex-start;
     }
+
+    /* Card internals: reduce 28px side padding so content breathes on narrow screens */
+    .card-header { padding: 16px 20px 14px; }
+    .card-note { padding: 10px 20px; }
+    .admin-notes-body { padding: 14px 20px 18px; }
+    .presigned-notice-row { padding: 16px 20px 12px; }
+    .signed-banner { margin: 0 20px 20px; }
+    .signature-display-wrap { padding: 0 20px 20px; }
+
+    /* Presigned download row: stack button + filename vertically so long filenames don't overflow */
+    .presigned-dl-row { flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 20px 20px; }
+    .presigned-filename { word-break: break-all; line-height: 1.45; }
+
+    /* Search input: full width so it doesn't clip inside the header row */
+    .search-input { width: 100%; }
+
+    /* Modal: tighter horizontal padding on narrow screens */
+    .modal { padding: 24px 20px; }
 }
 
 @media (max-width: 480px) {
     .stats-row { grid-template-columns: 1fr 1fr; }
     .portal-container { padding: 20px 12px 80px; }
+    .card-header { padding: 14px 16px 12px; }
+    .card-note { padding: 10px 16px; }
+    .admin-notes-body { padding: 12px 16px 16px; }
+    .presigned-notice-row { padding: 14px 16px 10px; }
+    .presigned-dl-row { padding: 0 16px 18px; }
+    .signed-banner { margin: 0 16px 16px; padding: 14px 16px; }
+    .signature-display-wrap { padding: 0 16px 16px; }
+    .modal { padding: 20px 16px; }
+    .page-header h2 { font-size: 22px; }
 }
 
 /* ---- Band Schedule Timeline (shared — client + artist portals) ---- */
