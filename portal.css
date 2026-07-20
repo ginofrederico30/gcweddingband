@@ -2347,9 +2347,9 @@ body.is-impersonating #portal-nav { top: 40px; }
     text-align: center;
     white-space: nowrap;
 }
-.scol-priority { color: #b91c1c; }
+.scol-priority { color: #b8860b; }
 .scol-yes      { color: #155724; }
-.scol-dnp      { color: #888; }
+.scol-dnp      { color: #b91c1c; }
 
 /* Song item row — same grid + padding as column headers */
 #view-songs .song-item {
@@ -2377,8 +2377,9 @@ body.is-impersonating #portal-nav { top: 40px; }
     accent-color: var(--navy);
     flex-shrink: 0;
 }
-.song-check-cell.priority-cell input:checked { accent-color: #b91c1c; }
+.song-check-cell.priority-cell input:checked { accent-color: #b8860b; }
 .song-check-cell.yes-cell      input:checked { accent-color: #155724; }
+.song-check-cell.dnp-cell      input:checked { accent-color: #b91c1c; }
 
 /* ============================================
    Song Requests Section
