@@ -2408,8 +2408,8 @@ body.is-impersonating #portal-nav { top: 40px; }
     letter-spacing: 0.5px;
 }
 .req-priority-chip {
-    background: #fde8e8;
-    color: #b91c1c;
+    background: #fef9e7;
+    color: #b8860b;
 }
 .req-other-chip {
     background: #e6f4ea;
@@ -2478,7 +2478,7 @@ body.is-impersonating #portal-nav { top: 40px; }
     border-radius: 20px;
     flex-shrink: 0;
 }
-.req-badge-priority { background: #fde8e8; color: #b91c1c; }
+.req-badge-priority { background: #fef9e7; color: #b8860b; }
 .req-badge-other    { background: #e6f4ea; color: #155724; }
 
 .req-spotify-link {
