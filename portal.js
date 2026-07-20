@@ -2127,7 +2127,6 @@ const CHECKLIST_FIELDS = [
   'cl-wifi-name','cl-wifi-pass','cl-stage-size','cl-outdoor','cl-power',
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
-  'cl-set-count','cl-break1-min','cl-break2-min',
   'cl-attendance','cl-loadout',
   'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party-song','cl-spotify-party-artist','cl-spotify-party',
   'cl-grand-entrance','cl-couple-announce','cl-spotify-couple-song','cl-spotify-couple-artist','cl-spotify-couple',
@@ -2170,14 +2169,6 @@ function _applyChecklistVisibility(clientId) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !showCouple);
   });
-
-  // Performance sets: show break inputs only for 3-set configuration
-  const setCountEl = document.getElementById('cl-set-count');
-  const is3Sets = setCountEl && setCountEl.value === '3';
-  const b1Wrap = document.getElementById('cl-break1-wrap');
-  const b2Wrap = document.getElementById('cl-break2-wrap');
-  if (b1Wrap) b1Wrap.classList.toggle('hidden', !is3Sets);
-  if (b2Wrap) b2Wrap.classList.toggle('hidden', !is3Sets);
 
 }
 
@@ -3076,18 +3067,6 @@ document.addEventListener('DOMContentLoaded', function() {
     cocktailSepSel.addEventListener('change', function() {
       const wrap = document.getElementById('cl-cocktail-sep-location-wrap');
       if (wrap) wrap.classList.toggle('hidden', this.value !== 'Yes');
-    });
-  }
-
-  // Performance sets: show/hide break fields when set count changes
-  const setCountSel = document.getElementById('cl-set-count');
-  if (setCountSel) {
-    setCountSel.addEventListener('change', function() {
-      const is3 = this.value === '3';
-      const b1 = document.getElementById('cl-break1-wrap');
-      const b2 = document.getElementById('cl-break2-wrap');
-      if (b1) b1.classList.toggle('hidden', !is3);
-      if (b2) b2.classList.toggle('hidden', !is3);
     });
   }
 
