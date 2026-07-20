@@ -2318,9 +2318,9 @@ body.is-impersonating #portal-nav { top: 40px; }
     flex: 1;
     min-width: 160px;
 }
-.catalog-desc-item:nth-child(1) i { color: #b91c1c; }
+.catalog-desc-item:nth-child(1) i { color: #b8860b; }
 .catalog-desc-item:nth-child(2) i { color: #155724; }
-.catalog-desc-item:nth-child(3) i { color: #888; }
+.catalog-desc-item:nth-child(3) i { color: #b91c1c; }
 .catalog-desc-item strong { color: var(--navy); }
 
 /* Shared column definition — used by both header and rows */
