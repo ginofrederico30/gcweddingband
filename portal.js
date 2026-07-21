@@ -1019,7 +1019,11 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Family Processional',  [cer['cer-live-family-song'] || cer['cer-duties-family-link'] || cer['cer-hybrid-family-song'], cer['cer-live-family-artist'] || cer['cer-duties-family-artist'] || cer['cer-hybrid-family-artist']].filter(Boolean).join(' — ') + hybridTag('family'));
     html += row('Bride Processional',   [cer['cer-live-bride-song'] || cer['cer-duties-bride-link'] || cer['cer-hybrid-bride-song'], cer['cer-live-bride-artist'] || cer['cer-duties-bride-artist'] || cer['cer-hybrid-bride-artist']].filter(Boolean).join(' — ') + hybridTag('bride'));
     html += row('Recessional',          [cer['cer-live-exit-song'] || cer['cer-duties-exit-link'] || cer['cer-hybrid-exit-song'], cer['cer-live-exit-artist'] || cer['cer-duties-exit-artist'] || cer['cer-hybrid-exit-artist']].filter(Boolean).join(' — ') + hybridTag('exit'));
-    html += row('Notes',                   cer['cer-live-notes'] || cer['cer-duties-notes'] || cer['cer-hybrid-notes'] || cer['cer-notes']);
+    const notesVal = scope.includes('Hybrid Ceremony') ? (cer['cer-hybrid-notes'] || cer['cer-notes'])
+                   : scope.includes('Live Ceremony Music') ? (cer['cer-live-notes'] || cer['cer-notes'])
+                   : scope.includes('Ceremony Duties')     ? (cer['cer-duties-notes'] || cer['cer-notes'])
+                   : cer['cer-notes'];
+    html += row('Notes', notesVal);
   }
 
   html += '</div>';

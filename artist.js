@@ -498,7 +498,7 @@ function renderGigDetail(clientId) {
   // sortTime stores the raw "HH:MM" value used for chronological ordering
   function si(icon, label, val, sortTime) { return { icon, label, val, sortTime }; }
   const cocktailVal = fmtTime12(chk['cl-cocktail-start']) || null;
-  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties') || scope.includes('Hybrid Ceremony');
   const scheduleItems = [
     si('fa-truck-loading',  'Load-in',           fmtTime12(chk['cl-arrival-time']),                          chk['cl-arrival-time']),
     si('fa-microphone',     'Soundcheck',         fmtTime12(subtractMinutes(chk['cl-guest-arrival'], 60)),    subtractMinutes(chk['cl-guest-arrival'], 60)),
@@ -1294,8 +1294,9 @@ function _buildMCTimeline(clientId) {
   const a    = contract.admin  || {};
   const cl2  = contract.client || {};
   const scope = a.scopeOfServices || [];
-  const hasCeremony    = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCeremony    = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties') || scope.includes('Hybrid Ceremony');
   const isLiveCeremony = scope.includes('Live Ceremony Music');
+  const isHybrid       = scope.includes('Hybrid Ceremony');
   const hasCocktail    = scope.includes('Jazz Cocktail Band');
 
   const items = [];
@@ -1327,12 +1328,26 @@ function _buildMCTimeline(clientId) {
       if (cer['cer-seating-genre']) cerDetails.push(info('Seating music: ' + cer['cer-seating-genre']));
       if (fam)   cerDetails.push(songD('♫ Family / WP Processional: ' + fam));
       if (bride) cerDetails.push(songD('♫ Bride Entrance: ' + bride));
+    } else if (isHybrid) {
+      const modeTag = k => cer['cer-hybrid-' + k + '-mode'] ? ' [' + cer['cer-hybrid-' + k + '-mode'] + ']' : '';
+      if (cer['cer-hybrid-seating-mode'] === 'Live' && cer['cer-hybrid-seating-genre'])
+        cerDetails.push(info('Seating music: ' + cer['cer-hybrid-seating-genre']));
+      else if (cer['cer-hybrid-seating-mode'] === 'DJ' && cer['cer-hybrid-seating-link'])
+        cerDetails.push(info('Seating playlist: ' + cer['cer-hybrid-seating-link']));
+      const fam  = [cer['cer-hybrid-family-song'], cer['cer-hybrid-family-artist']].filter(Boolean).join(' — ');
+      const bride = [cer['cer-hybrid-bride-song'], cer['cer-hybrid-bride-artist']].filter(Boolean).join(' — ');
+      if (fam)   cerDetails.push(songD('♫ Family / WP Processional: ' + fam + modeTag('family')));
+      if (bride) cerDetails.push(songD('♫ Bride Entrance: ' + bride + modeTag('bride')));
     }
     add(cer['cer-start'], 'fa-ring', 'CEREMONY BEGINS', cerDetails);
     const exitDetails = [];
     if (isLiveCeremony) {
       const exit = [cer['cer-live-exit-song'], cer['cer-live-exit-artist']].filter(Boolean).join(' — ');
       if (exit) exitDetails.push(songD('♫ Recessional: ' + exit));
+    } else if (isHybrid) {
+      const exit = [cer['cer-hybrid-exit-song'], cer['cer-hybrid-exit-artist']].filter(Boolean).join(' — ');
+      const modeTag = cer['cer-hybrid-exit-mode'] ? ' [' + cer['cer-hybrid-exit-mode'] + ']' : '';
+      if (exit) exitDetails.push(songD('♫ Recessional: ' + exit + modeTag));
     }
     add(cer['cer-end'], 'fa-door-open', 'CEREMONY ENDS', exitDetails);
   }
