@@ -162,6 +162,7 @@
                     <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Live Ceremony Music"> Live Ceremony Music</label>
                     <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Jazz Cocktail Band"> Jazz Cocktail Band</label>
                     <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Ceremony Duties"> Ceremony Duties</label>
+                    <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="Hybrid Ceremony"> Hybrid Ceremony</label>
                     <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="MC for Reception"> MC for Reception</label>
                     <label class="scope-check-label"><input type="checkbox" name="ps-scope-service" value="DJ Services"> DJ Services</label>
                 </div>
@@ -203,6 +204,7 @@
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="Live Ceremony Music"> Live Ceremony Music</label>
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="Jazz Cocktail Band"> Jazz Cocktail Band</label>
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="Ceremony Duties"> Ceremony Duties</label>
+                    <label class="scope-check-label"><input type="checkbox" name="scope-service" value="Hybrid Ceremony"> Hybrid Ceremony</label>
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="MC for Reception"> MC for Reception</label>
                     <label class="scope-check-label"><input type="checkbox" name="scope-service" value="DJ Services"> DJ Services</label>
                 </div>
@@ -1321,6 +1323,86 @@
                     <div class="field-group"><label>Couple Exit — Artist</label><input type="text" id="cer-duties-exit-artist" placeholder="Artist name"></div>
                     <div class="field-group full-width"><label>Couple Exit — Spotify Link</label><input type="text" id="cer-duties-exit-spotify" placeholder="Paste a Spotify link so we can reference the song"></div>
                     <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-duties-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
+                </div>
+            </div>
+            <!-- Hybrid Ceremony variant -->
+            <div class="card checklist-card hidden" id="cer-music-hybrid">
+                <div class="card-header"><h3><i class="fas fa-music"></i> Ceremony Music — Hybrid</h3></div>
+                <div class="checklist-grid">
+                    <p class="full-width" style="margin:0 0 4px;font-family:var(--font-sans);font-size:13px;color:#666">For each ceremony moment, choose whether the band performs live or the DJ plays a track, then provide the song details.</p>
+
+                    <!-- Seating / Prelude -->
+                    <div class="hybrid-moment full-width">
+                        <div class="hybrid-moment-hdr">
+                            <span class="hybrid-moment-name">Seating / Prelude</span>
+                            <div class="hybrid-toggle-group">
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-seating-mode" value="Live"><span><i class="fas fa-guitar"></i> Live</span></label>
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-seating-mode" value="DJ"><span><i class="fas fa-headphones"></i> DJ</span></label>
+                            </div>
+                        </div>
+                        <div class="hybrid-fields hidden" id="cer-hybrid-seating-live-wrap">
+                            <div class="field-group" style="margin:0"><label>Genre Preference</label><input type="text" id="cer-hybrid-seating-genre" placeholder="e.g. Classical, Modern Pop, Jazz, Acoustic"></div>
+                        </div>
+                        <div class="hybrid-fields hidden" id="cer-hybrid-seating-dj-wrap">
+                            <div class="field-group" style="margin:0"><label>Spotify Playlist Link</label><input type="text" id="cer-hybrid-seating-link" placeholder="Spotify playlist link"></div>
+                        </div>
+                    </div>
+
+                    <!-- Family / Wedding Party Processional -->
+                    <div class="hybrid-moment full-width">
+                        <div class="hybrid-moment-hdr">
+                            <span class="hybrid-moment-name">Family / Wedding Party Processional</span>
+                            <div class="hybrid-toggle-group">
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-family-mode" value="Live"><span><i class="fas fa-guitar"></i> Live</span></label>
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-family-mode" value="DJ"><span><i class="fas fa-headphones"></i> DJ</span></label>
+                            </div>
+                        </div>
+                        <div class="hybrid-fields hidden" id="cer-hybrid-family-fields-wrap">
+                            <div class="checklist-grid" style="padding:0;gap:12px;margin-top:12px">
+                                <div class="field-group" style="margin:0"><label>Song Title</label><input type="text" id="cer-hybrid-family-song" placeholder="Song title"></div>
+                                <div class="field-group" style="margin:0"><label>Artist</label><input type="text" id="cer-hybrid-family-artist" placeholder="Artist name"></div>
+                                <div class="field-group full-width" style="margin:0"><label>Spotify Link</label><input type="text" id="cer-hybrid-family-link" placeholder="Paste a Spotify link"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bride / Partner Entrance -->
+                    <div class="hybrid-moment full-width">
+                        <div class="hybrid-moment-hdr">
+                            <span class="hybrid-moment-name">Bride / Partner Entrance</span>
+                            <div class="hybrid-toggle-group">
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-bride-mode" value="Live"><span><i class="fas fa-guitar"></i> Live</span></label>
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-bride-mode" value="DJ"><span><i class="fas fa-headphones"></i> DJ</span></label>
+                            </div>
+                        </div>
+                        <div class="hybrid-fields hidden" id="cer-hybrid-bride-fields-wrap">
+                            <div class="checklist-grid" style="padding:0;gap:12px;margin-top:12px">
+                                <div class="field-group" style="margin:0"><label>Song Title</label><input type="text" id="cer-hybrid-bride-song" placeholder="Song title"></div>
+                                <div class="field-group" style="margin:0"><label>Artist</label><input type="text" id="cer-hybrid-bride-artist" placeholder="Artist name"></div>
+                                <div class="field-group full-width" style="margin:0"><label>Spotify Link</label><input type="text" id="cer-hybrid-bride-link" placeholder="Paste a Spotify link"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Couple Exit / Recessional -->
+                    <div class="hybrid-moment full-width">
+                        <div class="hybrid-moment-hdr">
+                            <span class="hybrid-moment-name">Couple Exit / Recessional</span>
+                            <div class="hybrid-toggle-group">
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-exit-mode" value="Live"><span><i class="fas fa-guitar"></i> Live</span></label>
+                                <label class="hybrid-toggle-opt"><input type="radio" name="cer-hybrid-exit-mode" value="DJ"><span><i class="fas fa-headphones"></i> DJ</span></label>
+                            </div>
+                        </div>
+                        <div class="hybrid-fields hidden" id="cer-hybrid-exit-fields-wrap">
+                            <div class="checklist-grid" style="padding:0;gap:12px;margin-top:12px">
+                                <div class="field-group" style="margin:0"><label>Song Title</label><input type="text" id="cer-hybrid-exit-song" placeholder="Song title"></div>
+                                <div class="field-group" style="margin:0"><label>Artist</label><input type="text" id="cer-hybrid-exit-artist" placeholder="Artist name"></div>
+                                <div class="field-group full-width" style="margin:0"><label>Spotify Link</label><input type="text" id="cer-hybrid-exit-link" placeholder="Paste a Spotify link"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group full-width"><label>Additional Notes</label><textarea id="cer-hybrid-notes" rows="3" placeholder="Any other ceremony details or instructions…"></textarea></div>
                 </div>
             </div>
             <div class="card checklist-card">

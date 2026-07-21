@@ -407,10 +407,16 @@ function ceremonyProgress(cid) {
     musicFields = ['cer-seating-genre','cer-live-family-song','cer-live-bride-song','cer-live-exit-song'];
   } else if (scope.includes('Ceremony Duties')) {
     musicFields = ['cer-duties-seating-link','cer-duties-family-link','cer-duties-bride-link','cer-duties-exit-link'];
+  } else if (scope.includes('Hybrid Ceremony')) {
+    musicFields = ['cer-hybrid-family-song','cer-hybrid-bride-song','cer-hybrid-exit-song'];
   }
   const required = [...logistics, ...musicFields];
   if (!required.length) return 0;
-  const filled = required.filter(id => cer[id] !== '' && cer[id] != null).length;
+  let filled = required.filter(id => cer[id] !== '' && cer[id] != null).length;
+  if (scope.includes('Hybrid Ceremony')) {
+    const modesFilled = ['seating','family','bride','exit'].filter(k => cer['cer-hybrid-' + k + '-mode']).length;
+    return Math.min(100, Math.round(((filled + modesFilled) / (required.length + 4)) * 100));
+  }
   return Math.min(100, Math.round((filled / required.length) * 100));
 }
 
@@ -543,7 +549,7 @@ function renderAdminDash() {
     const selCount    = countSelectedSongs(c.id);
     const clProg      = checklistProgress(c.id);
     const cScope      = (DB.getContract(c.id).admin && DB.getContract(c.id).admin.scopeOfServices) || [];
-    const hasCeremony = cScope.includes('Live Ceremony Music') || cScope.includes('Ceremony Duties');
+    const hasCeremony = cScope.includes('Live Ceremony Music') || cScope.includes('Ceremony Duties') || cScope.includes('Hybrid Ceremony');
     const cerProg     = hasCeremony ? ceremonyProgress(c.id) : null;
     const cerCell     = hasCeremony
       ? `<div style="display:flex;align-items:center;gap:8px">
@@ -797,7 +803,7 @@ function renderAdminSchedule(clientId) {
   const cer = gcp.ceremony  || {};
   const contract = DB.getContract(clientId);
   const scope = (contract.admin && contract.admin.scopeOfServices) || [];
-  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties') || scope.includes('Hybrid Ceremony');
   const hasCocktail = scope.includes('Jazz Cocktail Band');
 
   const rows = [];
@@ -1008,11 +1014,12 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Power Available',         cer['cer-power']);
     html += row('Ceremony Location',       cer['cer-sep-location']);
     html += row('Distance to Venue',       cer['cer-distance']);
-    html += row('Seating Music Genre',     cer['cer-seating-genre']);
-    html += row('Family Seating Song',     [cer['cer-live-family-song'] || cer['cer-duties-family-link'], cer['cer-live-family-artist'] || cer['cer-duties-family-artist']].filter(Boolean).join(' — '));
-    html += row('Bride Processional Song', [cer['cer-live-bride-song'] || cer['cer-duties-bride-link'], cer['cer-live-bride-artist'] || cer['cer-duties-bride-artist']].filter(Boolean).join(' — '));
-    html += row('Recessional Song',        [cer['cer-live-exit-song'] || cer['cer-duties-exit-link'], cer['cer-live-exit-artist'] || cer['cer-duties-exit-artist']].filter(Boolean).join(' — '));
-    html += row('Notes',                   cer['cer-live-notes'] || cer['cer-duties-notes'] || cer['cer-notes']);
+    html += row('Seating Music',           cer['cer-seating-genre'] || cer['cer-hybrid-seating-genre'] || cer['cer-duties-seating-link'] || cer['cer-hybrid-seating-link']);
+    const hybridTag = k => cer['cer-hybrid-' + k + '-mode'] ? ' [' + cer['cer-hybrid-' + k + '-mode'] + ']' : '';
+    html += row('Family Processional',  [cer['cer-live-family-song'] || cer['cer-duties-family-link'] || cer['cer-hybrid-family-song'], cer['cer-live-family-artist'] || cer['cer-duties-family-artist'] || cer['cer-hybrid-family-artist']].filter(Boolean).join(' — ') + hybridTag('family'));
+    html += row('Bride Processional',   [cer['cer-live-bride-song'] || cer['cer-duties-bride-link'] || cer['cer-hybrid-bride-song'], cer['cer-live-bride-artist'] || cer['cer-duties-bride-artist'] || cer['cer-hybrid-bride-artist']].filter(Boolean).join(' — ') + hybridTag('bride'));
+    html += row('Recessional',          [cer['cer-live-exit-song'] || cer['cer-duties-exit-link'] || cer['cer-hybrid-exit-song'], cer['cer-live-exit-artist'] || cer['cer-duties-exit-artist'] || cer['cer-hybrid-exit-artist']].filter(Boolean).join(' — ') + hybridTag('exit'));
+    html += row('Notes',                   cer['cer-live-notes'] || cer['cer-duties-notes'] || cer['cer-hybrid-notes'] || cer['cer-notes']);
   }
 
   html += '</div>';
@@ -1222,7 +1229,7 @@ function renderClientDash(clientId) {
   // Ceremony
   const contract = DB.getContract(clientId);
   const scope = (contract.admin && contract.admin.scopeOfServices) || [];
-  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties') || scope.includes('Hybrid Ceremony');
   const cerCard = document.getElementById('module-ceremony');
   if (cerCard) cerCard.classList.toggle('hidden', !hasCeremony);
 
@@ -1247,7 +1254,7 @@ function renderClientBandSchedule(clientId) {
   const cl = DB.getGCP(clientId).checklist || {};
   const contract = DB.getContract(clientId);
   const scope = (contract.admin && contract.admin.scopeOfServices) || [];
-  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties');
+  const hasCeremony = scope.includes('Live Ceremony Music') || scope.includes('Ceremony Duties') || scope.includes('Hybrid Ceremony');
   const hasCocktailBand = scope.includes('Jazz Cocktail Band');
 
   const rows = [];
@@ -2500,6 +2507,11 @@ const CEREMONY_FIELDS = [
   'cer-duties-bride-link','cer-duties-bride-artist','cer-duties-bride-spotify',
   'cer-duties-exit-link','cer-duties-exit-artist','cer-duties-exit-spotify',
   'cer-duties-notes',
+  'cer-hybrid-seating-genre','cer-hybrid-seating-link',
+  'cer-hybrid-family-song','cer-hybrid-family-artist','cer-hybrid-family-link',
+  'cer-hybrid-bride-song','cer-hybrid-bride-artist','cer-hybrid-bride-link',
+  'cer-hybrid-exit-song','cer-hybrid-exit-artist','cer-hybrid-exit-link',
+  'cer-hybrid-notes',
   'cer-notes'
 ];
 
@@ -2509,17 +2521,45 @@ function loadCeremony(clientId) {
   const scope = (contract.admin && contract.admin.scopeOfServices) || [];
   const isLive = scope.includes('Live Ceremony Music');
   const isDuties = scope.includes('Ceremony Duties');
+  const isHybrid = scope.includes('Hybrid Ceremony');
   const livePanel = document.getElementById('cer-music-live');
   const dutiesPanel = document.getElementById('cer-music-duties');
+  const hybridPanel = document.getElementById('cer-music-hybrid');
   if (livePanel) livePanel.classList.toggle('hidden', !isLive);
   if (dutiesPanel) dutiesPanel.classList.toggle('hidden', !isDuties);
+  if (hybridPanel) hybridPanel.classList.toggle('hidden', !isHybrid);
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cer[id] !== undefined) el.value = cer[id]; });
+  if (isHybrid) {
+    function restoreHybridMode(key, splitFields) {
+      var savedMode = cer['cer-hybrid-' + key + '-mode'];
+      if (!savedMode) return;
+      var radio = document.querySelector('input[name="cer-hybrid-' + key + '-mode"][value="' + savedMode + '"]');
+      if (radio) radio.checked = true;
+      if (splitFields) {
+        var lw = document.getElementById('cer-hybrid-' + key + '-live-wrap');
+        var dw = document.getElementById('cer-hybrid-' + key + '-dj-wrap');
+        if (lw) lw.classList.toggle('hidden', savedMode !== 'Live');
+        if (dw) dw.classList.toggle('hidden', savedMode !== 'DJ');
+      } else {
+        var fw = document.getElementById('cer-hybrid-' + key + '-fields-wrap');
+        if (fw) fw.classList.remove('hidden');
+      }
+    }
+    restoreHybridMode('seating', true);
+    restoreHybridMode('family',  false);
+    restoreHybridMode('bride',   false);
+    restoreHybridMode('exit',    false);
+  }
 }
 
 function saveCeremony(clientId) {
   const gcp = DB.getGCP(clientId);
   const cer = {};
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cer[id] = el.value; });
+  ['seating','family','bride','exit'].forEach(function(key) {
+    var checked = document.querySelector('input[name="cer-hybrid-' + key + '-mode"]:checked');
+    if (checked) cer['cer-hybrid-' + key + '-mode'] = checked.value;
+  });
   gcp.ceremony = cer;
   DB.setGCP(clientId, gcp);
   showToast('Ceremony planner saved!');
@@ -3102,11 +3142,39 @@ document.addEventListener('DOMContentLoaded', function() {
   function wireCeremonyMutualExclusion(nameAttr) {
     const liveCb   = document.querySelector('input[name="' + nameAttr + '"][value="Live Ceremony Music"]');
     const dutiesCb = document.querySelector('input[name="' + nameAttr + '"][value="Ceremony Duties"]');
-    if (liveCb)   liveCb.addEventListener('change',   function() { if (this.checked && dutiesCb) dutiesCb.checked = false; });
-    if (dutiesCb) dutiesCb.addEventListener('change', function() { if (this.checked && liveCb)   liveCb.checked   = false; });
+    const hybridCb = document.querySelector('input[name="' + nameAttr + '"][value="Hybrid Ceremony"]');
+    if (liveCb)   liveCb.addEventListener('change',   function() { if (this.checked) { if (dutiesCb) dutiesCb.checked = false; if (hybridCb) hybridCb.checked = false; } });
+    if (dutiesCb) dutiesCb.addEventListener('change', function() { if (this.checked) { if (liveCb)   liveCb.checked   = false; if (hybridCb) hybridCb.checked = false; } });
+    if (hybridCb) hybridCb.addEventListener('change', function() { if (this.checked) { if (liveCb)   liveCb.checked   = false; if (dutiesCb) dutiesCb.checked   = false; } });
   }
   wireCeremonyMutualExclusion('scope-service');
   wireCeremonyMutualExclusion('ps-scope-service');
+
+  /* ---- Hybrid Ceremony: Live/DJ moment toggles ---- */
+  (function _wireHybridToggles() {
+    function toggle(key, splitFields) {
+      ['Live','DJ'].forEach(function(mode) {
+        var radio = document.querySelector('input[name="cer-hybrid-' + key + '-mode"][value="' + mode + '"]');
+        if (!radio) return;
+        radio.addEventListener('change', function() {
+          if (!this.checked) return;
+          if (splitFields) {
+            var lw = document.getElementById('cer-hybrid-' + key + '-live-wrap');
+            var dw = document.getElementById('cer-hybrid-' + key + '-dj-wrap');
+            if (lw) lw.classList.toggle('hidden', mode !== 'Live');
+            if (dw) dw.classList.toggle('hidden', mode !== 'DJ');
+          } else {
+            var fw = document.getElementById('cer-hybrid-' + key + '-fields-wrap');
+            if (fw) fw.classList.remove('hidden');
+          }
+        });
+      });
+    }
+    toggle('seating', true);
+    toggle('family',  false);
+    toggle('bride',   false);
+    toggle('exit',    false);
+  })();
 
   /* ---- Client: save ceremony ---- */
   function handleSaveCeremony() { const s=getSession(); if(s) saveCeremony(s.clientId); }

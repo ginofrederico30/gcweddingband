@@ -1355,6 +1355,73 @@ body.is-impersonating #portal-nav { top: 40px; }
 .dance-detail-grid .full-width { grid-column: 1 / -1; }
 
 /* ============================================
+   Hybrid Ceremony Toggles
+   ============================================ */
+.hybrid-moment {
+    background: #f9f8f6;
+    border: 1px solid #e0ddd7;
+    border-radius: 10px;
+    padding: 16px;
+}
+.hybrid-moment-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.hybrid-moment-name {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    color: #222;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+}
+.hybrid-toggle-group {
+    display: flex;
+    border: 2px solid var(--navy);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.hybrid-toggle-opt {
+    position: relative;
+    cursor: pointer;
+}
+.hybrid-toggle-opt input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.hybrid-toggle-opt span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--navy);
+    background: transparent;
+    transition: background .15s ease, color .15s ease;
+    user-select: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.hybrid-toggle-opt input[type="radio"]:checked + span {
+    background: var(--navy);
+    color: #fff;
+}
+.hybrid-fields {
+    padding-top: 14px;
+}
+
+/* ============================================
    Save Bar (sticky bottom)
    ============================================ */
 .save-bar {
