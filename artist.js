@@ -724,6 +724,17 @@ function renderGigDetail(clientId) {
    ============================================ */
 let _setlistSets = [[], []]; // in-memory working copy
 
+const _LEAD_OPTIONS = ['Gino', 'Ian', 'Lee', 'Matt', 'Nick', 'Savannah', 'N/A (Instrumental)', 'Multiple'];
+
+function _leadSelectHtml(currentLead, si, idx) {
+  const lead = currentLead || '';
+  const options = (_LEAD_OPTIONS.includes(lead) || !lead) ? _LEAD_OPTIONS : [..._LEAD_OPTIONS, lead];
+  return `<select class="setlist-lead-select" data-set="${si}" data-idx="${idx}" draggable="false" title="Change lead vocalist">
+    <option value="">Lead…</option>
+    ${options.map(o => `<option value="${escHtml(o)}"${o === lead ? ' selected' : ''}>${escHtml(o)}</option>`).join('')}
+  </select>`;
+}
+
 function sanitizeSong(s) {
   return { id:s.id||'', title:s.title||'', artist:s.artist||'', spotify:s.spotify||'', source:s.source||'catalog', priority:!!s.priority, lead:s.lead||'', key:s.key||'' };
 }
@@ -805,7 +816,7 @@ function _renderSetlistUI() {
           <div class="setlist-title">${_titleWithKeyHtml(s.title, key, s.spotify)}</div>
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
-        ${s.lead ? `<span class="status-badge setlist-lead-badge" style="font-size:9px;flex-shrink:0">${escHtml(s.lead)}</span>` : ''}
+        ${_leadSelectHtml(s.lead, si, i)}
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
         ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
@@ -855,6 +866,20 @@ function _attachSetlistEvents() {
       const idx = +this.dataset.idx;
       _setlistSets[si].splice(idx, 1);
       _renderSetlistUI();
+    });
+  });
+
+  /* Lead vocalist selects — change without re-rendering the whole UI */
+  document.querySelectorAll('.setlist-lead-select').forEach(sel => {
+    sel.addEventListener('mousedown', e => e.stopPropagation());
+    sel.addEventListener('change', function() {
+      const si  = +this.dataset.set;
+      const idx = +this.dataset.idx;
+      if (_setlistSets[si] && _setlistSets[si][idx] !== undefined) {
+        _setlistSets[si][idx].lead = this.value;
+        _renderLeadCounts();
+        _autoSaveSetlist();
+      }
     });
   });
 
