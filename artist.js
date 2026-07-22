@@ -1813,7 +1813,9 @@ function downloadSetlistPDF() {
       const time = (i % 4 === 0 && setStartMin !== null)
         ? _minToClockStr(setStartMin + Math.round(i * AVG_SONG_MIN))
         : '';
-      return `<div class="sl-song">${escHtml(s.title)}${key ? ' <span style="color:#888;font-size:0.88em;font-weight:400;text-transform:none;letter-spacing:0">(' + escHtml(key) + ')</span>' : ''}${time ? `<span class="sl-song-time">${time}</span>` : ''}</div>`;
+      const leftHtml = `${s.priority ? '<span class="sl-priority">★</span>' : ''}${escHtml(s.title)}${key ? ' <span class="sl-key">(' + escHtml(key) + ')</span>' : ''}${time ? ' <span class="sl-song-time">' + escHtml(time) + '</span>' : ''}`;
+      const rightHtml = s.lead ? `<span class="sl-lead">${escHtml(s.lead)}</span>` : '';
+      return `<div class="sl-song"><span class="sl-song-left">${leftHtml}</span>${rightHtml}</div>`;
     }).join('');
   }
 
@@ -1844,12 +1846,17 @@ function downloadSetlistPDF() {
     text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px
   }
   .sl-song{
-    text-align:center;font-family:'Montserrat',sans-serif;
+    display:flex;align-items:center;gap:6px;
+    font-family:'Montserrat',sans-serif;
     font-size:${setCount >= 3 ? '11px' : '14px'};font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
     padding:${setCount >= 3 ? '5px 2px' : '7px 4px'};border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
-  .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#c0392b;text-transform:none;letter-spacing:0;margin-left:7px;vertical-align:middle}
+  .sl-song-left{flex:1;min-width:0}
+  .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#c0392b;text-transform:none;letter-spacing:0;margin-left:5px;vertical-align:middle}
+  .sl-key{color:#888;font-size:0.82em;font-weight:400;text-transform:none;letter-spacing:0}
+  .sl-priority{color:#b8860b;margin-right:3px;font-size:0.9em}
+  .sl-lead{font-size:${setCount >= 3 ? '7px' : '8px'};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:#eef0f3;color:#555;border:1px solid #dde0e6;border-radius:10px;padding:2px 7px;flex-shrink:0;white-space:nowrap}
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}
