@@ -529,10 +529,17 @@ function renderAdminDash() {
     <div class="stat-card"><div class="stat-number">${DB.getMasterSongs().length}</div><div class="stat-label">Songs in Catalog</div></div>
   `;
 
+  const today    = new Date().toISOString().slice(0, 10);
   const query    = (document.getElementById('client-search').value || '').toLowerCase();
   const filtered = clients
-    .filter(c => c.name.toLowerCase().includes(query) || c.email.toLowerCase().includes(query))
-    .sort((a, b) => (a.eventDate || '9999') < (b.eventDate || '9999') ? -1 : 1);
+    .filter(c => c.name.toLowerCase().includes(query) || c.email.toLowerCase().includes(query));
+
+  const upcoming = filtered
+    .filter(c => !c.eventDate || c.eventDate >= today)
+    .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'));
+  const past = filtered
+    .filter(c => c.eventDate && c.eventDate < today)
+    .sort((a, b) => b.eventDate.localeCompare(a.eventDate));
 
   const tbody = document.getElementById('clients-tbody');
   const noMsg = document.getElementById('no-clients-msg');
@@ -544,7 +551,7 @@ function renderAdminDash() {
   }
   noMsg.classList.add('hidden');
 
-  function clientRow(c) {
+  function clientRow(c, isPast) {
     const cs          = contractStatus(c.id);
     const selCount    = countSelectedSongs(c.id);
     const clProg      = checklistProgress(c.id);
@@ -558,7 +565,7 @@ function renderAdminDash() {
          </div>`
       : `<span style="font-size:11px;color:#bbb;font-family:var(--font-sans);font-style:italic">N/A</span>`;
     return `
-      <tr>
+      <tr${isPast ? ' class="past-event-row"' : ''}>
         <td>
           <div class="table-client-name">${escHtml(c.name)}</div>
           <div class="table-client-email">${escHtml(c.email)}</div>
@@ -578,9 +585,9 @@ function renderAdminDash() {
       </tr>`;
   }
 
-  // Group by year, render year header rows between groups
+  // Group upcoming by year
   const byYear = {};
-  filtered.forEach(c => {
+  upcoming.forEach(c => {
     const year = (c.eventDate || '').slice(0, 4) || 'TBD';
     if (!byYear[year]) byYear[year] = [];
     byYear[year].push(c);
@@ -589,8 +596,15 @@ function renderAdminDash() {
   let html = '';
   Object.keys(byYear).sort().forEach(year => {
     html += `<tr class="year-header-row"><td colspan="7">${year === 'TBD' ? 'Date TBD' : year}</td></tr>`;
-    html += byYear[year].map(clientRow).join('');
+    html += byYear[year].map(c => clientRow(c)).join('');
   });
+
+  // Past events section (most recent first)
+  if (past.length) {
+    html += `<tr class="past-divider-row"><td colspan="7"><i class="fas fa-history"></i>&nbsp; Past Events</td></tr>`;
+    html += past.map(c => clientRow(c, true)).join('');
+  }
+
   tbody.innerHTML = html;
 }
 

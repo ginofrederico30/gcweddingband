@@ -599,6 +599,21 @@ body.is-impersonating #portal-nav { top: 40px; }
     color: var(--navy);
     border-bottom: 1px solid #e8e6e0;
 }
+.past-divider-row td {
+    padding: 8px 16px 6px;
+    background: #f9f8f6;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #bbb;
+    border-top: 2px solid #e0ddd7;
+    border-bottom: 1px solid #eceae5;
+}
+.past-event-row .table-client-name { color: #aaa; }
+.past-event-row .table-client-email { color: #bbb; }
+.past-event-row td:nth-child(2) { color: #bbb; }
 
 /* Mobile date shown under client name (hidden on desktop) */
 .table-client-date-mobile { display: none; }
@@ -2701,21 +2716,21 @@ body.is-impersonating #portal-nav { top: 40px; }
     .data-table thead { display: none; }
     .data-table, .data-table tbody { display: block; }
 
-    .data-table tbody tr:not(.year-header-row) {
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) {
         display: flex;
         align-items: center;
         gap: 10px;
         padding: 14px 16px;
         border-bottom: 1px solid #f0efec;
     }
-    .data-table tbody tr:not(.year-header-row) td {
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td {
         padding: 0;
         border: none;
         background: transparent !important;
     }
 
     /* Client cell grows to fill; children truncate so they can't bleed into badge/button */
-    .data-table tbody tr:not(.year-header-row) td:nth-child(1) { flex: 1; min-width: 0; overflow: hidden; }
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(1) { flex: 1; min-width: 0; overflow: hidden; }
     .table-client-name,
     .table-client-email,
     .table-client-date-mobile {
@@ -2726,14 +2741,14 @@ body.is-impersonating #portal-nav { top: 40px; }
     }
 
     /* Hide: Event Date, Songs, Checklist, Ceremony */
-    .data-table tbody tr:not(.year-header-row) td:nth-child(2),
-    .data-table tbody tr:not(.year-header-row) td:nth-child(4),
-    .data-table tbody tr:not(.year-header-row) td:nth-child(5),
-    .data-table tbody tr:not(.year-header-row) td:nth-child(6) { display: none; }
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(2),
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(4),
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(5),
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(6) { display: none; }
 
     /* Contract badge + View button stay, don't grow */
-    .data-table tbody tr:not(.year-header-row) td:nth-child(3),
-    .data-table tbody tr:not(.year-header-row) td:nth-child(7) { flex-shrink: 0; }
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(3),
+    .data-table tbody tr:not(.year-header-row):not(.past-divider-row) td:nth-child(7) { flex-shrink: 0; }
 
     /* Show date under client name on mobile */
     .table-client-date-mobile {
@@ -2744,9 +2759,11 @@ body.is-impersonating #portal-nav { top: 40px; }
         margin-top: 2px;
     }
 
-    /* Year header row stays block */
-    .data-table tbody .year-header-row { display: block; padding: 0; }
-    .data-table tbody .year-header-row td { display: block; }
+    /* Year header and past-divider rows stay block */
+    .data-table tbody .year-header-row,
+    .data-table tbody .past-divider-row { display: block; padding: 0; }
+    .data-table tbody .year-header-row td,
+    .data-table tbody .past-divider-row td { display: block; }
 
     #signature-canvas { height: 120px; }
 
