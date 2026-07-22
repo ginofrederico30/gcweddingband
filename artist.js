@@ -1849,7 +1849,7 @@ function downloadSetlistPDF() {
     padding:${setCount >= 3 ? '5px 2px' : '7px 4px'};border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
-  .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#333;text-transform:none;letter-spacing:0;margin-left:7px;vertical-align:middle}
+  .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#c0392b;text-transform:none;letter-spacing:0;margin-left:7px;vertical-align:middle}
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}
