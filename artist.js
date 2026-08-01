@@ -444,6 +444,7 @@ function renderGigsDash() {
    GIG DETAIL
    ============================================ */
 let _currentClientId = null;
+let _currentDnpIds   = new Set();
 
 function renderGigDetail(clientId) {
   _currentClientId = clientId;
@@ -500,6 +501,7 @@ function renderGigDetail(clientId) {
   const catalog  = ADB.getMasterSongs();
   const songPrefs = gcp.songs || {};
   const dnpSongs  = catalog.filter(s => songPrefs[s.id] === 'Do Not Play');
+  _currentDnpIds  = new Set(dnpSongs.map(s => s.id));
   if (dnpSongs.length) {
     dnpCard.classList.remove('hidden');
     dnpEl.innerHTML = dnpSongs.map(s => {
@@ -829,9 +831,10 @@ function _renderSetlistUI() {
       : '';
 
     const rows = songs.map((s, i) => {
-      const key = _songKey(s);
+      const key   = _songKey(s);
+      const isDnp = s.id && _currentDnpIds.has(s.id);
       return `
-      <div class="setlist-row" draggable="true" data-set="${si}" data-idx="${i}">
+      <div class="setlist-row${isDnp ? ' setlist-row-dnp' : ''}" draggable="true" data-set="${si}" data-idx="${i}">
         <div class="setlist-drag-handle"><i class="fas fa-grip-vertical"></i></div>
         <div class="setlist-num">${i + 1}</div>
         <div class="setlist-info">
@@ -839,6 +842,7 @@ function _renderSetlistUI() {
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
         ${_leadSelectHtml(s.lead, si, i)}
+        ${isDnp ? `<span class="status-badge setlist-dnp-badge" style="font-size:9px;flex-shrink:0"><i class="fas fa-ban"></i> Do Not Play</span>` : ''}
         ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
         ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">

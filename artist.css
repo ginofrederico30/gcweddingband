@@ -244,6 +244,9 @@
 .setlist-row:hover { background: #fafaf8; }
 .setlist-row.dragging { opacity: 0.35; cursor: grabbing; }
 .setlist-row.drag-over { background: #edf2f8; outline: 2px dashed var(--navy); outline-offset: -2px; }
+.setlist-row.setlist-row-dnp { background: #fff5f5; border-left: 3px solid #c0392b; }
+.setlist-row.setlist-row-dnp:hover { background: #fdecea; }
+.setlist-dnp-badge { background: #fde8e8 !important; color: #c0392b !important; border: 1px solid #f5c6c6 !important; }
 
 .setlist-drag-handle {
     color: #d0d0d0;
