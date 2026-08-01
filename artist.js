@@ -494,6 +494,28 @@ function renderGigDetail(clientId) {
     stlCard.classList.add('hidden');
   }
 
+  /* ---- Do Not Play ---- */
+  const dnpCard = document.getElementById('gig-dnp-card');
+  const dnpEl   = document.getElementById('gig-dnp');
+  const catalog  = ADB.getMasterSongs();
+  const songPrefs = gcp.songs || {};
+  const dnpSongs  = catalog.filter(s => songPrefs[s.id] === 'Do Not Play');
+  if (dnpSongs.length) {
+    dnpCard.classList.remove('hidden');
+    dnpEl.innerHTML = dnpSongs.map(s => {
+      const artistDisplay = s.spotify
+        ? `<a href="${escHtml(s.spotify)}" target="_blank" rel="noopener" class="artist-spotify-link">${escHtml(s.artist || '—')} <i class="fab fa-spotify"></i></a>`
+        : escHtml(s.artist || '—');
+      return `
+      <div class="artist-info-row">
+        <div class="artist-info-label">${escHtml(s.title)}</div>
+        <div class="artist-info-val">${artistDisplay}</div>
+      </div>`;
+    }).join('');
+  } else {
+    dnpCard.classList.add('hidden');
+  }
+
   /* ---- Day Schedule ---- */
   // sortTime stores the raw "HH:MM" value used for chronological ordering
   function si(icon, label, val, sortTime) { return { icon, label, val, sortTime }; }
