@@ -882,7 +882,7 @@
     line-height: 1.55;
 }
 .mcs-d-song  { color: #1a5c2a; font-weight: 600; }
-.mcs-d-info  { color: #666; }
+.mcs-d-info  { color: #666; white-space: pre-wrap; }
 .mcs-d-script {
     color: #5c3a00;
     font-style: italic;
