@@ -277,7 +277,8 @@ function renderRehearsalTable() {
   const panel = document.getElementById('rehearsal-panel');
   if (!panel) return;
 
-  const today    = new Date().toISOString().slice(0,10);
+  const _rd   = new Date();
+  const today = `${_rd.getFullYear()}-${String(_rd.getMonth()+1).padStart(2,'0')}-${String(_rd.getDate()).padStart(2,'0')}`;
   const clients  = ADB.getClients();
   const setlists = ADB.getSetlists();
   const catalog  = ADB.getMasterSongs();
@@ -342,7 +343,8 @@ function renderRehearsalTable() {
    ============================================ */
 function renderGigsDash() {
   const clients = ADB.getClients();
-  const today   = new Date().toISOString().slice(0,10);
+  const _d    = new Date();
+  const today = `${_d.getFullYear()}-${String(_d.getMonth()+1).padStart(2,'0')}-${String(_d.getDate()).padStart(2,'0')}`;
 
   const upcoming = clients
     .filter(c => !c.eventDate || c.eventDate >= today)
