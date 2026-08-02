@@ -344,6 +344,28 @@
 
     /* Prevent iOS auto-zoom on input focus */
     input, select, textarea { font-size: 16px !important; }
+
+    /* Setlist row: 2-line layout on mobile */
+    .setlist-row {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 2px 6px;
+        padding: 10px 2px;
+    }
+    .setlist-drag-handle { order: 1; padding-top: 3px; }
+    .setlist-num         { order: 2; padding-top: 3px; }
+    .setlist-info        { order: 3; flex: 1; min-width: 0; }
+    .setlist-remove-btn  { order: 4; margin-top: -2px; }
+    .setlist-meta {
+        order: 5;
+        flex: 0 0 100%;
+        padding-left: 48px;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 4px;
+    }
+    /* Override iOS zoom rule — selects open a native picker, not a keyboard */
+    .setlist-lead-select { font-size: 11px !important; padding: 4px 22px 4px 9px; }
 }
 
 /* ---- Lead vocalist tag in setlist rows ---- */
@@ -351,6 +373,13 @@
     background: #eef0f3;
     color: #555;
     border: 1px solid #dde0e6;
+}
+
+.setlist-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .setlist-lead-select {

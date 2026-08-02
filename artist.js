@@ -841,10 +841,12 @@ function _renderSetlistUI() {
           <div class="setlist-title">${_titleWithKeyHtml(s.title, key, s.spotify)}</div>
           <div class="setlist-artist">${escHtml(s.artist)}</div>
         </div>
-        ${_leadSelectHtml(s.lead, si, i)}
-        ${isDnp ? `<span class="status-badge setlist-dnp-badge" style="font-size:9px;flex-shrink:0"><i class="fas fa-ban"></i> Do Not Play</span>` : ''}
-        ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
-        ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
+        <div class="setlist-meta">
+          ${_leadSelectHtml(s.lead, si, i)}
+          ${isDnp ? `<span class="status-badge setlist-dnp-badge" style="font-size:9px;flex-shrink:0"><i class="fas fa-ban"></i> DNP</span>` : ''}
+          ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
+          ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
+        </div>
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
           <i class="fas fa-times"></i>
         </button>
