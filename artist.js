@@ -642,8 +642,35 @@ function renderGigDetail(clientId) {
   cerCard.classList.toggle('hidden', !hasCeremony);
 
   if (hasCeremony) {
-    const isLive = scope.includes('Live Ceremony Music');
+    const isLive   = scope.includes('Live Ceremony Music');
+    const isHybrid = scope.includes('Hybrid Ceremony');
+    const cerType  = isLive ? 'Live' : isHybrid ? 'Hybrid (Live + DJ)' : 'DJ Only';
+
+    function modeBadge(mode) {
+      if (!mode) return '';
+      const live = mode === 'Live';
+      return ` <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:.8px;padding:2px 6px;border-radius:4px;vertical-align:middle;background:${live ? '#e8f5e9' : '#e8eaf6'};color:${live ? '#2e7d32' : '#283593'};border:1px solid ${live ? '#c8e6c9' : '#c5cae9'}">${mode.toUpperCase()}</span>`;
+    }
+
+    function hybridSongRow(label, song, artist, link, mode) {
+      const display = [song, artist].filter(Boolean).join(' — ') || null;
+      const badge = modeBadge(mode);
+      if (!display && !link) {
+        return `<div class="artist-info-row"><div class="artist-info-label">${label}${badge}</div><div class="artist-info-val empty">—</div></div>`;
+      }
+      const url = link || null;
+      let content;
+      if (url) {
+        const t = escHtml(display || 'Open Link');
+        content = `<a href="${escHtml(url)}" target="_blank" rel="noopener" class="artist-spotify-link">${refLinkIcon(url)}${t}</a>`;
+      } else {
+        content = escHtml(display);
+      }
+      return `<div class="artist-info-row"><div class="artist-info-label">${label}${badge}</div><div class="artist-info-val">${content}</div></div>`;
+    }
+
     const cerRows = [
+      infoRow('Ceremony Type',     cerType),
       infoRow('Start Time',        fmtTime12(cer['cer-start']) || '—'),
       infoRow('End Time',          fmtTime12(cer['cer-end']) || '—'),
       infoRow('Officiant Mic',     cer['cer-officiant-mic'] || '—'),
@@ -656,19 +683,33 @@ function renderGigDetail(clientId) {
 
     if (isLive) {
       cerRows.push(
-        infoRow('Seating Genre', cer['cer-seating-genre'] || '—'),
+        infoRow('Seating / Prelude Genre', cer['cer-seating-genre'] || '—'),
         linkRow('Family / Wedding Party Processional', [cer['cer-live-family-song'], cer['cer-live-family-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-family-link'] || null),
         linkRow('Bride / Partner Entrance', [cer['cer-live-bride-song'], cer['cer-live-bride-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-bride-link'] || null),
-        linkRow('Couple Exit', [cer['cer-live-exit-song'], cer['cer-live-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-exit-link'] || null),
-        infoRow('Notes', cer['cer-live-notes'] || '—'),
+        linkRow('Couple Exit / Recessional', [cer['cer-live-exit-song'], cer['cer-live-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-exit-link'] || null),
+      );
+    } else if (isHybrid) {
+      const seatMode = cer['cer-hybrid-seating-mode'];
+      const seatBadge = modeBadge(seatMode);
+      const seatVal = seatMode === 'Live'
+        ? (cer['cer-hybrid-seating-genre'] || '—')
+        : (cer['cer-hybrid-seating-link'] || '—');
+      const seatLabel = seatMode === 'DJ' ? 'Seating Playlist' : 'Seating / Prelude Genre';
+      cerRows.push(
+        seatMode === 'DJ'
+          ? `<div class="artist-info-row"><div class="artist-info-label">${seatLabel}${seatBadge}</div><div class="artist-info-val${!cer['cer-hybrid-seating-link'] ? ' empty' : ''}"><a href="${escHtml(cer['cer-hybrid-seating-link'] || '#')}" target="_blank" rel="noopener" class="artist-spotify-link">${refLinkIcon(cer['cer-hybrid-seating-link'] || '')}Open Link</a></div></div>`
+          : `<div class="artist-info-row"><div class="artist-info-label">${seatLabel}${seatBadge}</div><div class="artist-info-val${!cer['cer-hybrid-seating-genre'] ? ' empty' : ''}">${escHtml(cer['cer-hybrid-seating-genre'] || '—')}</div></div>`,
+        hybridSongRow('Family / Wedding Party Processional', cer['cer-hybrid-family-song'], cer['cer-hybrid-family-artist'], cer['cer-hybrid-family-link'], cer['cer-hybrid-family-mode']),
+        hybridSongRow('Bride / Partner Entrance', cer['cer-hybrid-bride-song'], cer['cer-hybrid-bride-artist'], cer['cer-hybrid-bride-link'], cer['cer-hybrid-bride-mode']),
+        hybridSongRow('Couple Exit / Recessional', cer['cer-hybrid-exit-song'], cer['cer-hybrid-exit-artist'], cer['cer-hybrid-exit-link'], cer['cer-hybrid-exit-mode']),
       );
     } else {
+      // DJ Only (Ceremony Duties)
       cerRows.push(
         linkRow('Seating Playlist', cer['cer-duties-seating-link'] || null, null),
         linkRow('Family / Wedding Party Processional', [cer['cer-duties-family-link'], cer['cer-duties-family-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-family-spotify'] || null),
         linkRow('Bride / Partner Entrance', [cer['cer-duties-bride-link'], cer['cer-duties-bride-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-bride-spotify'] || null),
-        linkRow('Couple Exit', [cer['cer-duties-exit-link'], cer['cer-duties-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-exit-spotify'] || null),
-        infoRow('Notes', cer['cer-duties-notes'] || '—'),
+        linkRow('Couple Exit / Recessional', [cer['cer-duties-exit-link'], cer['cer-duties-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-duties-exit-spotify'] || null),
       );
     }
     document.getElementById('gig-ceremony').innerHTML = cerRows.join('');
