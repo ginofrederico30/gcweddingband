@@ -1,0 +1,17 @@
+{
+  "name": "Good Company — Artist Portal",
+  "short_name": "GC Artist",
+  "description": "Good Company Wedding Band — Artist Portal",
+  "start_url": "/artist.html",
+  "display": "standalone",
+  "background_color": "#153147",
+  "theme_color": "#153147",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
