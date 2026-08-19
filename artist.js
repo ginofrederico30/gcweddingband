@@ -535,12 +535,14 @@ function renderGigDetail(clientId) {
     ] : []),
     si('fa-cocktail',       'Cocktail Hour',      cocktailVal,                                                 chk['cl-cocktail-start']),
     si('fa-glass-cheers',   'Reception Starts',   fmtTime12(chk['cl-reception-start']),                       chk['cl-reception-start']),
-    ...(chk['cl-announce-party'] === 'Yes' && chk['cl-reception-start'] ? [
-      si('fa-users', 'Wedding Party Entrance', fmtTime12(addMinutes(chk['cl-reception-start'], 5)), addMinutes(chk['cl-reception-start'], 5)),
-    ] : []),
-    ...(chk['cl-grand-entrance'] === 'Yes' && chk['cl-reception-start'] ? [
-      si('fa-star', 'Grand Entrance', fmtTime12(addMinutes(chk['cl-reception-start'], 6)), addMinutes(chk['cl-reception-start'], 6)),
-    ] : []),
+    ...(chk['cl-announce-party'] === 'Yes' ? (() => {
+      const t = chk['cl-announce-party-time'] || (chk['cl-reception-start'] ? addMinutes(chk['cl-reception-start'], 5) : null);
+      return t ? [si('fa-users', 'Wedding Party Entrance', fmtTime12(t), t)] : [];
+    })() : []),
+    ...(chk['cl-grand-entrance'] === 'Yes' ? (() => {
+      const t = chk['cl-grand-entrance-time'] || (chk['cl-reception-start'] ? addMinutes(chk['cl-reception-start'], 6) : null);
+      return t ? [si('fa-star', 'Grand Entrance', fmtTime12(t), t)] : [];
+    })() : []),
     si('fa-utensils',       'Dinner',             fmtTime12(chk['cl-dinner-time']),                           chk['cl-dinner-time']),
     si('fa-heart',          'First Dance',        fmtTime12(chk['cl-first-dance']),                           chk['cl-first-dance']),
     si('fa-music',          'Dance Floor Opens',  fmtTime12(chk['cl-dance-floor']),                           chk['cl-dance-floor']),
@@ -1459,23 +1461,27 @@ function _buildMCTimeline(clientId) {
 
   add(cl['cl-reception-start'], 'fa-glass-cheers', 'RECEPTION BEGINS');
 
-  if (cl['cl-announce-party'] === 'Yes' && cl['cl-reception-start']) {
-    const t = addMinutes(cl['cl-reception-start'], 5);
-    const ps = [cl['cl-spotify-party-song'], cl['cl-spotify-party-artist']].filter(Boolean).join(' — ');
-    add(t, 'fa-users', 'WEDDING PARTY ENTRANCE', cpt([
-      cl['cl-announce-party-how'] ? info('Announced: ' + cl['cl-announce-party-how']) : null,
-      cl['cl-party-names'] ? names(cl['cl-party-names']) : null,
-      ps ? songD('♫ ' + ps) : null,
-    ]));
+  if (cl['cl-announce-party'] === 'Yes') {
+    const t = cl['cl-announce-party-time'] || (cl['cl-reception-start'] ? addMinutes(cl['cl-reception-start'], 5) : null);
+    if (t) {
+      const ps = [cl['cl-spotify-party-song'], cl['cl-spotify-party-artist']].filter(Boolean).join(' — ');
+      add(t, 'fa-users', 'WEDDING PARTY ENTRANCE', cpt([
+        cl['cl-announce-party-how'] ? info('Announced: ' + cl['cl-announce-party-how']) : null,
+        cl['cl-party-names'] ? names(cl['cl-party-names']) : null,
+        ps ? songD('♫ ' + ps) : null,
+      ]));
+    }
   }
 
-  if (cl['cl-grand-entrance'] === 'Yes' && cl['cl-reception-start']) {
-    const t = addMinutes(cl['cl-reception-start'], 6);
-    const cs = [cl['cl-spotify-couple-song'], cl['cl-spotify-couple-artist']].filter(Boolean).join(' — ');
-    add(t, 'fa-star', 'GRAND ENTRANCE', cpt([
-      cl['cl-couple-announce'] ? scrpt(cl['cl-couple-announce']) : null,
-      cs ? songD('♫ ' + cs) : null,
-    ]));
+  if (cl['cl-grand-entrance'] === 'Yes') {
+    const t = cl['cl-grand-entrance-time'] || (cl['cl-reception-start'] ? addMinutes(cl['cl-reception-start'], 6) : null);
+    if (t) {
+      const cs = [cl['cl-spotify-couple-song'], cl['cl-spotify-couple-artist']].filter(Boolean).join(' — ');
+      add(t, 'fa-star', 'GRAND ENTRANCE', cpt([
+        cl['cl-couple-announce'] ? scrpt(cl['cl-couple-announce']) : null,
+        cs ? songD('♫ ' + cs) : null,
+      ]));
+    }
   }
 
   if (cl['cl-dinner-time']) {
