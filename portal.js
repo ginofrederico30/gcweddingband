@@ -837,13 +837,13 @@ function renderAdminSchedule(clientId) {
     if (cocktailStart) addRow('fa-cocktail', 'Cocktail Hour', cocktailStart, cl['cl-cocktail-start']);
   }
   addRow('fa-glass-cheers',   'Reception Starts',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
-  if (cl['cl-announce-party'] === 'Yes' && cl['cl-reception-start']) {
-    const t = addMinutes(cl['cl-reception-start'], 5);
-    addRow('fa-users', 'Wedding Party Entrance', fmtTime12(t), t);
+  if (cl['cl-announce-party'] === 'Yes') {
+    const t = cl['cl-announce-party-time'] || (cl['cl-reception-start'] ? addMinutes(cl['cl-reception-start'], 5) : null);
+    if (t) addRow('fa-users', 'Wedding Party Entrance', fmtTime12(t), t);
   }
-  if (cl['cl-grand-entrance'] === 'Yes' && cl['cl-reception-start']) {
-    const t = addMinutes(cl['cl-reception-start'], 6);
-    addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
+  if (cl['cl-grand-entrance'] === 'Yes') {
+    const t = cl['cl-grand-entrance-time'] || (cl['cl-reception-start'] ? addMinutes(cl['cl-reception-start'], 6) : null);
+    if (t) addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
   }
   addRow('fa-utensils',       'Dinner',            cl['cl-dinner-time']     ? fmtTime12(cl['cl-dinner-time'])     : '', cl['cl-dinner-time']);
   addRow('fa-heart',          'First Dance',       cl['cl-first-dance']     ? fmtTime12(cl['cl-first-dance'])     : '', cl['cl-first-dance']);
@@ -1298,13 +1298,13 @@ function renderClientBandSchedule(clientId) {
   }
 
   addRow('fa-door-open',    'Reception Begins',  cl['cl-reception-start'] ? fmtTime12(cl['cl-reception-start']) : '', cl['cl-reception-start']);
-  if (cl['cl-announce-party'] === 'Yes' && cl['cl-reception-start']) {
-    const t = addMinutes(cl['cl-reception-start'], 5);
-    addRow('fa-users', 'Wedding Party Entrance', fmtTime12(t), t);
+  if (cl['cl-announce-party'] === 'Yes') {
+    const t = cl['cl-announce-party-time'] || (cl['cl-reception-start'] ? addMinutes(cl['cl-reception-start'], 5) : null);
+    if (t) addRow('fa-users', 'Wedding Party Entrance', fmtTime12(t), t);
   }
-  if (cl['cl-grand-entrance'] === 'Yes' && cl['cl-reception-start']) {
-    const t = addMinutes(cl['cl-reception-start'], 6);
-    addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
+  if (cl['cl-grand-entrance'] === 'Yes') {
+    const t = cl['cl-grand-entrance-time'] || (cl['cl-reception-start'] ? addMinutes(cl['cl-reception-start'], 6) : null);
+    if (t) addRow('fa-star', 'Grand Entrance', fmtTime12(t), t);
   }
   if (cl['cl-first-dance']) {
     const fdSong = cl['cl-first-dance-song'] ? ' — ' + cl['cl-first-dance-song'] : '';
@@ -2149,8 +2149,8 @@ const CHECKLIST_FIELDS = [
   'cl-reception-start','cl-dinner-time','cl-dinner-style','cl-table-announce',
   'cl-meals','cl-band-eat','cl-dance-floor','cl-reception-end',
   'cl-attendance','cl-loadout',
-  'cl-announce-party','cl-announce-party-how','cl-party-names','cl-spotify-party-song','cl-spotify-party-artist','cl-spotify-party',
-  'cl-grand-entrance','cl-couple-announce','cl-spotify-couple-song','cl-spotify-couple-artist','cl-spotify-couple',
+  'cl-announce-party','cl-announce-party-time','cl-announce-party-how','cl-party-names','cl-spotify-party-song','cl-spotify-party-artist','cl-spotify-party',
+  'cl-grand-entrance','cl-grand-entrance-time','cl-couple-announce','cl-spotify-couple-song','cl-spotify-couple-artist','cl-spotify-couple',
   'cl-first-dance','cl-first-dance-length','cl-first-dance-song','cl-first-dance-artist','cl-first-dance-spotify',
   'cl-spotify-dinner-title','cl-spotify-dinner','cl-spotify-break-title','cl-spotify-break',
   'cl-notes'
@@ -2178,7 +2178,7 @@ function _applyChecklistVisibility(clientId) {
   // Wedding party entrance
   const announceParty = document.getElementById('cl-announce-party');
   const showParty = announceParty && announceParty.value === 'Yes';
-  ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap'].forEach(id => {
+  ['cl-announce-party-time-wrap','cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !showParty);
   });
@@ -2186,7 +2186,7 @@ function _applyChecklistVisibility(clientId) {
   // Couple grand entrance
   const grandEntrance = document.getElementById('cl-grand-entrance');
   const showCouple = grandEntrance && grandEntrance.value === 'Yes';
-  ['cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap'].forEach(id => {
+  ['cl-grand-entrance-time-wrap','cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !showCouple);
   });
@@ -3111,8 +3111,8 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
-  clToggle('cl-announce-party', ['cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap']);
-  clToggle('cl-grand-entrance', ['cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap']);
+  clToggle('cl-announce-party', ['cl-announce-party-time-wrap','cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap']);
+  clToggle('cl-grand-entrance', ['cl-grand-entrance-time-wrap','cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap']);
   // Cocktail separate location: show text field when Yes
   const cocktailSepSel = document.getElementById('cl-cocktail-sep');
   if (cocktailSepSel) {

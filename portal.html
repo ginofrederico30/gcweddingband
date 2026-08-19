@@ -1086,8 +1086,6 @@
                     <div class="field-group"><label>Stage / Performance Area (approx.)</label><input type="text" id="cl-stage-size" placeholder="e.g. 20ft × 16ft"></div>
                     <div class="field-group"><label>Outdoor Reception?</label><select id="cl-outdoor"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group"><label>Power Circuits Available?</label><select id="cl-power"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
-                    <div class="field-group"><label>Meals Confirmed for Band?</label><select id="cl-meals"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
-                    <div class="field-group full-width"><label>Band Eats Where?</label><textarea id="cl-band-eat" class="auto-grow" rows="1" placeholder="e.g. Back room, vendor meal area"></textarea></div>
                 </div>
             </div>
             <!-- Reception Timeline -->
@@ -1098,6 +1096,7 @@
 
                     <!-- Wedding Party Entrance — conditional flow -->
                     <div class="field-group full-width"><label>Announce Wedding Party Entrance?</label><select id="cl-announce-party"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group hidden" id="cl-announce-party-time-wrap"><label>Wedding Party Entrance Time</label><input type="time" id="cl-announce-party-time"></div>
                     <div class="field-group full-width hidden" id="cl-announce-party-how-wrap"><label>How will they be announced?</label><textarea id="cl-announce-party-how" class="auto-grow" rows="2" placeholder="e.g. By couple, Individually, As one big group, Bridesmaids then Groomsmen…"></textarea></div>
                     <div class="field-group full-width hidden" id="cl-party-names-wrap"><label>Wedding Party Names</label><textarea id="cl-party-names" rows="3" placeholder="e.g. Maid of Honor — Jane Smith, Best Man — John Doe…"></textarea></div>
                     <div class="field-group hidden" id="cl-spotify-party-wrap"><label>Wedding Party Song Title</label><input type="text" id="cl-spotify-party-song" placeholder="e.g. Uptown Funk" autocomplete="off"></div>
@@ -1106,6 +1105,7 @@
 
                     <!-- Couple Grand Entrance — conditional flow -->
                     <div class="field-group full-width"><label>Couple Grand Entrance Announcement?</label><select id="cl-grand-entrance"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group hidden" id="cl-grand-entrance-time-wrap"><label>Grand Entrance Time</label><input type="time" id="cl-grand-entrance-time"></div>
                     <div class="field-group full-width hidden" id="cl-couple-announce-wrap"><label>Announcement Style</label><textarea id="cl-couple-announce" class="auto-grow" rows="2" placeholder='e.g. "Please welcome for the first time as husband and wife, Mr. and Mrs. Smith!"'></textarea></div>
                     <div class="field-group hidden" id="cl-spotify-couple-wrap"><label>Couple Entrance Song Title</label><input type="text" id="cl-spotify-couple-song" placeholder="e.g. Can't Stop the Feeling" autocomplete="off"></div>
                     <div class="field-group hidden" id="cl-spotify-couple-artist-wrap"><label>Artist</label><input type="text" id="cl-spotify-couple-artist" placeholder="e.g. Justin Timberlake" autocomplete="off"></div>
@@ -1115,6 +1115,8 @@
                     <div class="field-group"><label>Dinner Time</label><input type="time" id="cl-dinner-time"></div>
                     <div class="field-group"><label>Dinner Service Style</label><select id="cl-dinner-style"><option value="">Select…</option><option>Plated</option><option>Buffet</option><option>Family Style</option></select></div>
                     <div class="field-group"><label>Table Announcements by Band?</label><select id="cl-table-announce"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group"><label>Meals Confirmed for Band?</label><select id="cl-meals"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+                    <div class="field-group full-width"><label>Band Eats Where?</label><textarea id="cl-band-eat" class="auto-grow" rows="1" placeholder="e.g. Back room, vendor meal area"></textarea></div>
 
                     <!-- Speeches -->
                     <div class="field-group full-width">
