@@ -293,33 +293,6 @@
 }
 .setlist-remove-btn:hover { color: #c0392b; background: #fde8e8; }
 
-.setlist-song-note {
-    order: 6;
-    flex: 0 0 100%;
-    font-family: var(--font-sans);
-    font-size: 11px;
-    font-style: italic;
-    color: #555;
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed #e0ddd8;
-    border-radius: 0;
-    padding: 3px 4px 3px 48px;
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
-}
-.setlist-song-note::placeholder { color: #ccc; font-style: italic; }
-.setlist-song-note:focus { border-bottom-color: var(--navy); background: #fafaf8; }
-
-/* Preview note per song */
-.slp-song-note {
-    font-size: 10px;
-    font-style: italic;
-    color: #888;
-    margin-top: 2px;
-}
-
 .setlist-empty {
     font-family: var(--font-sans);
     font-size: 13px;
@@ -391,7 +364,6 @@
         gap: 5px;
         margin-top: 4px;
     }
-    .setlist-song-note { order: 6; padding-left: 48px; font-size: 13px !important; }
     /* Override iOS zoom rule — selects open a native picker, not a keyboard */
     .setlist-lead-select { font-size: 11px !important; padding: 4px 22px 4px 9px; }
 }
