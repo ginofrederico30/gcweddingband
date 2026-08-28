@@ -897,6 +897,8 @@ function _renderSetlistUI() {
           ${s.source === 'request' ? `<span class="status-badge status-pending" style="font-size:9px;flex-shrink:0">Request</span>` : ''}
           ${s.priority ? `<span class="status-badge status-alert" style="font-size:9px;flex-shrink:0">Priority</span>` : ''}
         </div>
+        <input class="setlist-song-note" type="text" placeholder="Song note…"
+          value="${escHtml(s.note || '')}" data-set="${si}" data-idx="${i}">
         <button class="setlist-remove-btn" data-set="${si}" data-idx="${i}" title="Remove song">
           <i class="fas fa-times"></i>
         </button>
@@ -956,6 +958,19 @@ function _attachSetlistEvents() {
       if (_setlistSets[si] && _setlistSets[si][idx] !== undefined) {
         _setlistSets[si][idx].lead = this.value;
         _renderLeadCounts();
+        _autoSaveSetlist();
+      }
+    });
+  });
+
+  /* Song note inputs */
+  document.querySelectorAll('.setlist-song-note').forEach(input => {
+    input.addEventListener('mousedown', e => e.stopPropagation());
+    input.addEventListener('change', function() {
+      const si  = +this.dataset.set;
+      const idx = +this.dataset.idx;
+      if (_setlistSets[si] && _setlistSets[si][idx] !== undefined) {
+        _setlistSets[si][idx].note = this.value.trim();
         _autoSaveSetlist();
       }
     });
@@ -1844,6 +1859,7 @@ function renderSetlistPreview() {
       return `<div class="slp-song">
           <div class="slp-song-left">
             <span class="slp-title">${escHtml(s.title)}${key ? ' <span class="slp-key">(' + escHtml(key) + ')</span>' : ''}</span>${time ? `<span class="slp-song-time">${escHtml(time)}</span>` : ''}
+            ${s.note ? `<div class="slp-song-note">${escHtml(s.note)}</div>` : ''}
           </div>
           ${s.lead ? `<span class="slp-lead">${escHtml(s.lead)}</span>` : ''}
         </div>`;
@@ -1900,7 +1916,8 @@ function downloadSetlistPDF() {
         : '';
       const leftHtml = `${s.priority ? '<span class="sl-priority">★</span>' : ''}${escHtml(s.title)}${key ? ' <span class="sl-key">(' + escHtml(key) + ')</span>' : ''}${time ? ' <span class="sl-song-time">' + escHtml(time) + '</span>' : ''}`;
       const rightHtml = s.lead ? `<span class="sl-lead">${escHtml(s.lead)}</span>` : '';
-      return `<div class="sl-song"><span class="sl-song-left">${leftHtml}</span>${rightHtml}</div>`;
+      const noteHtml  = s.note ? `<div class="sl-song-note">${escHtml(s.note)}</div>` : '';
+      return `<div class="sl-song"><div class="sl-song-main"><span class="sl-song-left">${leftHtml}</span>${rightHtml}</div>${noteHtml}</div>`;
     }).join('');
   }
 
@@ -1931,13 +1948,14 @@ function downloadSetlistPDF() {
     text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px
   }
   .sl-song{
-    display:flex;align-items:center;gap:6px;
     font-family:'Montserrat',sans-serif;
     font-size:${setCount >= 3 ? '11px' : '14px'};font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
     padding:${setCount >= 3 ? '5px 2px' : '7px 4px'};border-bottom:1px solid #ebebeb;color:#1a1a1a;line-height:1.25
   }
   .sl-song:last-child{border-bottom:none}
+  .sl-song-main{display:flex;align-items:center;gap:6px}
   .sl-song-left{flex:1;min-width:0}
+  .sl-song-note{font-size:${setCount >= 3 ? '8px' : '10px'};font-style:italic;font-weight:400;color:#666;text-transform:none;letter-spacing:0;padding-left:2px;margin-top:2px}
   .sl-song-time{font-size:10px;font-style:italic;font-weight:600;color:#c0392b;text-transform:none;letter-spacing:0;margin-left:5px;vertical-align:middle}
   .sl-key{color:#888;font-size:0.82em;font-weight:400;text-transform:none;letter-spacing:0}
   .sl-priority{color:#b8860b;margin-right:3px;font-size:0.9em}
