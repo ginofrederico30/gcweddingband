@@ -791,7 +791,8 @@ function renderGigDetail(clientId) {
 /* ============================================
    SETLIST
    ============================================ */
-let _setlistSets = [[], []]; // in-memory working copy
+let _setlistSets  = [[], []]; // in-memory working copy
+let _setlistNote  = '';       // optional note shown on exported setlist
 
 const _LEAD_OPTIONS = ['Gino', 'Ian', 'Lee', 'Matt', 'Nick', 'Savannah', 'N/A (Instrumental)', 'Multiple'];
 
@@ -830,7 +831,9 @@ function loadAndRenderSetlist(clientId) {
     _setlistSets = Array.from({ length: _setStructure.sets }, (_, i) =>
       _enrichFromCatalog((saved[i] || []).map(sanitizeSong))
     );
+    _setlistNote = setlists[clientId].note || '';
   } else {
+    _setlistNote = '';
     const gen = generateSetlist(clientId);
     _setlistSets = gen.sets;
     // Ensure we have the right number of set arrays
@@ -841,6 +844,8 @@ function loadAndRenderSetlist(clientId) {
 
 function _renderSetlistUI() {
   const container = document.getElementById('setlist-container');
+  const noteEl = document.getElementById('setlist-note');
+  if (noteEl && noteEl.value !== _setlistNote) noteEl.value = _setlistNote;
   const { songsPerSet, breaks, sets, totalMin, danceStr, endStr } = _setStructure;
 
   // Timing summary banner
@@ -1227,8 +1232,9 @@ function _renderUnplacedRequests() {
 async function saveSetlist(clientId) {
   const btn = document.getElementById('btn-save-setlist');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…'; }
+  _setlistNote = (document.getElementById('setlist-note') || {}).value || '';
   const setlists = ADB.getSetlists();
-  setlists[clientId] = { sets: _setlistSets, savedAt: Date.now() };
+  setlists[clientId] = { sets: _setlistSets, note: _setlistNote, savedAt: Date.now() };
   try {
     await ADB.setSetlist(clientId, setlists[clientId]);
     showToast('Setlist saved!');
@@ -1245,7 +1251,7 @@ async function saveSetlist(clientId) {
 function _autoSaveSetlist() {
   if (!_currentClientId) return;
   const setlists = ADB.getSetlists();
-  setlists[_currentClientId] = { sets: _setlistSets, savedAt: Date.now() };
+  setlists[_currentClientId] = { sets: _setlistSets, note: _setlistNote, savedAt: Date.now() };
   ADB.setSetlist(_currentClientId, setlists[_currentClientId]).catch(err =>
     console.warn('Auto-save failed:', err)
   );
@@ -1851,11 +1857,13 @@ function renderSetlistPreview() {
       ${buildSongs(songs, _setStartMins[si])}
     </div>`).join('');
 
+  const previewNote = _setlistNote || (ADB.getSetlists()[_currentClientId] || {}).note || '';
   document.getElementById('setlist-preview-content').innerHTML = `
     <div class="slp-header">
       <img class="slp-logo" src="${base}/Insta%20Profile.png" alt="Good Company">
     </div>
     <div class="slp-body ${colClass}">${setsHtml}</div>
+    ${previewNote ? `<div class="slp-note">${escHtml(previewNote)}</div>` : ''}
     <div class="slp-footer">
       <div class="slp-client-name">${escHtml(name)}</div>
       ${date ? `<div class="slp-event-date">${escHtml(date)}</div>` : ''}
@@ -1937,12 +1945,14 @@ function downloadSetlistPDF() {
   .sl-footer{text-align:center;padding-top:14px;border-top:1.5px solid #e0ddd8}
   .sl-client-name{font-family:'Bitter',serif;font-size:16px;font-weight:700;color:#153147;margin-bottom:3px}
   .sl-event-date{font-family:'Montserrat',sans-serif;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:2px}
+  .sl-note{font-family:'Montserrat',sans-serif;font-size:10px;font-style:italic;color:#666;text-align:center;margin:10px 0 4px;white-space:pre-wrap}
   @media print{body{padding:10px 18px}@page{margin:0.5cm;size:letter landscape}}
 </style></head><body>
   <div class="sl-header">
     <img class="sl-logo" src="${base}/Insta%20Profile.png" alt="Good Company Wedding Band">
   </div>
   <div class="sl-body ${pdfColClass}">${pdfSetsHtml}</div>
+  ${_setlistNote ? `<div class="sl-note">${escHtml(_setlistNote)}</div>` : ''}
   <div class="sl-footer">
     <div class="sl-client-name">${escHtml(name)}</div>
     <div class="sl-event-date">${escHtml(date)}</div>

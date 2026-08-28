@@ -647,6 +647,14 @@
     text-align: center;
     padding: 20px 0;
 }
+.slp-note {
+    font-size: 11px;
+    font-style: italic;
+    color: #666;
+    text-align: center;
+    margin: 10px 0 4px;
+    white-space: pre-wrap;
+}
 .slp-footer {
     text-align: center;
     padding-top: 18px;
