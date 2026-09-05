@@ -39,7 +39,7 @@
    ============================================ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
     font-family: var(--font-serif);
@@ -2769,9 +2769,6 @@ body.is-impersonating #portal-nav { top: 40px; }
 
     .gcp-overview-grid { grid-template-columns: 1fr; }
 
-    /* Prevent iOS from zooming in on focused inputs (requires font-size >= 16px) */
-    input, select, textarea { font-size: 16px !important; }
-
     /* Time inputs in the checklist grid: full-width so they match all other fields in
        the same single-column layout and don't leave a visual gap under the label. */
     .checklist-grid .field-group input[type="time"] {
@@ -2806,6 +2803,14 @@ body.is-impersonating #portal-nav { top: 40px; }
 
     /* Modal: tighter horizontal padding on narrow screens */
     .modal { padding: 24px 20px; }
+}
+
+/* Prevent iOS from zooming on focused inputs.
+   Applies to ALL touch devices (phones in any orientation, tablets) because
+   the ≤768px width breakpoint misses landscape phones (iPhone 14 landscape = 844px).
+   font-size ≥ 16px is the iOS threshold — below it, the browser auto-zooms. */
+@media (hover: none) {
+    input, select, textarea { font-size: 16px !important; }
 }
 
 @media (max-width: 480px) {

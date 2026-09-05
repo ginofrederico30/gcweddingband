@@ -342,9 +342,6 @@
     .artist-timeline-val { min-width: 90px; }
     .setlist-set-block { padding: 0 12px 16px; }
 
-    /* Prevent iOS auto-zoom on input focus */
-    input, select, textarea { font-size: 16px !important; }
-
     /* Setlist row: 2-line layout on mobile */
     .setlist-row {
         flex-wrap: wrap;
@@ -364,7 +361,13 @@
         gap: 5px;
         margin-top: 4px;
     }
-    /* Override iOS zoom rule — selects open a native picker, not a keyboard */
+}
+
+/* Prevent iOS auto-zoom on input focus — covers all touch devices in any orientation.
+   (The ≤768px breakpoint misses landscape phones whose viewport width exceeds 768px.) */
+@media (hover: none) {
+    input, select, textarea { font-size: 16px !important; }
+    /* setlist lead-select opens a native picker, not a keyboard — keep it compact */
     .setlist-lead-select { font-size: 11px !important; padding: 4px 22px 4px 9px; }
 }
 
