@@ -2973,6 +2973,42 @@ body.is-impersonating #portal-nav { top: 40px; }
         text-overflow: ellipsis;
     }
 }
+/* Inline edit state for speech / dance items */
+.speech-item--editing {
+    background: #f0f4fa;
+    border-color: var(--navy);
+    border-width: 2px;
+}
+.speech-inline-edit {
+    border-top: 1px solid #d0d8e8;
+    margin-top: 8px;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Dance inline edit grid — mirrors the add-dance form layout */
+.sd-ie-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.sd-ie-grid input[type="time"] { width: 130px; flex-shrink: 0; }
+.sd-ie-grid input[type="text"],
+.sd-ie-grid select { flex: 1; min-width: 160px; }
+.sd-ie-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+@media (max-width: 600px) {
+    .sd-ie-grid input[type="time"] { width: 115px; }
+    .sd-ie-grid input[type="text"],
+    .sd-ie-grid select { width: 100%; flex-basis: 100%; min-width: 0; }
+    .sd-ie-actions button { flex: 1; }
+}
+
 .length-custom-input {
     margin-top: 6px;
     width: 100%;

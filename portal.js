@@ -2196,6 +2196,40 @@ function _applyChecklistVisibility(clientId) {
 /* ============================================
    SPEECHES
    ============================================ */
+function _sortByTime(arr) {
+  arr.sort((a, b) => {
+    if (!a.time && !b.time) return 0;
+    if (!a.time) return 1;
+    if (!b.time) return -1;
+    return a.time.localeCompare(b.time);
+  });
+}
+
+function _speechInlineEditHTML(s, clientId) {
+  const ALL_RELS = ['Best Man','Maid of Honor','Matron of Honor','Father of the Bride','Mother of the Bride','Father of the Groom','Mother of the Groom','Bride/Groom','Officiant','Bridesmaid','Groomsman','Other'];
+  const knownRels = new Set(ALL_RELS);
+  const isOther = s.relation && !knownRels.has(s.relation);
+  const relVal  = isOther ? 'Other' : (s.relation || '');
+  const relOtherVal = isOther ? escHtml(s.relation) : '';
+  const opts = ALL_RELS.map(r => `<option${r === relVal ? ' selected' : ''}>${escHtml(r)}</option>`).join('');
+  return `
+  <div class="speech-inline-edit">
+    <div class="speech-add-row">
+      <input type="time" id="sp-ie-time" value="${escHtml(s.time || '')}">
+      <input type="text" id="sp-ie-speaker" value="${escHtml(s.speaker || '')}" placeholder="Speaker name" autocomplete="off">
+      <select id="sp-ie-relation" onchange="document.getElementById('sp-ie-relation-other').classList.toggle('hidden',this.value!=='Other')">
+        <option value="">Relation to couple…</option>${opts}
+      </select>
+      <input type="text" id="sp-ie-relation-other" placeholder="Specify relation…" autocomplete="off"${isOther ? '' : ' class="hidden"'} value="${relOtherVal}">
+      <button type="button" class="btn-secondary" onclick="cancelSpeechInlineEdit('${clientId}')"><i class="fas fa-times"></i> Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveSpeechInlineEdit('${clientId}')"><i class="fas fa-save"></i> Save</button>
+    </div>
+    <div class="speech-notes-row">
+      <input type="text" id="sp-ie-notes" value="${escHtml(s.notes || '')}" placeholder="Notes (optional)" autocomplete="off">
+    </div>
+  </div>`;
+}
+
 function renderSpeeches(clientId) {
   const el = document.getElementById('speeches-list');
   if (!el) return;
@@ -2204,36 +2238,29 @@ function renderSpeeches(clientId) {
     el.innerHTML = '<div class="speech-empty">No speeches added yet.</div>';
     return;
   }
-  el.innerHTML = speeches.map(s => `
-    <div class="speech-item">
+  el.innerHTML = speeches.map(s => {
+    const editing = s.id === _editingSpeechId;
+    return `
+    <div class="speech-item${editing ? ' speech-item--editing' : ''}">
       <div class="speech-main-row">
         <span class="speech-time">${s.time ? escHtml(fmtTime12(s.time)) : '—'}</span>
         <span class="speech-speaker">${escHtml(s.speaker)}</span>
         <span class="speech-relation">${escHtml(s.relation)}</span>
         <div class="item-actions">
-          <button type="button" class="item-action-btn item-action-btn--edit" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+          ${editing ? '' : `<button type="button" class="item-action-btn item-action-btn--edit" onclick="editSpeech('${clientId}','${s.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>`}
           <button type="button" class="item-action-btn item-action-btn--delete" onclick="deleteSpeech('${clientId}','${s.id}')" title="Remove"><i class="fas fa-times"></i></button>
         </div>
       </div>${s.notes ? `<div class="speech-notes">${escHtml(s.notes)}</div>` : ''}
-    </div>`).join('');
+      ${editing ? _speechInlineEditHTML(s, clientId) : ''}
+    </div>`;
+  }).join('');
 }
 
 function _clearSpeechForm() {
-  const spSpeaker = document.getElementById('sp-speaker');
-  const spTime    = document.getElementById('sp-time');
-  const relSel    = document.getElementById('sp-relation');
-  const relOther  = document.getElementById('sp-relation-other');
-  const spNotes   = document.getElementById('sp-notes');
-  if (spSpeaker) spSpeaker.value = '';
-  if (spTime)    spTime.value    = '';
-  if (relSel)    relSel.value    = '';
-  if (relOther)  { relOther.value = ''; relOther.classList.add('hidden'); }
-  if (spNotes)   spNotes.value   = '';
-  const btn    = document.getElementById('btn-add-speech');
-  const cancel = document.getElementById('btn-cancel-speech-edit');
-  if (btn)    btn.innerHTML = '<i class="fas fa-plus"></i> Add Speech';
-  if (cancel) cancel.classList.add('hidden');
-  _editingSpeechId = null;
+  const els = ['sp-speaker','sp-time','sp-relation','sp-relation-other','sp-notes'];
+  els.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const relOther = document.getElementById('sp-relation-other');
+  if (relOther) relOther.classList.add('hidden');
 }
 
 function addSpeech(clientId) {
@@ -2247,59 +2274,104 @@ function addSpeech(clientId) {
   if (!speaker) { showToast('Please enter a speaker name.'); return; }
   const gcp = DB.getGCP(clientId);
   gcp.speeches = gcp.speeches || [];
-  if (_editingSpeechId) {
-    const idx = gcp.speeches.findIndex(s => s.id === _editingSpeechId);
-    if (idx !== -1) gcp.speeches[idx] = { ...gcp.speeches[idx], time, speaker, relation, notes };
-  } else {
-    gcp.speeches.push({ id: uid(), time, speaker, relation, notes });
-  }
+  gcp.speeches.push({ id: uid(), time, speaker, relation, notes });
+  _sortByTime(gcp.speeches);
   DB.setGCP(clientId, gcp);
   _clearSpeechForm();
   renderSpeeches(clientId);
 }
 
-function editSpeech(clientId, speechId) {
-  const gcp    = DB.getGCP(clientId);
-  const speech = (gcp.speeches || []).find(s => s.id === speechId);
-  if (!speech) return;
-  const spSpeaker = document.getElementById('sp-speaker');
-  const spTime    = document.getElementById('sp-time');
-  const relSel    = document.getElementById('sp-relation');
-  const relOther  = document.getElementById('sp-relation-other');
-  if (spSpeaker) spSpeaker.value = speech.speaker || '';
-  if (spTime)    spTime.value    = speech.time     || '';
-  const spNotes = document.getElementById('sp-notes');
-  if (spNotes)   spNotes.value   = speech.notes   || '';
-  const knownRelations = ['Best Man','Maid of Honor','Matron of Honor','Father of the Bride','Mother of the Bride','Father of the Groom','Mother of the Groom','Bride/Groom','Officiant','Bridesmaid','Groomsman','Other'];
-  if (relSel) {
-    if (knownRelations.includes(speech.relation)) {
-      relSel.value = speech.relation;
-      if (relOther) relOther.classList.toggle('hidden', speech.relation !== 'Other');
-    } else if (speech.relation) {
-      relSel.value = 'Other';
-      if (relOther) { relOther.value = speech.relation; relOther.classList.remove('hidden'); }
-    }
+function saveSpeechInlineEdit(clientId) {
+  if (!_editingSpeechId) return;
+  const g = id => document.getElementById(id);
+  const speaker  = g('sp-ie-speaker')?.value?.trim() || '';
+  const relSel   = g('sp-ie-relation');
+  const relOther = g('sp-ie-relation-other');
+  const relVal   = relSel ? relSel.value : '';
+  const relation = relVal === 'Other' ? (relOther ? relOther.value.trim() : '') : relVal;
+  const time     = g('sp-ie-time')?.value || '';
+  const notes    = g('sp-ie-notes')?.value?.trim() || '';
+  if (!speaker) { showToast('Please enter a speaker name.'); return; }
+  const gcp = DB.getGCP(clientId);
+  const idx = (gcp.speeches || []).findIndex(s => s.id === _editingSpeechId);
+  if (idx !== -1) {
+    gcp.speeches[idx] = { ...gcp.speeches[idx], time, speaker, relation, notes };
+    _sortByTime(gcp.speeches);
+    DB.setGCP(clientId, gcp);
   }
+  _editingSpeechId = null;
+  renderSpeeches(clientId);
+}
+
+function cancelSpeechInlineEdit(clientId) {
+  _editingSpeechId = null;
+  renderSpeeches(clientId);
+}
+
+function editSpeech(clientId, speechId) {
   _editingSpeechId = speechId;
-  const btn    = document.getElementById('btn-add-speech');
-  const cancel = document.getElementById('btn-cancel-speech-edit');
-  if (btn)    btn.innerHTML = '<i class="fas fa-save"></i> Update Speech';
-  if (cancel) cancel.classList.remove('hidden');
-  const addBox = document.querySelector('#speeches-list')?.closest('.field-group')?.querySelector('.speech-add-box');
-  if (addBox) addBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  renderSpeeches(clientId);
+  setTimeout(() => {
+    const ie = document.querySelector('.speech-item--editing .speech-inline-edit');
+    if (ie) ie.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
 }
 
 function deleteSpeech(clientId, speechId) {
   const gcp = DB.getGCP(clientId);
   gcp.speeches = (gcp.speeches || []).filter(s => s.id !== speechId);
   DB.setGCP(clientId, gcp);
-  if (_editingSpeechId === speechId) _clearSpeechForm();
+  if (_editingSpeechId === speechId) _editingSpeechId = null;
   renderSpeeches(clientId);
 }
 
 /* ============================================
    SPECIAL / PARENT DANCES
    ============================================ */
+function _danceInlineEditHTML(d, clientId) {
+  const WITH_RELS   = ['Bride','Groom','Other'];
+  const TITLES      = ['Father','Mother','Step-Father','Step-Mother','Grandfather','Grandmother','Parent','Guardian','Other'];
+  const LENGTHS     = ['Full Song','Fade ~30 sec','Fade ~1 min','Fade ~1.5 min','Fade ~2 min','Custom'];
+  const isWrOther   = d.withRelation && !['Bride','Groom'].includes(d.withRelation);
+  const wrVal       = isWrOther ? 'Other' : (d.withRelation || '');
+  const wrOtherVal  = isWrOther ? escHtml(d.withRelation) : '';
+  const isTitleOther = d.title && !['Father','Mother','Step-Father','Step-Mother','Grandfather','Grandmother','Parent','Guardian'].includes(d.title);
+  const titleVal    = isTitleOther ? 'Other' : (d.title || '');
+  const titleOtherVal = isTitleOther ? escHtml(d.title) : '';
+  const isCustomLen = d.length && !['Full Song','Fade ~30 sec','Fade ~1 min','Fade ~1.5 min','Fade ~2 min',''].includes(d.length);
+  const lenVal      = isCustomLen ? 'Custom' : (d.length || '');
+  const wrOpts  = WITH_RELS.map(r  => `<option${r===wrVal?' selected':''}>${escHtml(r)}</option>`).join('');
+  const tOpts   = TITLES.map(t    => `<option${t===titleVal?' selected':''}>${escHtml(t)}</option>`).join('');
+  const lOpts   = LENGTHS.map(l   => `<option${l===lenVal?' selected':''}>${escHtml(l)}</option>`).join('');
+  return `
+  <div class="speech-inline-edit">
+    <div class="sd-ie-grid">
+      <input type="time" id="sd-ie-time" value="${escHtml(d.time||'')}">
+      <input type="text" id="sd-ie-name" value="${escHtml(d.name||'')}" placeholder="Name (e.g. Bride)" autocomplete="off">
+      <input type="text" id="sd-ie-with-name" value="${escHtml(d.withName||'')}" placeholder="Dancing with (name)" autocomplete="off">
+      <select id="sd-ie-with-relation" onchange="document.getElementById('sd-ie-with-relation-other').classList.toggle('hidden',this.value!=='Other')">
+        <option value="">Relation…</option>${wrOpts}
+      </select>
+      <input type="text" id="sd-ie-with-relation-other" placeholder="Specify relation…" value="${wrOtherVal}" autocomplete="off"${isWrOther?'':' class="hidden"'}>
+      <select id="sd-ie-title" onchange="document.getElementById('sd-ie-title-other').classList.toggle('hidden',this.value!=='Other')">
+        <option value="">Title…</option>${tOpts}
+      </select>
+      <input type="text" id="sd-ie-title-other" placeholder="Specify title…" value="${titleOtherVal}" autocomplete="off"${isTitleOther?'':' class="hidden"'}>
+      <input type="text" id="sd-ie-song"    value="${escHtml(d.song||'')}"    placeholder="Song (optional)" autocomplete="off">
+      <input type="text" id="sd-ie-artist"  value="${escHtml(d.artist||'')}"  placeholder="Artist (optional)" autocomplete="off">
+      <input type="text" id="sd-ie-spotify" value="${escHtml(d.spotify||'')}" placeholder="Spotify link (optional)" autocomplete="off">
+      <select id="sd-ie-length" onchange="document.getElementById('sd-ie-length-custom').classList.toggle('hidden',this.value!=='Custom')">
+        <option value="">Song length…</option>${lOpts}
+      </select>
+      <input type="text" id="sd-ie-length-custom" placeholder="e.g. 2:15" value="${isCustomLen?escHtml(d.length):''}" autocomplete="off"${isCustomLen?'':' class="hidden"'}>
+    </div>
+    <div class="sd-ie-actions">
+      <button type="button" class="btn-secondary" onclick="cancelSpecialDanceInlineEdit('${clientId}')"><i class="fas fa-times"></i> Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveSpecialDanceInlineEdit('${clientId}')"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>`;
+}
+
 function renderSpecialDances(clientId) {
   const el = document.getElementById('special-dances-list');
   if (!el) return;
@@ -2309,19 +2381,21 @@ function renderSpecialDances(clientId) {
     return;
   }
   el.innerHTML = dances.map(d => {
+    const editing     = d.id === _editingDanceId;
     const songPart    = d.song   ? ` &mdash; <em>${escHtml(d.song)}${d.artist ? ' / ' + escHtml(d.artist) : ''}</em>` : '';
     const lengthPart  = d.length ? ` <span class="sd-length-badge">${escHtml(d.length)}</span>` : '';
     return `
-    <div class="speech-item">
+    <div class="speech-item${editing ? ' speech-item--editing' : ''}">
       <div class="speech-main-row">
         <span class="speech-time">${d.time ? escHtml(fmtTime12(d.time)) : '—'}</span>
         <span class="speech-speaker">${escHtml(d.name)}${d.withRelation ? ' (' + escHtml(d.withRelation) + ')' : ''}</span>
         <span class="speech-relation">dancing with ${escHtml(d.withName)}${d.title ? ' (' + escHtml(d.title) + ')' : ''}${songPart}${lengthPart}</span>
         <div class="item-actions">
-          <button type="button" class="item-action-btn item-action-btn--edit" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+          ${editing ? '' : `<button type="button" class="item-action-btn item-action-btn--edit" onclick="editSpecialDance('${clientId}','${d.id}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>`}
           <button type="button" class="item-action-btn item-action-btn--delete" onclick="deleteSpecialDance('${clientId}','${d.id}')" title="Remove"><i class="fas fa-times"></i></button>
         </div>
       </div>
+      ${editing ? _danceInlineEditHTML(d, clientId) : ''}
     </div>`;
   }).join('');
 }
@@ -2337,11 +2411,6 @@ function _clearDanceForm() {
   const titleOther   = document.getElementById('sd-title-other');
   if (withRelOther) withRelOther.classList.add('hidden');
   if (titleOther)   titleOther.classList.add('hidden');
-  const btn    = document.getElementById('btn-add-special-dance');
-  const cancel = document.getElementById('btn-cancel-dance-edit');
-  if (btn)    { btn.innerHTML = '<i class="fas fa-plus"></i> Add Dance'; }
-  if (cancel) { cancel.classList.add('hidden'); }
-  _editingDanceId = null;
 }
 
 function addSpecialDance(clientId) {
@@ -2363,69 +2432,64 @@ function addSpecialDance(clientId) {
   if (!name) { showToast('Please enter a name.'); return; }
   const gcp = DB.getGCP(clientId);
   gcp.specialDances = gcp.specialDances || [];
-  if (_editingDanceId) {
-    const idx = gcp.specialDances.findIndex(d => d.id === _editingDanceId);
-    if (idx !== -1) {
-      gcp.specialDances[idx] = { ...gcp.specialDances[idx], time, name, withRelation, withName, title, song, artist, spotify, length };
-    }
-  } else {
-    gcp.specialDances.push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify, length });
-  }
+  gcp.specialDances.push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify, length });
+  _sortByTime(gcp.specialDances);
   DB.setGCP(clientId, gcp);
   _clearDanceForm();
   renderSpecialDances(clientId);
 }
 
-function editSpecialDance(clientId, danceId) {
-  const gcp   = DB.getGCP(clientId);
-  const dance = (gcp.specialDances || []).find(d => d.id === danceId);
-  if (!dance) return;
+function saveSpecialDanceInlineEdit(clientId) {
+  if (!_editingDanceId) return;
   const g = id => document.getElementById(id);
-  if (g('sd-time'))    g('sd-time').value    = dance.time    || '';
-  if (g('sd-name'))    g('sd-name').value    = dance.name    || '';
-  if (g('sd-with-name'))  g('sd-with-name').value  = dance.withName || '';
-  if (g('sd-song'))    g('sd-song').value    = dance.song    || '';
-  if (g('sd-artist'))  g('sd-artist').value  = dance.artist  || '';
-  if (g('sd-spotify')) g('sd-spotify').value = dance.spotify || '';
-  _applyLengthCustom('sd-length', 'sd-length-custom', dance.length || '');
-  const withRelSel   = g('sd-with-relation');
-  const withRelOther = g('sd-with-relation-other');
-  if (withRelSel) {
-    const knownRels = ['Bride','Groom','Other'];
-    if (knownRels.includes(dance.withRelation)) {
-      withRelSel.value = dance.withRelation;
-      if (withRelOther) withRelOther.classList.toggle('hidden', dance.withRelation !== 'Other');
-    } else if (dance.withRelation) {
-      withRelSel.value = 'Other';
-      if (withRelOther) { withRelOther.value = dance.withRelation; withRelOther.classList.remove('hidden'); }
-    }
+  const name         = g('sd-ie-name')?.value?.trim() || '';
+  const withRelSel   = g('sd-ie-with-relation');
+  const withRelOther = g('sd-ie-with-relation-other');
+  const withRelVal   = withRelSel ? withRelSel.value : '';
+  const withRelation = withRelVal === 'Other' ? (withRelOther ? withRelOther.value.trim() : '') : withRelVal;
+  const withName     = g('sd-ie-with-name')?.value?.trim()  || '';
+  const titleSel     = g('sd-ie-title');
+  const titleOther   = g('sd-ie-title-other');
+  const titleVal     = titleSel ? titleSel.value : '';
+  const title        = titleVal === 'Other' ? (titleOther ? titleOther.value.trim() : '') : titleVal;
+  const time         = g('sd-ie-time')?.value    || '';
+  const song         = g('sd-ie-song')?.value?.trim()    || '';
+  const artist       = g('sd-ie-artist')?.value?.trim()  || '';
+  const spotify      = g('sd-ie-spotify')?.value?.trim() || '';
+  const lenSel       = g('sd-ie-length');
+  const lenCustom    = g('sd-ie-length-custom');
+  const length       = lenSel?.value === 'Custom' ? (lenCustom?.value.trim() || '') : (lenSel?.value || '');
+  if (!name) { showToast('Please enter a name.'); return; }
+  const gcp = DB.getGCP(clientId);
+  const idx = (gcp.specialDances || []).findIndex(d => d.id === _editingDanceId);
+  if (idx !== -1) {
+    gcp.specialDances[idx] = { ...gcp.specialDances[idx], time, name, withRelation, withName, title, song, artist, spotify, length };
+    _sortByTime(gcp.specialDances);
+    DB.setGCP(clientId, gcp);
   }
-  const titleSel   = g('sd-title');
-  const titleOther = g('sd-title-other');
-  const knownTitles = ['Father','Mother','Step-Father','Step-Mother','Grandfather','Grandmother','Parent','Guardian','Other'];
-  if (titleSel) {
-    if (knownTitles.includes(dance.title)) {
-      titleSel.value = dance.title;
-      if (titleOther) titleOther.classList.toggle('hidden', dance.title !== 'Other');
-    } else if (dance.title) {
-      titleSel.value = 'Other';
-      if (titleOther) { titleOther.value = dance.title; titleOther.classList.remove('hidden'); }
-    }
-  }
+  _editingDanceId = null;
+  renderSpecialDances(clientId);
+}
+
+function cancelSpecialDanceInlineEdit(clientId) {
+  _editingDanceId = null;
+  renderSpecialDances(clientId);
+}
+
+function editSpecialDance(clientId, danceId) {
   _editingDanceId = danceId;
-  const btn    = g('btn-add-special-dance');
-  const cancel = g('btn-cancel-dance-edit');
-  if (btn)    btn.innerHTML = '<i class="fas fa-save"></i> Update Dance';
-  if (cancel) cancel.classList.remove('hidden');
-  const addBox = document.getElementById('special-dances-list')?.closest('.field-group')?.querySelector('.speech-add-box');
-  if (addBox) addBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  renderSpecialDances(clientId);
+  setTimeout(() => {
+    const ie = document.querySelector('.speech-item--editing .speech-inline-edit');
+    if (ie) ie.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
 }
 
 function deleteSpecialDance(clientId, danceId) {
   const gcp = DB.getGCP(clientId);
   gcp.specialDances = (gcp.specialDances || []).filter(d => d.id !== danceId);
   DB.setGCP(clientId, gcp);
-  if (_editingDanceId === danceId) _clearDanceForm();
+  if (_editingDanceId === danceId) _editingDanceId = null;
   renderSpecialDances(clientId);
 }
 
