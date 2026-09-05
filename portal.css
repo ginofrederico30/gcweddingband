@@ -2772,15 +2772,21 @@ body.is-impersonating #portal-nav { top: 40px; }
     /* Prevent iOS from zooming in on focused inputs (requires font-size >= 16px) */
     input, select, textarea { font-size: 16px !important; }
 
-    /* Time inputs: stay compact — don't stretch to full column width.
-       iOS centers the clock value in the box, so full-width looks broken. */
-    .field-group input[type="time"],
+    /* Time inputs in the checklist grid: full-width so they match all other fields in
+       the same single-column layout and don't leave a visual gap under the label. */
+    .checklist-grid .field-group input[type="time"] {
+        width: 100%;
+        max-width: none;
+        align-self: stretch;
+    }
+    /* Time inputs in the speech / dance add forms: stay compact so they sit
+       inline next to the speaker name without dominating the row. */
     .sd-add-grid input[type="time"],
     .speech-add-row input[type="time"] {
         width: auto;
-        min-width: 130px;
-        max-width: 160px;
-        align-self: flex-start;
+        min-width: 120px;
+        max-width: 150px;
+        align-self: center;
     }
 
     /* Card internals: reduce 28px side padding so content breathes on narrow screens */
@@ -2805,6 +2811,7 @@ body.is-impersonating #portal-nav { top: 40px; }
 @media (max-width: 480px) {
     .stats-row { grid-template-columns: 1fr 1fr; }
     .portal-container { padding: 20px 12px 80px; }
+    .checklist-grid { padding: 16px; gap: 12px; }
     .card-header { padding: 14px 16px 12px; }
     .card-note { padding: 10px 16px; }
     .admin-notes-body { padding: 12px 16px 16px; }
@@ -2987,11 +2994,14 @@ body.is-impersonating #portal-nav { top: 40px; }
 .speech-add-row input[type="text"] { width: 240px; flex-shrink: 0; }
 .speech-add-row select { width: 220px; flex-shrink: 0; }
 @media (max-width: 600px) {
-    .speech-add-row { flex-direction: column; align-items: stretch; }
-    .speech-add-row input[type="time"] { width: auto; align-self: flex-start; }
-    .speech-add-row input[type="text"] { width: 100%; }
-    .speech-add-row select { width: 100%; }
-    .speech-add-row .btn-primary { width: 100%; }
+    /* Flex-wrap so time + speaker name share the first row, relation and button
+       each take their own full-width row — far more compact than full column-stack. */
+    .speech-add-row { flex-wrap: wrap; align-items: center; }
+    .speech-add-row input[type="time"] { width: 115px; flex-shrink: 0; }
+    .speech-add-row input[type="text"] { flex: 1; min-width: 100px; }
+    .speech-add-row select { width: 100%; flex-basis: 100%; }
+    .speech-add-row .btn-primary { width: 100%; flex-basis: 100%; }
+    .speech-add-row .btn-secondary { width: 100%; flex-basis: 100%; }
 }
 .speech-notes-row {
     margin-top: 8px;
