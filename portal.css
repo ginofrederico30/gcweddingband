@@ -2924,8 +2924,8 @@ body.is-impersonating #portal-nav { top: 40px; }
     flex-shrink: 0;
     min-width: 60px;
 }
-.speech-speaker { font-weight: 600; color: #333; flex-shrink: 0; }
-.speech-relation { color: #888; flex: 1; }
+.speech-speaker { font-weight: 600; color: #333; min-width: 0; }
+.speech-relation { color: #888; flex: 1; min-width: 0; }
 .item-actions {
     display: flex;
     gap: 4px;

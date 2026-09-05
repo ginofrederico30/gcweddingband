@@ -2234,6 +2234,7 @@ function renderSpeeches(clientId) {
   const el = document.getElementById('speeches-list');
   if (!el) return;
   const speeches = DB.getGCP(clientId).speeches || [];
+  _sortByTime(speeches);
   if (!speeches.length) {
     el.innerHTML = '<div class="speech-empty">No speeches added yet.</div>';
     return;
@@ -2376,6 +2377,7 @@ function renderSpecialDances(clientId) {
   const el = document.getElementById('special-dances-list');
   if (!el) return;
   const dances = DB.getGCP(clientId).specialDances || [];
+  _sortByTime(dances);
   if (!dances.length) {
     el.innerHTML = '<div class="speech-empty">No special dances added yet.</div>';
     return;
