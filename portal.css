@@ -2769,9 +2769,11 @@ body.is-impersonating #portal-nav { top: 40px; }
 
     .gcp-overview-grid { grid-template-columns: 1fr; }
 
-    /* Time inputs in the checklist grid: full-width so they match all other fields in
-       the same single-column layout and don't leave a visual gap under the label. */
-    .checklist-grid .field-group input[type="time"] {
+    /* Time inputs that are DIRECT children of a checklist-grid field-group: full-width
+       so they match all other fields in the single-column layout.
+       Using > (child combinator) to avoid matching sp-time inside the speech add form,
+       which is nested several levels deep inside a .field-group. */
+    .checklist-grid .field-group > input[type="time"] {
         width: 100%;
         max-width: none;
         align-self: stretch;
@@ -2950,6 +2952,27 @@ body.is-impersonating #portal-nav { top: 40px; }
 .item-action-btn--delete:hover { color: #c0392b;     background: #fde8e8; }
 @media (max-width: 600px) {
     .item-action-btn { width: 36px; height: 36px; font-size: 13px; }
+
+    /* Speech / dance items: wrap so time + name + action buttons share the first row
+       and the relation/dance-type drops to its own row. Without this, flex-shrink:0 on
+       .speech-speaker pushes the action buttons off the right edge of the card. */
+    .speech-main-row {
+        flex-wrap: wrap;
+        row-gap: 2px;
+        column-gap: 8px;
+    }
+    .speech-main-row .speech-time  { order: 1; flex-shrink: 0; }
+    .speech-main-row .speech-speaker { order: 2; flex: 1; min-width: 0; }
+    .speech-main-row .item-actions { order: 3; flex-shrink: 0; margin-left: auto; }
+    .speech-main-row .speech-relation {
+        order: 4;
+        flex-basis: 100%;
+        font-size: 11px;
+        color: #aaa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 .length-custom-input {
     margin-top: 6px;
