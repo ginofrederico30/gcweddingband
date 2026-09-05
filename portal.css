@@ -2769,22 +2769,21 @@ body.is-impersonating #portal-nav { top: 40px; }
 
     .gcp-overview-grid { grid-template-columns: 1fr; }
 
-    /* Time inputs that are DIRECT children of a checklist-grid field-group: full-width
-       so they match all other fields in the single-column layout.
-       Using > (child combinator) to avoid matching sp-time inside the speech add form,
-       which is nested several levels deep inside a .field-group. */
-    .checklist-grid .field-group > input[type="time"] {
-        width: 100%;
-        max-width: none;
-        align-self: stretch;
+    /* Time inputs: compact, left-aligned under their label.
+       iOS native pickers ignore height: 44px when stretched to full width and
+       render visually oversized. Auto width (~140px intrinsic) respects the height
+       constraint and looks like the standard iOS Calendar / Reminders pattern. */
+    .checklist-grid .field-group > input[type="time"],
+    .sd-add-grid input[type="time"] {
+        width: auto;
+        min-width: 130px;
+        align-self: flex-start;
     }
-    /* Time inputs in the speech / dance add forms: stay compact so they sit
-       inline next to the speaker name without dominating the row. */
-    .sd-add-grid input[type="time"],
+    /* Speech add-form time input: stays compact inline with speaker name */
     .speech-add-row input[type="time"] {
         width: auto;
-        min-width: 120px;
-        max-width: 150px;
+        min-width: 110px;
+        max-width: 140px;
         align-self: center;
     }
 
