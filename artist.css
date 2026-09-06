@@ -363,9 +363,11 @@
     }
 }
 
-/* Prevent iOS auto-zoom on input focus — covers all touch devices in any orientation.
-   (The ≤768px breakpoint misses landscape phones whose viewport width exceeds 768px.) */
-@media (hover: none) {
+/* Prevent iOS auto-zoom on input focus.
+   Two-condition approach: (max-width:768px) catches portrait phones reliably
+   even in cached CSS; (hover:none) catches landscape phones >768px and tablets.
+   Together they cover all real mobile use cases. */
+@media (max-width: 768px), (hover: none) {
     input, select, textarea { font-size: 16px !important; }
     /* setlist lead-select opens a native picker, not a keyboard — keep it compact */
     .setlist-lead-select { font-size: 11px !important; padding: 4px 22px 4px 9px; }
