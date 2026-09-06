@@ -2258,20 +2258,21 @@ function renderVendorMeals(clientId) {
   if (countsEl) {
     const sels = vm.selections || {};
     const hasSels = Object.keys(sels).length > 0;
-    const allOptions = [...(vm.options || []), 'None'];
-    if (hasSels && (vm.options || []).length > 0) {
+    const mealOptions = vm.options || [];
+    if (hasSels && mealOptions.length > 0) {
       const counts = {};
-      allOptions.forEach(o => { counts[o] = 0; });
+      mealOptions.forEach(o => { counts[o] = 0; });
       Object.values(sels).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
-      const filled = Object.values(sels).filter(v => v).length;
-      const total  = BAND_MEMBERS.length;
+      const mealTotal = Object.values(counts).reduce((a, b) => a + b, 0);
+      const submitted = Object.values(sels).filter(v => v).length;
+      const total     = BAND_MEMBERS.length;
       countsEl.innerHTML = `
         <div class="vm-counts-header">
           <span>Band Selections</span>
-          <span class="vm-counts-meta">${filled} of ${total} submitted</span>
+          <span class="vm-counts-meta">${submitted} of ${total} submitted · ${mealTotal} meals total</span>
         </div>
         <div class="vm-counts-grid">
-          ${allOptions.map(o => `
+          ${mealOptions.map(o => `
             <div class="vm-count-cell">
               <span class="vm-count-num">${counts[o]}</span>
               <span class="vm-count-label">${escHtml(o)}</span>
