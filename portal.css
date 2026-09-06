@@ -3027,6 +3027,244 @@ body.is-impersonating #portal-nav { top: 40px; }
     margin-left: 6px;
     vertical-align: middle;
 }
+/* ---- Vendor Meals (client portal) ---- */
+.vm-box {
+    background: #f8f7f4;
+    border: 1px solid #e8e4de;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.vm-status-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.vm-status-btn {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border: 1.5px solid #d0ccc5;
+    border-radius: 20px;
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.vm-status-btn:hover { border-color: var(--navy); color: var(--navy); }
+.vm-status-btn--active {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: #fff;
+}
+.vm-add-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.vm-add-row input { flex: 1; min-width: 0; }
+.vm-options-list { display: flex; flex-direction: column; gap: 6px; }
+.vm-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 1px solid #e0ddd8;
+    border-radius: 7px;
+    padding: 8px 10px 8px 14px;
+}
+.vm-option-label {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+.vm-option-delete {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: #bbb;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+.vm-option-delete:hover { background: #fde8e8; color: #c0392b; }
+.vm-empty {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #bbb;
+    padding: 2px 0;
+    margin: 0;
+}
+.vm-status-msg {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #888;
+    font-style: italic;
+    padding: 4px 2px;
+}
+.vm-counts {
+    border-top: 1px solid #e0ddd8;
+    padding-top: 12px;
+}
+.vm-counts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #888;
+}
+.vm-counts-meta { font-weight: 400; font-style: italic; text-transform: none; letter-spacing: 0; }
+.vm-counts-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.vm-count-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e0ddd8;
+    border-radius: 8px;
+    padding: 8px 14px;
+    min-width: 60px;
+}
+.vm-count-num {
+    font-family: var(--font-sans);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+}
+.vm-count-label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: #888;
+    margin-top: 3px;
+    text-align: center;
+}
+
+/* ---- Vendor Meals (artist portal) ---- */
+.vm-artist-msg {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+    margin: 0;
+}
+.vm-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.vm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    min-width: 360px;
+}
+.vm-th-name, .vm-th-opt {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    border-bottom: 2px solid #e8e4de;
+    text-align: center;
+}
+.vm-th-name { text-align: left; min-width: 110px; }
+.vm-row { border-bottom: 1px solid #f0ede8; }
+.vm-row:last-child { border-bottom: none; }
+.vm-row:hover { background: #faf9f7; }
+.vm-td-name {
+    padding: 10px 12px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+}
+.vm-td-opt {
+    padding: 8px 12px;
+    text-align: center;
+}
+.vm-radio-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: background 0.15s;
+}
+.vm-radio-label:hover { background: #e8edf4; }
+.vm-radio-label input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.vm-radio-custom {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: #fff;
+    display: inline-block;
+    flex-shrink: 0;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+}
+.vm-radio-label input[type="radio"]:checked + .vm-radio-custom {
+    border-color: var(--navy);
+    background: var(--navy);
+}
+.vm-radio-label input[type="radio"]:checked + .vm-radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+}
+.vm-summary-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #e8e4de;
+}
+.vm-summary-label {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: #888;
+    margin-right: 4px;
+}
+.vm-summary-chip {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    background: #eef2f8;
+    color: var(--navy);
+    border-radius: 12px;
+    padding: 3px 10px;
+}
+.vm-summary-chip strong { font-weight: 700; }
+
 .speech-empty {
     font-family: var(--font-sans);
     font-size: 13px;

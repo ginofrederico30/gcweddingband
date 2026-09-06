@@ -639,6 +639,9 @@ function renderGigDetail(clientId) {
   ];
   document.getElementById('gig-logistics').innerHTML = logRows.join('');
 
+  /* ---- Vendor Meals ---- */
+  renderVendorMealsArtist(clientId);
+
   /* ---- Ceremony ---- */
   const cerCard = document.getElementById('gig-ceremony-card');
   cerCard.classList.toggle('hidden', !hasCeremony);
@@ -786,6 +789,110 @@ function renderGigDetail(clientId) {
 
   showView('view-gig');
   window.scrollTo(0, 0);
+}
+
+/* ============================================
+   VENDOR MEALS (artist side)
+   ============================================ */
+const BAND_MEMBERS_ARTIST = ['Gino','Ian','Savannah','Miely','Luebs','Thomas','Lee','Luke','Nick','Hannah'];
+
+function renderVendorMealsArtist(clientId) {
+  const card    = document.getElementById('gig-vendor-meals-card');
+  const body    = document.getElementById('gig-vendor-meals-body');
+  const saveBtn = document.getElementById('btn-save-meal-selections');
+  if (!card || !body) return;
+
+  const gcp  = ADB.getGCP(clientId);
+  const chk  = gcp.checklist || {};
+  const vm   = gcp.vendorMeals || {};
+  const mealsConfirmed = chk['cl-meals'] === 'Yes';
+
+  if (!mealsConfirmed) { card.classList.add('hidden'); return; }
+
+  card.classList.remove('hidden');
+
+  // N/A or TBD
+  if (vm.status === 'na') {
+    body.innerHTML = '<p class="vm-artist-msg">Vendor meals are not applicable for this event.</p>';
+    if (saveBtn) saveBtn.style.display = 'none';
+    return;
+  }
+  if (vm.status === 'tbd') {
+    body.innerHTML = '<p class="vm-artist-msg">Vendor meal selections are to be determined. Check back closer to the event.</p>';
+    if (saveBtn) saveBtn.style.display = 'none';
+    return;
+  }
+
+  const options = vm.options || [];
+  if (!options.length) {
+    body.innerHTML = '<p class="vm-artist-msg">No meal options have been set by the client yet.</p>';
+    if (saveBtn) saveBtn.style.display = 'none';
+    return;
+  }
+
+  if (saveBtn) saveBtn.style.display = '';
+
+  const cols = [...options, 'None'];
+  const sels = vm.selections || {};
+
+  body.innerHTML = `
+    <div class="vm-table-wrap">
+      <table class="vm-table">
+        <thead>
+          <tr>
+            <th class="vm-th-name">Band Member</th>
+            ${cols.map(c => `<th class="vm-th-opt">${escHtml(c)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${BAND_MEMBERS_ARTIST.map(m => `
+            <tr class="vm-row">
+              <td class="vm-td-name">${escHtml(m)}</td>
+              ${cols.map(c => {
+                const checked = sels[m] === c ? ' checked' : '';
+                return `<td class="vm-td-opt">
+                  <label class="vm-radio-label">
+                    <input type="radio" name="vm-meal-${m.replace(/\s/g,'_')}" value="${escHtml(c)}"${checked}>
+                    <span class="vm-radio-custom"></span>
+                  </label>
+                </td>`;
+              }).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="vm-summary-row" id="vm-artist-summary"></div>`;
+
+  _updateVendorMealSummary(sels, cols);
+}
+
+function _updateVendorMealSummary(sels, cols) {
+  const el = document.getElementById('vm-artist-summary');
+  if (!el) return;
+  const counts = {};
+  cols.forEach(c => { counts[c] = 0; });
+  Object.values(sels).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+  const filled = BAND_MEMBERS_ARTIST.filter(m => sels[m]).length;
+  el.innerHTML = `
+    <span class="vm-summary-label">${filled} of ${BAND_MEMBERS_ARTIST.length} submitted</span>
+    ${cols.map(c => `<span class="vm-summary-chip"><strong>${counts[c]}</strong> ${escHtml(c)}</span>`).join('')}`;
+}
+
+function saveVendorMealSelectionsArtist(clientId) {
+  const gcp = ADB.getGCP(clientId);
+  const vm  = gcp.vendorMeals || {};
+  const options = vm.options || [];
+  const cols    = [...options, 'None'];
+  const selections = {};
+  BAND_MEMBERS_ARTIST.forEach(m => {
+    const key  = `vm-meal-${m.replace(/\s/g,'_')}`;
+    const radios = document.querySelectorAll(`input[name="${key}"]`);
+    radios.forEach(r => { if (r.checked) selections[m] = r.value; });
+  });
+  vm.selections = selections;
+  ADB.setVendorMeals(clientId, vm);
+  _updateVendorMealSummary(selections, cols);
+  showToast('Meal selections saved!');
 }
 
 /* ============================================
@@ -2075,6 +2182,11 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Save setlist */
   document.getElementById('btn-save-setlist').addEventListener('click', () => {
     if (_currentClientId) saveSetlist(_currentClientId);
+  });
+
+  /* Save vendor meal selections */
+  document.getElementById('btn-save-meal-selections').addEventListener('click', () => {
+    if (_currentClientId) saveVendorMealSelectionsArtist(_currentClientId);
   });
 
   document.getElementById('btn-download-setlist').addEventListener('click', () => {

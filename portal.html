@@ -1118,6 +1118,27 @@
                     <div class="field-group"><label>Meals Confirmed for Band?</label><select id="cl-meals"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
                     <div class="field-group full-width"><label>Band Eats Where?</label><textarea id="cl-band-eat" class="auto-grow" rows="1" placeholder="e.g. Back room, vendor meal area"></textarea></div>
 
+                    <!-- Vendor Meal Selections — shown when cl-meals = Yes -->
+                    <div class="field-group full-width hidden" id="cl-vendor-meals-wrap">
+                        <label>Vendor Meal Selections</label>
+                        <div class="vm-box">
+                            <div class="vm-status-row">
+                                <button type="button" class="vm-status-btn" id="vm-btn-custom" onclick="if(_checklistClientId)setVendorMealStatus(_checklistClientId,'custom')">Custom Selections</button>
+                                <button type="button" class="vm-status-btn" id="vm-btn-na"     onclick="if(_checklistClientId)setVendorMealStatus(_checklistClientId,'na')">N/A</button>
+                                <button type="button" class="vm-status-btn" id="vm-btn-tbd"    onclick="if(_checklistClientId)setVendorMealStatus(_checklistClientId,'tbd')">TBD</button>
+                            </div>
+                            <div id="vm-custom-area">
+                                <div class="vm-add-row">
+                                    <input type="text" id="vm-option-input" placeholder="e.g. Chicken, Beef, Pasta…" autocomplete="off">
+                                    <button type="button" class="btn-primary" onclick="if(_checklistClientId)addVendorMealOption(_checklistClientId)"><i class="fas fa-plus"></i> Add</button>
+                                </div>
+                                <div id="vm-options-list"></div>
+                            </div>
+                            <div id="vm-status-msg" class="vm-status-msg hidden"></div>
+                            <div id="vm-counts" class="vm-counts hidden"></div>
+                        </div>
+                    </div>
+
                     <!-- Speeches -->
                     <div class="field-group full-width">
                         <label>Speeches</label>

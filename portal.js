@@ -2194,6 +2194,125 @@ function _applyChecklistVisibility(clientId) {
 }
 
 /* ============================================
+   VENDOR MEALS
+   ============================================ */
+const BAND_MEMBERS = ['Gino','Ian','Savannah','Miely','Luebs','Thomas','Lee','Luke','Nick','Hannah'];
+
+function _getVendorMeals(clientId) {
+  return DB.getGCP(clientId).vendorMeals || { status: 'custom', options: [], selections: {} };
+}
+
+function _saveVendorMeals(clientId, vm) {
+  const gcp = DB.getGCP(clientId);
+  gcp.vendorMeals = vm;
+  DB.setGCP(clientId, gcp);
+}
+
+function renderVendorMeals(clientId) {
+  const vm   = _getVendorMeals(clientId);
+  const wrap = document.getElementById('cl-vendor-meals-wrap');
+  const mealsVal = (document.getElementById('cl-meals') || {}).value;
+  if (wrap) wrap.classList.toggle('hidden', mealsVal !== 'Yes');
+  if (mealsVal !== 'Yes') return;
+
+  // Status button highlight
+  ['custom','na','tbd'].forEach(s => {
+    const btn = document.getElementById(`vm-btn-${s}`);
+    if (btn) btn.classList.toggle('vm-status-btn--active', vm.status === s);
+  });
+
+  // Custom area
+  const customArea = document.getElementById('vm-custom-area');
+  const statusMsg  = document.getElementById('vm-status-msg');
+  const isCustom   = !vm.status || vm.status === 'custom';
+  if (customArea) customArea.classList.toggle('hidden', !isCustom);
+  if (statusMsg) {
+    if (vm.status === 'na') {
+      statusMsg.textContent = 'Vendor meals are not applicable for this event.';
+      statusMsg.classList.remove('hidden');
+    } else if (vm.status === 'tbd') {
+      statusMsg.textContent = 'Vendor meal selections are to be determined.';
+      statusMsg.classList.remove('hidden');
+    } else {
+      statusMsg.classList.add('hidden');
+    }
+  }
+
+  // Options list
+  const listEl = document.getElementById('vm-options-list');
+  if (listEl) {
+    const opts = vm.options || [];
+    listEl.innerHTML = opts.length
+      ? opts.map((o, i) => `
+        <div class="vm-option-item">
+          <span class="vm-option-label">${escHtml(o)}</span>
+          <button type="button" class="vm-option-delete" onclick="deleteVendorMealOption('${clientId}',${i})" title="Remove">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>`).join('')
+      : (isCustom ? '<p class="vm-empty">No meal options added yet. Add at least one above.</p>' : '');
+  }
+
+  // Counts from artist selections
+  const countsEl = document.getElementById('vm-counts');
+  if (countsEl) {
+    const sels = vm.selections || {};
+    const hasSels = Object.keys(sels).length > 0;
+    const allOptions = [...(vm.options || []), 'None'];
+    if (hasSels && (vm.options || []).length > 0) {
+      const counts = {};
+      allOptions.forEach(o => { counts[o] = 0; });
+      Object.values(sels).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+      const filled = Object.values(sels).filter(v => v).length;
+      const total  = BAND_MEMBERS.length;
+      countsEl.innerHTML = `
+        <div class="vm-counts-header">
+          <span>Band Selections</span>
+          <span class="vm-counts-meta">${filled} of ${total} submitted</span>
+        </div>
+        <div class="vm-counts-grid">
+          ${allOptions.map(o => `
+            <div class="vm-count-cell">
+              <span class="vm-count-num">${counts[o]}</span>
+              <span class="vm-count-label">${escHtml(o)}</span>
+            </div>`).join('')}
+        </div>`;
+      countsEl.classList.remove('hidden');
+    } else {
+      countsEl.classList.add('hidden');
+    }
+  }
+}
+
+function setVendorMealStatus(clientId, status) {
+  const vm = _getVendorMeals(clientId);
+  vm.status = status;
+  if (status !== 'custom') vm.options = [];
+  _saveVendorMeals(clientId, vm);
+  renderVendorMeals(clientId);
+}
+
+function addVendorMealOption(clientId) {
+  const inp = document.getElementById('vm-option-input');
+  const val = (inp ? inp.value.trim() : '');
+  if (!val) return;
+  const vm = _getVendorMeals(clientId);
+  vm.status = 'custom';
+  vm.options = vm.options || [];
+  if (!vm.options.includes(val)) vm.options.push(val);
+  _saveVendorMeals(clientId, vm);
+  if (inp) inp.value = '';
+  renderVendorMeals(clientId);
+}
+
+function deleteVendorMealOption(clientId, index) {
+  const vm = _getVendorMeals(clientId);
+  vm.options = (vm.options || []).filter((_, i) => i !== index);
+  _saveVendorMeals(clientId, vm);
+  renderVendorMeals(clientId);
+}
+
+/* ============================================
    SPEECHES
    ============================================ */
 function _sortByTime(arr) {
@@ -2546,6 +2665,7 @@ function loadChecklist(clientId) {
   }
   renderSpeeches(clientId);
   renderSpecialDances(clientId);
+  renderVendorMeals(clientId);
   _applyChecklistVisibility(clientId);
   setTimeout(() => initAutoGrow(document.getElementById('view-checklist')), 0);
 }
@@ -3179,6 +3299,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   clToggle('cl-announce-party', ['cl-announce-party-time-wrap','cl-announce-party-how-wrap','cl-party-names-wrap','cl-spotify-party-wrap','cl-spotify-party-artist-wrap','cl-spotify-party-link-wrap']);
   clToggle('cl-grand-entrance', ['cl-grand-entrance-time-wrap','cl-couple-announce-wrap','cl-spotify-couple-wrap','cl-spotify-couple-artist-wrap','cl-spotify-couple-link-wrap']);
+  // Vendor meals: show/hide when meals confirmed changes
+  const clMealsSel = document.getElementById('cl-meals');
+  if (clMealsSel) {
+    clMealsSel.addEventListener('change', function() {
+      if (_checklistClientId) renderVendorMeals(_checklistClientId);
+    });
+  }
+  // Vendor meal option: add on Enter key
+  const vmInput = document.getElementById('vm-option-input');
+  if (vmInput) {
+    vmInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); if (_checklistClientId) addVendorMealOption(_checklistClientId); }
+    });
+  }
   // Cocktail separate location: show text field when Yes
   const cocktailSepSel = document.getElementById('cl-cocktail-sep');
   if (cocktailSepSel) {

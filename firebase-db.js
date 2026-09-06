@@ -228,6 +228,13 @@ const ADB = {
     return { songs:{}, songRequests:[], checklist:{}, ceremony:{}, ...d };
   },
 
+  /* Partial-update only the vendorMeals field (artist meal selections) */
+  setVendorMeals(cid, vendorMeals) {
+    if (!this._cache.gcp[cid]) this._cache.gcp[cid] = {};
+    this._cache.gcp[cid].vendorMeals = vendorMeals;
+    _db.doc('gcp/' + cid).set({ vendorMeals }, { merge: true }).catch(_fsErr);
+  },
+
   /* Write a single client's setlist to Firestore and update cache.
      Firestore does not support arrays-of-arrays, so sets are stored
      as flat fields set0/set1 and reconstructed on load. */
