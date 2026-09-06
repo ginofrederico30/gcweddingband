@@ -886,8 +886,7 @@ function _autoSaveVendorMeal(clientId, member, value, cols) {
 }
 
 function saveVendorMealSelectionsArtist(clientId) {
-  // kept for the event listener wired before auto-save was added — now a no-op
-}
+  // no-op — selections auto-save on radio change
 }
 
 /* ============================================

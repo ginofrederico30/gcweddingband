@@ -2264,12 +2264,10 @@ function renderVendorMeals(clientId) {
       mealOptions.forEach(o => { counts[o] = 0; });
       Object.values(sels).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
       const mealTotal = Object.values(counts).reduce((a, b) => a + b, 0);
-      const submitted = Object.values(sels).filter(v => v).length;
-      const total     = BAND_MEMBERS.length;
       countsEl.innerHTML = `
         <div class="vm-counts-header">
           <span>Band Selections</span>
-          <span class="vm-counts-meta">${submitted} of ${total} submitted · ${mealTotal} meals total</span>
+          <span class="vm-counts-meta">${mealTotal} meals total</span>
         </div>
         <div class="vm-counts-grid">
           ${mealOptions.map(o => `
