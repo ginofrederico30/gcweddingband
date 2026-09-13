@@ -24,7 +24,10 @@ const _storage   = firebase.storage();
 const _functions = typeof firebase.functions === 'function' ? firebase.functions() : null;
 
 /* ---- Firestore write error handler ---- */
-function _fsErr(e) { console.error('Firestore sync error:', e); }
+function _fsErr(e) {
+  console.error('Firestore sync error:', e);
+  if (typeof window._onFirestoreError === 'function') window._onFirestoreError(e);
+}
 
 /* ============================================
    STORAGE HELPERS

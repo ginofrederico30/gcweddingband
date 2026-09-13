@@ -615,6 +615,8 @@ let currentAdminClientId = null;
 let _checklistClientId = null;
 let _editingDanceId    = null;
 let _editingSpeechId   = null;
+let _clAutosaveTimer   = null;
+let _clSavedMsgTimer   = null;
 
 function renderPresignedEditFields(clientId) {
   const contract = DB.getContract(clientId);
@@ -2691,6 +2693,36 @@ function saveChecklist(clientId) {
   else if (s) { renderClientDash(clientId); showView('view-client-dash'); }
 }
 
+/* Silent autosave — same logic as saveChecklist but no redirect and no toast */
+function _checklistAutosave() {
+  if (!_checklistClientId) return;
+  const gcp = DB.getGCP(_checklistClientId);
+  const cl  = {};
+  CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
+  cl['cl-first-dance-length'] = _resolveLengthValue('cl-first-dance-length', 'cl-first-dance-length-custom');
+  gcp.checklist = cl;
+  DB.setGCP(_checklistClientId, gcp);
+  const dcVal = cl['cl-dress-code'];
+  if (dcVal) {
+    const contract = DB.getContract(_checklistClientId);
+    if (!contract.client) contract.client = {};
+    contract.client.dressCode = dcVal;
+    DB.setContract(_checklistClientId, contract);
+  }
+  const confirmEl = document.getElementById('checklist-saved-confirm');
+  if (confirmEl) {
+    confirmEl.textContent = 'Auto-saved';
+    confirmEl.classList.remove('hidden');
+    clearTimeout(_clSavedMsgTimer);
+    _clSavedMsgTimer = setTimeout(() => confirmEl.classList.add('hidden'), 2500);
+  }
+}
+
+function _triggerChecklistAutosave() {
+  clearTimeout(_clAutosaveTimer);
+  _clAutosaveTimer = setTimeout(_checklistAutosave, 1500);
+}
+
 /* ============================================
    CLIENT CEREMONY PLANNER
    ============================================ */
@@ -3272,6 +3304,17 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleSaveChecklist() { const s=getSession(); if(s) saveChecklist(s.clientId); }
   document.getElementById('btn-save-checklist').addEventListener('click', handleSaveChecklist);
   document.getElementById('btn-save-checklist-bottom').addEventListener('click', handleSaveChecklist);
+
+  /* ---- Checklist: autosave on every field change (debounced 1.5s) ---- */
+  CHECKLIST_FIELDS.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', _triggerChecklistAutosave);
+    if (el.tagName !== 'SELECT') el.addEventListener('input', _triggerChecklistAutosave);
+  });
+  /* Also watch the custom length input (not in CHECKLIST_FIELDS, resolved separately) */
+  const clCustomLenEl = document.getElementById('cl-first-dance-length-custom');
+  if (clCustomLenEl) clCustomLenEl.addEventListener('input', _triggerChecklistAutosave);
   document.getElementById('btn-add-speech').addEventListener('click', function() {
     if (_checklistClientId) addSpeech(_checklistClientId);
   });
@@ -3460,4 +3503,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (_deleteSongId)   { deleteSong(_deleteSongId);     _deleteSongId   = null; }
     else if (_deleteClientId) { deleteClient(_deleteClientId); _deleteClientId = null; }
   });
+
+  /* ---- Firestore write error handler: surfaces silent failures to the user ---- */
+  window._onFirestoreError = function() {
+    showToast('Save failed — check your connection. Try saving again.', 5000);
+  };
 });
