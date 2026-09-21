@@ -160,6 +160,14 @@ const DB = {
     this._cache.gcp[cid] = data;
     _db.doc('gcp/' + cid).set(data).catch(_fsErr);
   },
+  /* Write a single top-level field of the gcp document (merge: true so other fields are untouched).
+     Use this instead of setGCP whenever only one sub-field changed, so the artist's vendorMeals
+     selections (written via ADB from the artist portal) are never overwritten by a stale DB cache. */
+  setGCPField(cid, field, value) {
+    if (!this._cache.gcp[cid]) this._cache.gcp[cid] = {};
+    this._cache.gcp[cid][field] = value;
+    _db.doc('gcp/' + cid).set({ [field]: value }, { merge: true }).catch(_fsErr);
+  },
 
   /* Delete a client and all their data from cache + Firestore */
   async deleteClientData(cid) {

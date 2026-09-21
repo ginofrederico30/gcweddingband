@@ -2227,4 +2227,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('add-song-search').addEventListener('input', function() {
     _renderAddSongList(this.value);
   });
+
+  /* Surface Firestore write failures visibly */
+  window._onFirestoreError = function() {
+    showToast('Save failed — check your connection. Try again.');
+  };
 });

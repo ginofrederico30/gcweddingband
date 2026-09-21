@@ -2013,8 +2013,7 @@ function updateSongPref(clientId, songId, pref, checked) {
     delete prefs[songId];
   }
 
-  gcp.songs = prefs;
-  DB.setGCP(clientId, gcp);
+  DB.setGCPField(clientId, 'songs', prefs);
   renderSongSelector(clientId);
 }
 
@@ -2097,8 +2096,7 @@ function addSongRequest(clientId) {
   if (total >= 20) { showToast('Maximum 20 song requests reached.'); return; }
 
   requests.push({ id: uid(), title, artist, type, spotify: spotify || '', addedAt: Date.now() });
-  gcp.songRequests = requests;
-  DB.setGCP(clientId, gcp);
+  DB.setGCPField(clientId, 'songRequests', requests);
 
   if (titleEl)   titleEl.value   = '';
   if (artistEl)  artistEl.value  = '';
@@ -2112,8 +2110,8 @@ function addSongRequest(clientId) {
 
 function deleteSongRequest(clientId, requestId) {
   const gcp      = DB.getGCP(clientId);
-  gcp.songRequests = (gcp.songRequests || []).filter(r => r.id !== requestId);
-  DB.setGCP(clientId, gcp);
+  const updated  = (gcp.songRequests || []).filter(r => r.id !== requestId);
+  DB.setGCPField(clientId, 'songRequests', updated);
   renderSongRequests(clientId);
 }
 
@@ -2205,9 +2203,7 @@ function _getVendorMeals(clientId) {
 }
 
 function _saveVendorMeals(clientId, vm) {
-  const gcp = DB.getGCP(clientId);
-  gcp.vendorMeals = vm;
-  DB.setGCP(clientId, gcp);
+  DB.setGCPField(clientId, 'vendorMeals', vm);
 }
 
 function renderVendorMeals(clientId) {
@@ -2394,10 +2390,10 @@ function addSpeech(clientId) {
   const notes    = (document.getElementById('sp-notes') || {}).value?.trim() || '';
   if (!speaker) { showToast('Please enter a speaker name.'); return; }
   const gcp = DB.getGCP(clientId);
-  gcp.speeches = gcp.speeches || [];
-  gcp.speeches.push({ id: uid(), time, speaker, relation, notes });
-  _sortByTime(gcp.speeches);
-  DB.setGCP(clientId, gcp);
+  const speeches = gcp.speeches || [];
+  speeches.push({ id: uid(), time, speaker, relation, notes });
+  _sortByTime(speeches);
+  DB.setGCPField(clientId, 'speeches', speeches);
   _clearSpeechForm();
   renderSpeeches(clientId);
 }
@@ -2414,11 +2410,12 @@ function saveSpeechInlineEdit(clientId) {
   const notes    = g('sp-ie-notes')?.value?.trim() || '';
   if (!speaker) { showToast('Please enter a speaker name.'); return; }
   const gcp = DB.getGCP(clientId);
-  const idx = (gcp.speeches || []).findIndex(s => s.id === _editingSpeechId);
+  const speeches = gcp.speeches || [];
+  const idx = speeches.findIndex(s => s.id === _editingSpeechId);
   if (idx !== -1) {
-    gcp.speeches[idx] = { ...gcp.speeches[idx], time, speaker, relation, notes };
-    _sortByTime(gcp.speeches);
-    DB.setGCP(clientId, gcp);
+    speeches[idx] = { ...speeches[idx], time, speaker, relation, notes };
+    _sortByTime(speeches);
+    DB.setGCPField(clientId, 'speeches', speeches);
   }
   _editingSpeechId = null;
   renderSpeeches(clientId);
@@ -2440,8 +2437,8 @@ function editSpeech(clientId, speechId) {
 
 function deleteSpeech(clientId, speechId) {
   const gcp = DB.getGCP(clientId);
-  gcp.speeches = (gcp.speeches || []).filter(s => s.id !== speechId);
-  DB.setGCP(clientId, gcp);
+  const updated = (gcp.speeches || []).filter(s => s.id !== speechId);
+  DB.setGCPField(clientId, 'speeches', updated);
   if (_editingSpeechId === speechId) _editingSpeechId = null;
   renderSpeeches(clientId);
 }
@@ -2553,10 +2550,10 @@ function addSpecialDance(clientId) {
   const length       = _resolveLengthValue('sd-length', 'sd-length-custom');
   if (!name) { showToast('Please enter a name.'); return; }
   const gcp = DB.getGCP(clientId);
-  gcp.specialDances = gcp.specialDances || [];
-  gcp.specialDances.push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify, length });
-  _sortByTime(gcp.specialDances);
-  DB.setGCP(clientId, gcp);
+  const dances = gcp.specialDances || [];
+  dances.push({ id: uid(), time, name, withRelation, withName, title, song, artist, spotify, length });
+  _sortByTime(dances);
+  DB.setGCPField(clientId, 'specialDances', dances);
   _clearDanceForm();
   renderSpecialDances(clientId);
 }
@@ -2583,11 +2580,12 @@ function saveSpecialDanceInlineEdit(clientId) {
   const length       = lenSel?.value === 'Custom' ? (lenCustom?.value.trim() || '') : (lenSel?.value || '');
   if (!name) { showToast('Please enter a name.'); return; }
   const gcp = DB.getGCP(clientId);
-  const idx = (gcp.specialDances || []).findIndex(d => d.id === _editingDanceId);
+  const dances = gcp.specialDances || [];
+  const idx = dances.findIndex(d => d.id === _editingDanceId);
   if (idx !== -1) {
-    gcp.specialDances[idx] = { ...gcp.specialDances[idx], time, name, withRelation, withName, title, song, artist, spotify, length };
-    _sortByTime(gcp.specialDances);
-    DB.setGCP(clientId, gcp);
+    dances[idx] = { ...dances[idx], time, name, withRelation, withName, title, song, artist, spotify, length };
+    _sortByTime(dances);
+    DB.setGCPField(clientId, 'specialDances', dances);
   }
   _editingDanceId = null;
   renderSpecialDances(clientId);
@@ -2609,8 +2607,8 @@ function editSpecialDance(clientId, danceId) {
 
 function deleteSpecialDance(clientId, danceId) {
   const gcp = DB.getGCP(clientId);
-  gcp.specialDances = (gcp.specialDances || []).filter(d => d.id !== danceId);
-  DB.setGCP(clientId, gcp);
+  const updated = (gcp.specialDances || []).filter(d => d.id !== danceId);
+  DB.setGCPField(clientId, 'specialDances', updated);
   if (_editingDanceId === danceId) _editingDanceId = null;
   renderSpecialDances(clientId);
 }
@@ -2672,13 +2670,11 @@ function loadChecklist(clientId) {
 }
 
 function saveChecklist(clientId) {
-  const gcp = DB.getGCP(clientId);
   const cl  = {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
   // Resolve custom length: replace the "Custom" placeholder with the typed text
   cl['cl-first-dance-length'] = _resolveLengthValue('cl-first-dance-length', 'cl-first-dance-length-custom');
-  gcp.checklist = cl;
-  DB.setGCP(clientId, gcp);
+  DB.setGCPField(clientId, 'checklist', cl);
   // Sync dress code back to contract.client so it appears in the contract view
   const dcVal = cl['cl-dress-code'];
   if (dcVal) {
@@ -2696,12 +2692,10 @@ function saveChecklist(clientId) {
 /* Silent autosave — same logic as saveChecklist but no redirect and no toast */
 function _checklistAutosave() {
   if (!_checklistClientId) return;
-  const gcp = DB.getGCP(_checklistClientId);
   const cl  = {};
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
   cl['cl-first-dance-length'] = _resolveLengthValue('cl-first-dance-length', 'cl-first-dance-length-custom');
-  gcp.checklist = cl;
-  DB.setGCP(_checklistClientId, gcp);
+  DB.setGCPField(_checklistClientId, 'checklist', cl);
   const dcVal = cl['cl-dress-code'];
   if (dcVal) {
     const contract = DB.getContract(_checklistClientId);
@@ -2782,15 +2776,13 @@ function loadCeremony(clientId) {
 }
 
 function saveCeremony(clientId) {
-  const gcp = DB.getGCP(clientId);
   const cer = {};
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cer[id] = el.value; });
   ['seating','family','bride','exit'].forEach(function(key) {
     var checked = document.querySelector('input[name="cer-hybrid-' + key + '-mode"]:checked');
     if (checked) cer['cer-hybrid-' + key + '-mode'] = checked.value;
   });
-  gcp.ceremony = cer;
-  DB.setGCP(clientId, gcp);
+  DB.setGCPField(clientId, 'ceremony', cer);
   showToast('Ceremony planner saved!');
   const s = getSession();
   if (s && s.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
