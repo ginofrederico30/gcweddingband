@@ -97,6 +97,127 @@ const SEED_SONGS = [
   { title: "You Sexy Thing",                               artist: "Hot Chocolate",                    lead: "Ian",       genre: "funk"      },
 ];
 
+/* ---- SPOTIFY 30-SECOND PREVIEW URLs ---- */
+/* Extracted from the band's public playlist (4zLig4YfOnxEKUn2Vri0U0).          */
+/* Keys are SEED_SONGS titles lowercased. 2 songs not in playlist have no entry. */
+const SPOTIFY_PREVIEWS = {
+  "1999":                                        "https://p.scdn.co/mp3-preview/07a94d38c55fc8ace1a3d1efc8f2f42202ada12e",
+  "ain't it fun":                                "https://p.scdn.co/mp3-preview/75fcf967520ab9dfc043833e9b2a86c2882228be",
+  "ain't no mountain high enough":               "https://p.scdn.co/mp3-preview/7301aee11d8646c25071e0825b0794aa609092db",
+  "all night long":                              "https://p.scdn.co/mp3-preview/a1b7a67aa91cc95fc0c4e534bb10e1fbe528e7ee",
+  "all the small things":                        "https://p.scdn.co/mp3-preview/b1447b8d76183737ea2ebd10f70da6292904f833",
+  "all your'n":                                  "https://p.scdn.co/mp3-preview/a4b3324cedc9f7a1e23d3e992a251120e6a727ce",
+  "are you gonna be my girl":                    "https://p.scdn.co/mp3-preview/f1fe6d0f585d5ea6ad5ad9fa1fdecf5e7d3d9f2c",
+  "blame it on the boogie":                      "https://p.scdn.co/mp3-preview/f790f6441226f16e55a75064289e5eb7a573332d",
+  "boogie shoes":                                "https://p.scdn.co/mp3-preview/9f097853f1dc200b807623d045eaa04da7ac3d7f",
+  "brick house":                                 "https://p.scdn.co/mp3-preview/8e3acac4d6f2cda5ad2b8e62cf6ebc8001bcf6f4",
+  "bust a move":                                 "https://p.scdn.co/mp3-preview/3703536d893b08110cae971a23ef1fbf7ae8d942",
+  "cake by the ocean":                           "https://p.scdn.co/mp3-preview/f42a9a2157e1b4653ffe9c54c3bb9357c293ead6",
+  "canned heat":                                 "https://p.scdn.co/mp3-preview/17bed183741cd92a306cc7b129514b972ba54c89",
+  "celebration":                                 "https://p.scdn.co/mp3-preview/1ba26bd1583538201bbd9c8b9d822b2d340eb301",
+  "come and get your love":                      "https://p.scdn.co/mp3-preview/beb70a209af1e258ff3af3a01c92cc6a7295c7bb",
+  "come on eileen":                              "https://p.scdn.co/mp3-preview/33413b567fcf367cc538874b5e33fd077b0d4b07",
+  "crazy in love":                               "https://p.scdn.co/mp3-preview/28d167ea8ccdb4740f163bf0cf44df80ad69f980",
+  "dancing in the moonlight":                    "https://p.scdn.co/mp3-preview/7a9886f285cbed054d2209c1076094f573f97de2",
+  "dancing on my own":                           "https://p.scdn.co/mp3-preview/7d025c444ac68bb2f20e48dd0259d68af79a5198",
+  "dancing on the ceiling":                      "https://p.scdn.co/mp3-preview/c48366f931efb095562e7a23f267319f989c0bcd",
+  "dancing queen":                               "https://p.scdn.co/mp3-preview/1116076e3d1538852d6605ada1fd7130c8fc75a5",
+  "december 1963 (oh, what a night)":            "https://p.scdn.co/mp3-preview/51effd871c92f7eb6ff43e9d16028e554db1c12d",
+  "don't start now":                             "https://p.scdn.co/mp3-preview/9e280fe5460e415f6da318071609e1823feba309",
+  "dreams":                                      "https://p.scdn.co/mp3-preview/30d63954de3ee9c0bc3600a4560260cb252d4fbd",
+  "fade into you":                               "https://p.scdn.co/mp3-preview/0dcffaf83437720696060e3a836b91eb9f47bba3",
+  "funkytown":                                   "https://p.scdn.co/mp3-preview/3a15c77315dbea93c031b0ae8eaabcccee602d5c",
+  "get down on it":                              "https://p.scdn.co/mp3-preview/0759da9804568d6c1028681a1b23ce779977454b",
+  "gimme! gimme! gimme!":                        "https://p.scdn.co/mp3-preview/02603b1ac0f95d780cdda0f09ed9c19cdb53089f",
+  "give it to me baby":                          "https://p.scdn.co/mp3-preview/7dbba52d35481410cb39c0422567f8f532f180e6",
+  "give it up":                                  "https://p.scdn.co/mp3-preview/f892b08401b50a582fe8ccd81d9416297803294f",
+  "hot to go!":                                  "https://p.scdn.co/mp3-preview/75ffd47fee75208bb0bd42858de25e23b0b13091",
+  "heaven":                                      "https://p.scdn.co/mp3-preview/64e2e4f1fa5c45bcc52f8a9db8414e89d54bb63e",
+  "hot stuff":                                   "https://p.scdn.co/mp3-preview/41b2a6c3665934c39d9ed36dd951180fed53740c",
+  "how bizarre":                                 "https://p.scdn.co/mp3-preview/40c2fe9c2b6afcb51314ff06a7e0ffdb91f6d2bc",
+  "i got you (i feel good)":                     "https://p.scdn.co/mp3-preview/8a9fac11f510a6d5d6cd6ff903f6e8cd0c43dd54",
+  "i wanna be your lover":                       "https://p.scdn.co/mp3-preview/69de400e0693832707ef2d5fa0ef3260e3fe99b9",
+  "i wanna dance with somebody":                 "https://p.scdn.co/mp3-preview/6d13b049b24af1bef77aa4d366c088c316ca1b65",
+  "i wish":                                      "https://p.scdn.co/mp3-preview/4c07b0f47c516e5242f0233c76549fefcd753a38",
+  "if i ain't got you":                          "https://p.scdn.co/mp3-preview/2d1fd54c4a4147b43e1eb79c00380e36818a2546",
+  "ironic":                                      "https://p.scdn.co/mp3-preview/c99e623830575b8db26ce67e8312ad9bf6552355",
+  "le freak":                                    "https://p.scdn.co/mp3-preview/241942ca79687b09271455f78e210fbc7d8de553",
+  "levitating":                                  "https://p.scdn.co/mp3-preview/a0e86dd9b06f44569f6dc159a889579dc5b279ba",
+  "lil boo thang":                               "https://p.scdn.co/mp3-preview/7aef1c351e8f59daf51276c842516e7267e6ca7d",
+  "linger":                                      "https://p.scdn.co/mp3-preview/c2ade0c30699cf50fb83f3a6b1e743d4a52a44dc",
+  "love story":                                  "https://p.scdn.co/mp3-preview/7bc39c6033766fc816be39a0a6af4c81d0faffe1",
+  "man i need":                                  "https://p.scdn.co/mp3-preview/0a36635f94b4e44e6e4f5b7edb3f501d458812d9",
+  "man! i feel like a woman":                    "https://p.scdn.co/mp3-preview/7741ab88338abbf62b0ab19f58230044fd52cda5",
+  "mr. brightside":                              "https://p.scdn.co/mp3-preview/848b1bd5544e82f62f9cfcec65362d0f5369781f",
+  "murder on the dancefloor":                    "https://p.scdn.co/mp3-preview/340bdf7b29f2725f0353cb77cc8f6996cdc9fbe8",
+  "music for a sushi restaurant":                "https://p.scdn.co/mp3-preview/e3e77ccb5480c79cbca57f397442e9fb5995ad3c",
+  "my girl":                                     "https://p.scdn.co/mp3-preview/a38a2f0fc30ffe90ecae49b9789517338c5ea193",
+  "pick up the pieces":                          "https://p.scdn.co/mp3-preview/bedf045bbaf123f3df052fdfef7d3fa9275cf586",
+  "pink pony club":                              "https://p.scdn.co/mp3-preview/064dd33ec1b86bb205a7e6875a247d61da32e8e9",
+  "play that funky music":                       "https://p.scdn.co/mp3-preview/4b3c574d2e102bf5140c29d2934f2f0d5dc7bfcf",
+  "proud mary":                                  "https://p.scdn.co/mp3-preview/9794a7ef0fe44a1d86e179a8b8f5ec8678c14f98",
+  "red wine supernova":                          "https://p.scdn.co/mp3-preview/e0017925ff70bc4a7d3f3eb64d757bc5d450db6c",
+  "reelin' in the years":                        "https://p.scdn.co/mp3-preview/08fcfd47f12bef5b57ec18eb4a9e4b11481392c3",
+  "rich girl":                                   "https://p.scdn.co/mp3-preview/246e1cdfbc760791fa34b2ac697259b6c3598009",
+  "semi-charmed life":                           "https://p.scdn.co/mp3-preview/3c46a9f2954735cab673dd930ddc7d5e1a2fd1f5",
+  "september":                                   "https://p.scdn.co/mp3-preview/5c241e847beb7556341f97d6bbea4ab9e41a99cc",
+  "sex on fire":                                 "https://p.scdn.co/mp3-preview/6806855988e246016413cc8a34a2afe862f3988d",
+  "shining star":                                "https://p.scdn.co/mp3-preview/a4c23dbe7fd3df08c7cfa559a3600680b8b9c433",
+  "signed, sealed, delivered (i'm yours)":       "https://p.scdn.co/mp3-preview/a5b72edb206044aa54a6fc19325903b8c3ea9c02",
+  "sir duke":                                    "https://p.scdn.co/mp3-preview/5ae5258492617cf3d463b717e8a28fc59243f449",
+  "stayin' alive":                               "https://p.scdn.co/mp3-preview/80f18af7b4bdd7bd2e95d55bb85dcec92dfdfff0",
+  "superstition":                                "https://p.scdn.co/mp3-preview/b7b70cda4f3c1bff01624cca71f6defb8cebcc37",
+  "tennessee whiskey":                           "https://p.scdn.co/mp3-preview/1bdfec5610e444c97a8a70893739b1ba2163b950",
+  "tequila":                                     "https://p.scdn.co/mp3-preview/085342e6507ab9202f6b51385e89efd8361e29d3",
+  "the impressions that i get":                  "https://p.scdn.co/mp3-preview/79ee09e0ad91c83e587833459508959532a074af",
+  "the real slim shady":                         "https://p.scdn.co/mp3-preview/a3cb1372a99a0944063b535182eef6ad80d43087",
+  "this will be (an everlasting love)":          "https://p.scdn.co/mp3-preview/ec7e346ae360a1056256fdb813e0961a6e9b5f46",
+  "treasure":                                    "https://p.scdn.co/mp3-preview/2265c5b16b2e19f65da045df41cf2b4b8fd66ea3",
+  "unwritten":                                   "https://p.scdn.co/mp3-preview/e32457b2d3dde164da91f38052f4f636ce4ddba3",
+  "uptown funk":                                 "https://p.scdn.co/mp3-preview/67ea20051d23a47d74becbe982285c5320dbe577",
+  "valerie":                                     "https://p.scdn.co/mp3-preview/7c1f773fee487c3fdc15fd8b0ee6a3a388b341d3",
+  "we are family":                               "https://p.scdn.co/mp3-preview/c8e62c272be0fd81117f2059aaa6b5eaaa1e5b73",
+  "what a wonderful world":                      "https://p.scdn.co/mp3-preview/09b846edd2af989c00a282fe8a6d3fa6cd479500",
+  "where is my husband!":                        "https://p.scdn.co/mp3-preview/0194ff4186a1f53bff2cdf6d7660289ca8eb0e7e",
+  "you are the best thing":                      "https://p.scdn.co/mp3-preview/4610a2b53f927185bc3a0d11369cc392c434b4f9",
+  "you can call me al":                          "https://p.scdn.co/mp3-preview/d9144f35328ebf1e07dea90119171fcf468e9f45",
+  "you make me feel like dancing":               "https://p.scdn.co/mp3-preview/8d6039ebe4c4c26eb72cc57b859a6ef3f72ad869",
+  "you make my dreams (come true)":              "https://p.scdn.co/mp3-preview/5f096f9722067db33f1453ea8804725ca15ac5bf",
+  "you sexy thing":                              "https://p.scdn.co/mp3-preview/cf7d6e0e8f7cb98c438805bbb5631fbc45891e3f",
+};
+
+/* Global audio player — one preview at a time */
+var _previewAudio = null;
+var _previewBtn   = null;
+
+function toggleSongPreview(btn) {
+  var url = btn.dataset.previewUrl;
+  if (_previewBtn === btn && _previewAudio && !_previewAudio.paused) {
+    _previewAudio.pause();
+    btn.innerHTML = '<i class="fab fa-spotify"></i>';
+    return;
+  }
+  if (_previewAudio) {
+    _previewAudio.pause();
+    if (_previewBtn) { _previewBtn.innerHTML = '<i class="fab fa-spotify"></i>'; }
+  }
+  _previewBtn = btn;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  _previewAudio = new Audio(url);
+  _previewAudio.volume = 0.8;
+  _previewAudio.play().then(function() {
+    btn.innerHTML = '<i class="fas fa-pause"></i>';
+  }).catch(function() {
+    btn.innerHTML = '<i class="fab fa-spotify"></i>';
+  });
+  _previewAudio.addEventListener('ended', function() {
+    if (_previewBtn === btn) { btn.innerHTML = '<i class="fab fa-spotify"></i>'; _previewBtn = null; }
+  });
+  _previewAudio.addEventListener('error', function() {
+    if (_previewBtn === btn) { btn.innerHTML = '<i class="fab fa-spotify"></i>'; _previewBtn = null; }
+  });
+}
+
 /* Lead lookup by title — used to migrate existing songs that lack the lead field */
 const LEAD_BY_TITLE = {};
 SEED_SONGS.forEach(s => { LEAD_BY_TITLE[s.title.toLowerCase()] = s.lead; });
@@ -1976,11 +2097,18 @@ function renderSongSelector(clientId) {
     const pref  = prefs[s.id] || '';
     const newBadge = (isNew && !pref) ? ' <span class="song-new-badge">New</span>' : '';
     const chk = (val) => pref === val ? 'checked' : '';
+    const previewUrl = SPOTIFY_PREVIEWS[(s.title || '').toLowerCase()];
+    const previewBtn = previewUrl
+      ? `<button class="song-preview-btn" data-preview-url="${escHtml(previewUrl)}"
+           onclick="toggleSongPreview(this)" title="Preview on Spotify"
+           aria-label="Preview ${escHtml(s.title)} on Spotify"><i class="fab fa-spotify"></i></button>`
+      : `<span class="song-preview-spacer"></span>`;
     return `<div class="song-item">
       <div class="song-info">
         <div class="song-title">${escHtml(s.title)}${newBadge}</div>
         <div class="song-artist">${escHtml(s.artist)}</div>
       </div>
+      ${previewBtn}
       <div class="song-check-cell priority-cell">
         <input type="checkbox" data-song-id="${s.id}" data-pref="Priority"
           onchange="updateSongPref('${clientId}','${s.id}','Priority',this.checked)"
