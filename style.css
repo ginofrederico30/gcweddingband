@@ -954,6 +954,7 @@ img {
 .testimonial-row {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    align-items: start;
     gap: 28px;
     width: 90%;
     max-width: 1300px;
@@ -979,20 +980,13 @@ img {
 .user {
     display: block;
     margin: 0;
-    flex-shrink: 0;
 }
 
 .user img {
     width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    object-position: center center;
+    height: auto;
     display: block;
 }
-
-.user img[src="maddie.png"]   { object-position: center 15%; }
-.user img[src="stylski2.png"] { object-position: center top; }
-.user img[src="megdrew.png"]  { object-position: center 12%; }
 
 .stars {
     display: flex;
