@@ -1117,6 +1117,24 @@ body.is-impersonating #portal-nav { top: 40px; }
 .song-preview-spacer { display: inline-block; width: 26px; flex-shrink: 0; }
 .song-item:has(.song-preview-btn .fa-pause) .song-preview-btn { opacity: 1; }
 
+.spotify-playlist-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    background: #1DB954;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity var(--ease);
+}
+.spotify-playlist-btn:hover { opacity: 0.85; }
+
 /* Song selector: preview button + title/artist share the first grid column */
 .song-selector-card .song-info {
     display: flex;
