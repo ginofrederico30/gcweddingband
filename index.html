@@ -412,199 +412,142 @@
             <h2>CELEBRATE GOOD TIMES</h2>
         </div>
 
-        <!-- Search -->
-        <div class="catalog-search-wrap fade-in">
-            <svg class="catalog-search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="search" id="catalog-search" placeholder="Search songs or artists…" autocomplete="off" aria-label="Search song catalog">
-        </div>
-
         <!-- Genre Tabs -->
-        <div class="genre-tabs" role="tablist" aria-label="Song genres">
-            <button class="genre-tab active" data-panel="panel-all" role="tab" aria-selected="true" aria-controls="panel-all">All <span class="tab-count">78</span></button>
-            <button class="genre-tab" data-panel="panel-rock" role="tab" aria-selected="false" aria-controls="panel-rock">Rock / Funk <span class="tab-count">26</span></button>
-            <button class="genre-tab" data-panel="panel-pop" role="tab" aria-selected="false" aria-controls="panel-pop">Pop / Country <span class="tab-count">35</span></button>
-            <button class="genre-tab" data-panel="panel-rnb" role="tab" aria-selected="false" aria-controls="panel-rnb">R&amp;B / Soul <span class="tab-count">17</span></button>
+        <div class="genre-tabs fade-in" role="tablist" aria-label="Browse songs by genre">
+            <button class="genre-tab active" data-panel="panel-funk" data-name="Funk &amp; Disco" role="tab" aria-selected="true" aria-controls="panel-funk">Funk &amp; Disco <span class="tab-count"></span></button>
+            <button class="genre-tab" data-panel="panel-throwback" data-name="90s, 00s &amp; 10s Throwbacks" role="tab" aria-selected="false" aria-controls="panel-throwback">90s, 00s &amp; 10s <span class="tab-count"></span></button>
+            <button class="genre-tab" data-panel="panel-hits" data-name="Today's Hits" role="tab" aria-selected="false" aria-controls="panel-hits">Today's Hits <span class="tab-count"></span></button>
+            <button class="genre-tab" data-panel="panel-motown" data-name="Motown &amp; Soul" role="tab" aria-selected="false" aria-controls="panel-motown">Motown &amp; Soul <span class="tab-count"></span></button>
+            <button class="genre-tab" data-panel="panel-rock" data-name="Rock" role="tab" aria-selected="false" aria-controls="panel-rock">Rock <span class="tab-count"></span></button>
         </div>
 
-        <!-- All Songs (alphabetical) -->
-        <div class="genre-panel active" id="panel-all" role="tabpanel">
-            <ul class="catalog-song-list">
-                <li class="catalog-song-item"><song>1999</song><br><em>Prince</em></li>
-                <li class="catalog-song-item"><song>Ain't It Fun</song><br><em>Paramore</em></li>
-                <li class="catalog-song-item"><song>Ain't No Mountain High Enough</song><br><em>Marvin Gaye</em></li>
-                <li class="catalog-song-item"><song>All Night Long</song><br><em>Lionel Richie</em></li>
-                <li class="catalog-song-item"><song>All the Small Things</song><br><em>blink-182</em></li>
-                <li class="catalog-song-item"><song>All Your'n</song><br><em>Tyler Childers</em></li>
-                <li class="catalog-song-item"><song>Are You Gonna Be My Girl</song><br><em>Jet</em></li>
-                <li class="catalog-song-item"><song>Birthday</song><br><em>Katy Perry</em></li>
-                <li class="catalog-song-item"><song>Blame It on the Boogie</song><br><em>The Jacksons</em></li>
-                <li class="catalog-song-item"><song>Boogie Shoes</song><br><em>KC &amp; The Sunshine Band</em></li>
-                <li class="catalog-song-item"><song>Brick House</song><br><em>Commodores</em></li>
-                <li class="catalog-song-item"><song>Bust a Move</song><br><em>Young MC</em></li>
-                <li class="catalog-song-item"><song>Cake By the Ocean</song><br><em>DNCE</em></li>
-                <li class="catalog-song-item"><song>Canned Heat</song><br><em>Jamiroquai</em></li>
-                <li class="catalog-song-item"><song>Celebration</song><br><em>Kool &amp; The Gang</em></li>
-                <li class="catalog-song-item"><song>Come and Get Your Love</song><br><em>Redbone</em></li>
-                <li class="catalog-song-item"><song>Come On Eileen</song><br><em>Dexys Midnight Runners</em></li>
-                <li class="catalog-song-item"><song>Crazy in Love</song><br><em>Beyoncé</em></li>
-                <li class="catalog-song-item"><song>Dancing in the Moonlight</song><br><em>King Harvest</em></li>
-                <li class="catalog-song-item"><song>Dancing on the Ceiling</song><br><em>Lionel Richie</em></li>
-                <li class="catalog-song-item"><song>Dancing Queen</song><br><em>ABBA</em></li>
-                <li class="catalog-song-item"><song>December 1963 (Oh, What a Night)</song><br><em>Frankie Valli &amp; The Four Seasons</em></li>
-                <li class="catalog-song-item"><song>Don't Start Now</song><br><em>Dua Lipa</em></li>
-                <li class="catalog-song-item"><song>Dreams</song><br><em>Fleetwood Mac</em></li>
-                <li class="catalog-song-item"><song>Funkytown</song><br><em>Lipps Inc.</em></li>
-                <li class="catalog-song-item"><song>Get Down On It</song><br><em>Kool &amp; The Gang</em></li>
-                <li class="catalog-song-item"><song>Gimme! Gimme! Gimme!</song><br><em>ABBA</em></li>
-                <li class="catalog-song-item"><song>Give It To Me Baby</song><br><em>Rick James</em></li>
-                <li class="catalog-song-item"><song>Heaven</song><br><em>Los Lonely Boys</em></li>
-                <li class="catalog-song-item"><song>Hips Don't Lie</song><br><em>Shakira</em></li>
-                <li class="catalog-song-item"><song>Hot Stuff</song><br><em>Donna Summer</em></li>
-                <li class="catalog-song-item"><song>HOT TO GO!</song><br><em>Chappell Roan</em></li>
-                <li class="catalog-song-item"><song>How Bizarre</song><br><em>OMC</em></li>
-                <li class="catalog-song-item"><song>I Wanna Be Your Lover</song><br><em>Prince</em></li>
-                <li class="catalog-song-item"><song>I Wanna Dance With Somebody</song><br><em>Whitney Houston</em></li>
-                <li class="catalog-song-item"><song>I Wish</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>If I Ain't Got You</song><br><em>Alicia Keys</em></li>
-                <li class="catalog-song-item"><song>Is This Love</song><br><em>Bob Marley &amp; The Wailers</em></li>
-                <li class="catalog-song-item"><song>Le Freak</song><br><em>CHIC</em></li>
-                <li class="catalog-song-item"><song>Levitating</song><br><em>Dua Lipa</em></li>
-                <li class="catalog-song-item"><song>Lil Boo Thang</song><br><em>Paul Russell</em></li>
-                <li class="catalog-song-item"><song>Love Story</song><br><em>Taylor Swift</em></li>
-                <li class="catalog-song-item"><song>Man! I Feel Like a Woman</song><br><em>Shania Twain</em></li>
-                <li class="catalog-song-item"><song>Man I Need</song><br><em>Olivia Dean</em></li>
-                <li class="catalog-song-item"><song>Mr. Brightside</song><br><em>The Killers</em></li>
-                <li class="catalog-song-item"><song>Murder on the Dance Floor</song><br><em>Sophie Ellis-Bextor</em></li>
-                <li class="catalog-song-item"><song>Music For a Sushi Restaurant</song><br><em>Harry Styles</em></li>
-                <li class="catalog-song-item"><song>My Girl</song><br><em>The Temptations</em></li>
-                <li class="catalog-song-item"><song>Pick Up the Pieces</song><br><em>Average White Band</em></li>
-                <li class="catalog-song-item"><song>Pink Pony Club</song><br><em>Chappell Roan</em></li>
-                <li class="catalog-song-item"><song>Play That Funky Music</song><br><em>Wild Cherry</em></li>
-                <li class="catalog-song-item"><song>Red Wine Supernova</song><br><em>Chappell Roan</em></li>
-                <li class="catalog-song-item"><song>Reelin' In The Years</song><br><em>Steely Dan</em></li>
-                <li class="catalog-song-item"><song>Rich Girl</song><br><em>Daryl Hall &amp; John Oates</em></li>
-                <li class="catalog-song-item"><song>Semi-Charmed Life</song><br><em>Third Eye Blind</em></li>
-                <li class="catalog-song-item"><song>September</song><br><em>Earth, Wind &amp; Fire</em></li>
-                <li class="catalog-song-item"><song>Shake Your Body (Down to the Ground)</song><br><em>The Jacksons</em></li>
-                <li class="catalog-song-item"><song>Shining Star</song><br><em>Earth, Wind &amp; Fire</em></li>
-                <li class="catalog-song-item"><song>Signed, Sealed, Delivered (I'm Yours)</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>Sir Duke</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>Stayin' Alive</song><br><em>Bee Gees</em></li>
-                <li class="catalog-song-item"><song>Sunday Morning</song><br><em>Maroon 5</em></li>
-                <li class="catalog-song-item"><song>Superstition</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>Tennessee Whiskey</song><br><em>Chris Stapleton</em></li>
-                <li class="catalog-song-item"><song>Tequila</song><br><em>The Champs</em></li>
-                <li class="catalog-song-item"><song>The Real Slim Shady</song><br><em>Eminem</em></li>
-                <li class="catalog-song-item"><song>This Will Be (An Everlasting Love)</song><br><em>Natalie Cole</em></li>
-                <li class="catalog-song-item"><song>Treasure</song><br><em>Bruno Mars</em></li>
-                <li class="catalog-song-item"><song>Unwritten</song><br><em>Natasha Bedingfield</em></li>
-                <li class="catalog-song-item"><song>Uptown Funk</song><br><em>Mark Ronson ft. Bruno Mars</em></li>
-                <li class="catalog-song-item"><song>Valerie</song><br><em>Mark Ronson ft. Amy Winehouse</em></li>
-                <li class="catalog-song-item"><song>We Are Family</song><br><em>Sister Sledge</em></li>
-                <li class="catalog-song-item"><song>What a Wonderful World</song><br><em>Louis Armstrong</em></li>
-                <li class="catalog-song-item"><song>WHERE IS MY HUSBAND!</song><br><em>RAYE</em></li>
-                <li class="catalog-song-item"><song>You Are the Best Thing</song><br><em>Ray LaMontagne</em></li>
-                <li class="catalog-song-item"><song>You Make Me Feel Like Dancing</song><br><em>Leo Sayer</em></li>
-                <li class="catalog-song-item"><song>You Make My Dreams (Come True)</song><br><em>Daryl Hall &amp; John Oates</em></li>
-                <li class="catalog-song-item"><song>You Sexy Thing</song><br><em>Hot Chocolate</em></li>
-            </ul>
-        </div>
+        <!-- Dynamic status line -->
+        <p class="catalog-status fade-in" id="catalog-status" aria-live="polite"></p>
 
-        <!-- Rock / Funk -->
-        <div class="genre-panel" id="panel-rock" role="tabpanel">
-            <ul class="catalog-song-list">
-                <li class="catalog-song-item"><song>1999</song><br><em>Prince</em></li>
-                <li class="catalog-song-item"><song>Ain't It Fun</song><br><em>Paramore</em></li>
-                <li class="catalog-song-item"><song>All the Small Things</song><br><em>blink-182</em></li>
-                <li class="catalog-song-item"><song>Are You Gonna Be My Girl</song><br><em>Jet</em></li>
-                <li class="catalog-song-item"><song>Boogie Shoes</song><br><em>KC &amp; The Sunshine Band</em></li>
-                <li class="catalog-song-item"><song>Bust a Move</song><br><em>Young MC</em></li>
-                <li class="catalog-song-item"><song>Canned Heat</song><br><em>Jamiroquai</em></li>
-                <li class="catalog-song-item"><song>Come and Get Your Love</song><br><em>Redbone</em></li>
-                <li class="catalog-song-item"><song>December 1963 (Oh, What a Night)</song><br><em>Frankie Valli &amp; The Four Seasons</em></li>
-                <li class="catalog-song-item"><song>Dreams</song><br><em>Fleetwood Mac</em></li>
-                <li class="catalog-song-item"><song>Funkytown</song><br><em>Lipps Inc.</em></li>
-                <li class="catalog-song-item"><song>Get Down On It</song><br><em>Kool &amp; The Gang</em></li>
-                <li class="catalog-song-item"><song>Give It To Me Baby</song><br><em>Rick James</em></li>
-                <li class="catalog-song-item"><song>Heaven</song><br><em>Los Lonely Boys</em></li>
-                <li class="catalog-song-item"><song>I Wanna Be Your Lover</song><br><em>Prince</em></li>
-                <li class="catalog-song-item"><song>Le Freak</song><br><em>CHIC</em></li>
-                <li class="catalog-song-item"><song>Pick Up the Pieces</song><br><em>Average White Band</em></li>
-                <li class="catalog-song-item"><song>Play That Funky Music</song><br><em>Wild Cherry</em></li>
-                <li class="catalog-song-item"><song>Reelin' In The Years</song><br><em>Steely Dan</em></li>
-                <li class="catalog-song-item"><song>Rich Girl</song><br><em>Daryl Hall &amp; John Oates</em></li>
-                <li class="catalog-song-item"><song>Semi-Charmed Life</song><br><em>Third Eye Blind</em></li>
-                <li class="catalog-song-item"><song>September</song><br><em>Earth, Wind &amp; Fire</em></li>
-                <li class="catalog-song-item"><song>Shining Star</song><br><em>Earth, Wind &amp; Fire</em></li>
-                <li class="catalog-song-item"><song>Stayin' Alive</song><br><em>Bee Gees</em></li>
-                <li class="catalog-song-item"><song>Tequila</song><br><em>The Champs</em></li>
-                <li class="catalog-song-item"><song>You Make My Dreams (Come True)</song><br><em>Daryl Hall &amp; John Oates</em></li>
-            </ul>
-        </div>
+        <!-- Scrollable song area -->
+        <div class="catalog-scroll-area fade-in" id="catalog-scroll-area">
 
-        <!-- Pop / Country -->
-        <div class="genre-panel" id="panel-pop" role="tabpanel">
-            <ul class="catalog-song-list">
-                <li class="catalog-song-item"><song>All Your'n</song><br><em>Tyler Childers</em></li>
-                <li class="catalog-song-item"><song>Birthday</song><br><em>Katy Perry</em></li>
-                <li class="catalog-song-item"><song>Cake By the Ocean</song><br><em>DNCE</em></li>
-                <li class="catalog-song-item"><song>Come On Eileen</song><br><em>Dexys Midnight Runners</em></li>
-                <li class="catalog-song-item"><song>Crazy in Love</song><br><em>Beyoncé</em></li>
-                <li class="catalog-song-item"><song>Dancing in the Moonlight</song><br><em>King Harvest</em></li>
-                <li class="catalog-song-item"><song>Dancing Queen</song><br><em>ABBA</em></li>
-                <li class="catalog-song-item"><song>Don't Start Now</song><br><em>Dua Lipa</em></li>
-                <li class="catalog-song-item"><song>Gimme! Gimme! Gimme!</song><br><em>ABBA</em></li>
-                <li class="catalog-song-item"><song>Hips Don't Lie</song><br><em>Shakira</em></li>
-                <li class="catalog-song-item"><song>Hot Stuff</song><br><em>Donna Summer</em></li>
-                <li class="catalog-song-item"><song>HOT TO GO!</song><br><em>Chappell Roan</em></li>
-                <li class="catalog-song-item"><song>How Bizarre</song><br><em>OMC</em></li>
-                <li class="catalog-song-item"><song>Is This Love</song><br><em>Bob Marley &amp; The Wailers</em></li>
-                <li class="catalog-song-item"><song>Levitating</song><br><em>Dua Lipa</em></li>
-                <li class="catalog-song-item"><song>Lil Boo Thang</song><br><em>Paul Russell</em></li>
-                <li class="catalog-song-item"><song>Love Story</song><br><em>Taylor Swift</em></li>
-                <li class="catalog-song-item"><song>Man! I Feel Like a Woman</song><br><em>Shania Twain</em></li>
-                <li class="catalog-song-item"><song>Man I Need</song><br><em>Olivia Dean</em></li>
-                <li class="catalog-song-item"><song>Mr. Brightside</song><br><em>The Killers</em></li>
-                <li class="catalog-song-item"><song>Murder on the Dance Floor</song><br><em>Sophie Ellis-Bextor</em></li>
-                <li class="catalog-song-item"><song>Music For a Sushi Restaurant</song><br><em>Harry Styles</em></li>
-                <li class="catalog-song-item"><song>Pink Pony Club</song><br><em>Chappell Roan</em></li>
-                <li class="catalog-song-item"><song>Red Wine Supernova</song><br><em>Chappell Roan</em></li>
-                <li class="catalog-song-item"><song>Shake Your Body (Down to the Ground)</song><br><em>The Jacksons</em></li>
-                <li class="catalog-song-item"><song>Sunday Morning</song><br><em>Maroon 5</em></li>
-                <li class="catalog-song-item"><song>Tennessee Whiskey</song><br><em>Chris Stapleton</em></li>
-                <li class="catalog-song-item"><song>The Real Slim Shady</song><br><em>Eminem</em></li>
-                <li class="catalog-song-item"><song>Treasure</song><br><em>Bruno Mars</em></li>
-                <li class="catalog-song-item"><song>Unwritten</song><br><em>Natasha Bedingfield</em></li>
-                <li class="catalog-song-item"><song>Uptown Funk</song><br><em>Mark Ronson ft. Bruno Mars</em></li>
-                <li class="catalog-song-item"><song>Valerie</song><br><em>Mark Ronson ft. Amy Winehouse</em></li>
-                <li class="catalog-song-item"><song>WHERE IS MY HUSBAND!</song><br><em>RAYE</em></li>
-                <li class="catalog-song-item"><song>You Are the Best Thing</song><br><em>Ray LaMontagne</em></li>
-                <li class="catalog-song-item"><song>You Make Me Feel Like Dancing</song><br><em>Leo Sayer</em></li>
-            </ul>
-        </div>
+            <!-- Funk & Disco (26) -->
+            <div class="genre-panel active" id="panel-funk" role="tabpanel">
+                <h3 class="genre-heading">Funk &amp; Disco</h3>
+                <ul class="catalog-song-list">
+                    <li class="catalog-song-item"><song>1999</song><br><em>Prince</em></li>
+                    <li class="catalog-song-item"><song>Blame It on the Boogie</song><br><em>The Jacksons</em></li>
+                    <li class="catalog-song-item"><song>Boogie Shoes</song><br><em>KC &amp; The Sunshine Band</em></li>
+                    <li class="catalog-song-item"><song>Brick House</song><br><em>Commodores</em></li>
+                    <li class="catalog-song-item"><song>Bust a Move</song><br><em>Young MC</em></li>
+                    <li class="catalog-song-item"><song>Canned Heat</song><br><em>Jamiroquai</em></li>
+                    <li class="catalog-song-item"><song>Celebration</song><br><em>Kool &amp; The Gang</em></li>
+                    <li class="catalog-song-item"><song>Dancing Queen</song><br><em>ABBA</em></li>
+                    <li class="catalog-song-item"><song>December 1963 (Oh, What a Night)</song><br><em>Frankie Valli &amp; The Four Seasons</em></li>
+                    <li class="catalog-song-item"><song>Funkytown</song><br><em>Lipps Inc.</em></li>
+                    <li class="catalog-song-item"><song>Get Down On It</song><br><em>Kool &amp; The Gang</em></li>
+                    <li class="catalog-song-item"><song>Gimme! Gimme! Gimme!</song><br><em>ABBA</em></li>
+                    <li class="catalog-song-item"><song>Give It To Me Baby</song><br><em>Rick James</em></li>
+                    <li class="catalog-song-item"><song>Give It Up</song><br><em>KC and the Sunshine Band</em></li>
+                    <li class="catalog-song-item"><song>Hot Stuff</song><br><em>Donna Summer</em></li>
+                    <li class="catalog-song-item"><song>I Wanna Be Your Lover</song><br><em>Prince</em></li>
+                    <li class="catalog-song-item"><song>Le Freak</song><br><em>CHIC</em></li>
+                    <li class="catalog-song-item"><song>Pick Up the Pieces</song><br><em>Average White Band</em></li>
+                    <li class="catalog-song-item"><song>Play That Funky Music</song><br><em>Wild Cherry</em></li>
+                    <li class="catalog-song-item"><song>September</song><br><em>Earth, Wind &amp; Fire</em></li>
+                    <li class="catalog-song-item"><song>Shake Your Body (Down to the Ground)</song><br><em>The Jacksons</em></li>
+                    <li class="catalog-song-item"><song>Shining Star</song><br><em>Earth, Wind &amp; Fire</em></li>
+                    <li class="catalog-song-item"><song>Stayin' Alive</song><br><em>Bee Gees</em></li>
+                    <li class="catalog-song-item"><song>We Are Family</song><br><em>Sister Sledge</em></li>
+                    <li class="catalog-song-item"><song>You Make Me Feel Like Dancing</song><br><em>Leo Sayer</em></li>
+                    <li class="catalog-song-item"><song>You Sexy Thing</song><br><em>Hot Chocolate</em></li>
+                </ul>
+            </div>
 
-        <!-- R&B / Soul -->
-        <div class="genre-panel" id="panel-rnb" role="tabpanel">
-            <ul class="catalog-song-list">
-                <li class="catalog-song-item"><song>Ain't No Mountain High Enough</song><br><em>Marvin Gaye</em></li>
-                <li class="catalog-song-item"><song>All Night Long</song><br><em>Lionel Richie</em></li>
-                <li class="catalog-song-item"><song>Blame It on the Boogie</song><br><em>The Jacksons</em></li>
-                <li class="catalog-song-item"><song>Brick House</song><br><em>Commodores</em></li>
-                <li class="catalog-song-item"><song>Celebration</song><br><em>Kool &amp; The Gang</em></li>
-                <li class="catalog-song-item"><song>Dancing on the Ceiling</song><br><em>Lionel Richie</em></li>
-                <li class="catalog-song-item"><song>I Wanna Dance With Somebody</song><br><em>Whitney Houston</em></li>
-                <li class="catalog-song-item"><song>I Wish</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>If I Ain't Got You</song><br><em>Alicia Keys</em></li>
-                <li class="catalog-song-item"><song>My Girl</song><br><em>The Temptations</em></li>
-                <li class="catalog-song-item"><song>Signed, Sealed, Delivered (I'm Yours)</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>Sir Duke</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>Superstition</song><br><em>Stevie Wonder</em></li>
-                <li class="catalog-song-item"><song>This Will Be (An Everlasting Love)</song><br><em>Natalie Cole</em></li>
-                <li class="catalog-song-item"><song>We Are Family</song><br><em>Sister Sledge</em></li>
-                <li class="catalog-song-item"><song>What a Wonderful World</song><br><em>Louis Armstrong</em></li>
-                <li class="catalog-song-item"><song>You Sexy Thing</song><br><em>Hot Chocolate</em></li>
-            </ul>
-        </div>
+            <!-- 90s, 00s & 10s Throwbacks (27) -->
+            <div class="genre-panel" id="panel-throwback" role="tabpanel">
+                <h3 class="genre-heading">90s, 00s &amp; 10s Throwbacks</h3>
+                <ul class="catalog-song-list">
+                    <li class="catalog-song-item"><song>Ain't It Fun</song><br><em>Paramore</em></li>
+                    <li class="catalog-song-item"><song>All the Small Things</song><br><em>blink-182</em></li>
+                    <li class="catalog-song-item"><song>Are You Gonna Be My Girl</song><br><em>Jet</em></li>
+                    <li class="catalog-song-item"><song>Cake By the Ocean</song><br><em>DNCE</em></li>
+                    <li class="catalog-song-item"><song>Crazy in Love</song><br><em>Beyoncé</em></li>
+                    <li class="catalog-song-item"><song>Dancing On My Own</song><br><em>Robyn</em></li>
+                    <li class="catalog-song-item"><song>Fade Into You</song><br><em>Mazzy Star</em></li>
+                    <li class="catalog-song-item"><song>Heaven</song><br><em>Los Lonely Boys</em></li>
+                    <li class="catalog-song-item"><song>How Bizarre</song><br><em>OMC</em></li>
+                    <li class="catalog-song-item"><song>If I Ain't Got You</song><br><em>Alicia Keys</em></li>
+                    <li class="catalog-song-item"><song>Ironic</song><br><em>Alanis Morissette</em></li>
+                    <li class="catalog-song-item"><song>Linger</song><br><em>The Cranberries</em></li>
+                    <li class="catalog-song-item"><song>Love Story</song><br><em>Taylor Swift</em></li>
+                    <li class="catalog-song-item"><song>Man! I Feel Like a Woman</song><br><em>Shania Twain</em></li>
+                    <li class="catalog-song-item"><song>Mr. Brightside</song><br><em>The Killers</em></li>
+                    <li class="catalog-song-item"><song>Murder On the Dancefloor</song><br><em>Sophie Ellis-Bextor</em></li>
+                    <li class="catalog-song-item"><song>Semi-Charmed Life</song><br><em>Third Eye Blind</em></li>
+                    <li class="catalog-song-item"><song>Sex On Fire</song><br><em>Kings of Leon</em></li>
+                    <li class="catalog-song-item"><song>Sunday Morning</song><br><em>Maroon 5</em></li>
+                    <li class="catalog-song-item"><song>Tennessee Whiskey</song><br><em>Chris Stapleton</em></li>
+                    <li class="catalog-song-item"><song>The Impressions That I Get</song><br><em>The Mighty Mighty Bosstones</em></li>
+                    <li class="catalog-song-item"><song>The Real Slim Shady</song><br><em>Eminem</em></li>
+                    <li class="catalog-song-item"><song>Treasure</song><br><em>Bruno Mars</em></li>
+                    <li class="catalog-song-item"><song>Unwritten</song><br><em>Natasha Bedingfield</em></li>
+                    <li class="catalog-song-item"><song>Uptown Funk</song><br><em>Mark Ronson ft. Bruno Mars</em></li>
+                    <li class="catalog-song-item"><song>Valerie</song><br><em>Mark Ronson ft. Amy Winehouse</em></li>
+                    <li class="catalog-song-item"><song>You Are the Best Thing</song><br><em>Ray LaMontagne</em></li>
+                </ul>
+            </div>
+
+            <!-- Today's Hits (10) -->
+            <div class="genre-panel" id="panel-hits" role="tabpanel">
+                <h3 class="genre-heading">Today's Hits</h3>
+                <ul class="catalog-song-list">
+                    <li class="catalog-song-item"><song>All Your'n</song><br><em>Tyler Childers</em></li>
+                    <li class="catalog-song-item"><song>Don't Start Now</song><br><em>Dua Lipa</em></li>
+                    <li class="catalog-song-item"><song>HOT TO GO!</song><br><em>Chappell Roan</em></li>
+                    <li class="catalog-song-item"><song>Levitating</song><br><em>Dua Lipa</em></li>
+                    <li class="catalog-song-item"><song>Lil Boo Thang</song><br><em>Paul Russell</em></li>
+                    <li class="catalog-song-item"><song>Man I Need</song><br><em>Olivia Dean</em></li>
+                    <li class="catalog-song-item"><song>Music For a Sushi Restaurant</song><br><em>Harry Styles</em></li>
+                    <li class="catalog-song-item"><song>Pink Pony Club</song><br><em>Chappell Roan</em></li>
+                    <li class="catalog-song-item"><song>Red Wine Supernova</song><br><em>Chappell Roan</em></li>
+                    <li class="catalog-song-item"><song>WHERE IS MY HUSBAND!</song><br><em>RAYE</em></li>
+                </ul>
+            </div>
+
+            <!-- Motown & Soul (13) -->
+            <div class="genre-panel" id="panel-motown" role="tabpanel">
+                <h3 class="genre-heading">Motown &amp; Soul</h3>
+                <ul class="catalog-song-list">
+                    <li class="catalog-song-item"><song>Ain't No Mountain High Enough</song><br><em>Marvin Gaye</em></li>
+                    <li class="catalog-song-item"><song>All Night Long</song><br><em>Lionel Richie</em></li>
+                    <li class="catalog-song-item"><song>Dancing on the Ceiling</song><br><em>Lionel Richie</em></li>
+                    <li class="catalog-song-item"><song>I Got You (I Feel Good)</song><br><em>James Brown</em></li>
+                    <li class="catalog-song-item"><song>I Wanna Dance With Somebody</song><br><em>Whitney Houston</em></li>
+                    <li class="catalog-song-item"><song>I Wish</song><br><em>Stevie Wonder</em></li>
+                    <li class="catalog-song-item"><song>My Girl</song><br><em>The Temptations</em></li>
+                    <li class="catalog-song-item"><song>Proud Mary</song><br><em>Tina Turner</em></li>
+                    <li class="catalog-song-item"><song>Signed, Sealed, Delivered (I'm Yours)</song><br><em>Stevie Wonder</em></li>
+                    <li class="catalog-song-item"><song>Sir Duke</song><br><em>Stevie Wonder</em></li>
+                    <li class="catalog-song-item"><song>Superstition</song><br><em>Stevie Wonder</em></li>
+                    <li class="catalog-song-item"><song>This Will Be (An Everlasting Love)</song><br><em>Natalie Cole</em></li>
+                    <li class="catalog-song-item"><song>What a Wonderful World</song><br><em>Louis Armstrong</em></li>
+                </ul>
+            </div>
+
+            <!-- Rock (9) -->
+            <div class="genre-panel" id="panel-rock" role="tabpanel">
+                <h3 class="genre-heading">Rock</h3>
+                <ul class="catalog-song-list">
+                    <li class="catalog-song-item"><song>Come and Get Your Love</song><br><em>Redbone</em></li>
+                    <li class="catalog-song-item"><song>Come On Eileen</song><br><em>Dexys Midnight Runners</em></li>
+                    <li class="catalog-song-item"><song>Dancing in the Moonlight</song><br><em>King Harvest</em></li>
+                    <li class="catalog-song-item"><song>Dreams</song><br><em>Fleetwood Mac</em></li>
+                    <li class="catalog-song-item"><song>Reelin' In The Years</song><br><em>Steely Dan</em></li>
+                    <li class="catalog-song-item"><song>Rich Girl</song><br><em>Daryl Hall &amp; John Oates</em></li>
+                    <li class="catalog-song-item"><song>Tequila</song><br><em>The Champs</em></li>
+                    <li class="catalog-song-item"><song>You Can Call Me Al</song><br><em>Paul Simon</em></li>
+                    <li class="catalog-song-item"><song>You Make My Dreams (Come True)</song><br><em>Daryl Hall &amp; John Oates</em></li>
+                </ul>
+            </div>
+
+        </div><!-- /.catalog-scroll-area -->
 
         <!-- Spotify — below the catalog -->
         <div class="catalog-spotify fade-in">
@@ -625,43 +568,76 @@
 
         <script>
         (function () {
-            var tabs        = document.querySelectorAll('.genre-tab');
-            var panels      = document.querySelectorAll('.genre-panel');
-            var searchEl    = document.getElementById('catalog-search');
-            var activePanel = 'panel-all';
+            var tabs       = document.querySelectorAll('.genre-tab');
+            var panels     = document.querySelectorAll('.genre-panel');
+            var scrollArea = document.getElementById('catalog-scroll-area');
+            var statusEl   = document.getElementById('catalog-status');
+            var activePanel = 'panel-funk';
+            var fullMode    = false;
+            var TOTAL       = 0;
+            var genreData   = {};
+
+            // Derive counts from DOM so they stay accurate when songs are added
+            tabs.forEach(function (tab) {
+                var pid   = tab.dataset.panel;
+                var count = document.getElementById(pid).querySelectorAll('.catalog-song-item').length;
+                genreData[pid] = { name: tab.dataset.name, count: count };
+                tab.querySelector('.tab-count').textContent = count;
+                TOTAL += count;
+            });
+
+            function renderStatus() {
+                if (fullMode) {
+                    statusEl.innerHTML =
+                        'Showing all <strong>' + TOTAL + ' songs</strong> across 5 genres &nbsp;&middot;&nbsp; ' +
+                        '<button class="catalog-inline-btn" id="catalog-toggle" type="button">&larr; back to Funk &amp; Disco</button>';
+                    document.getElementById('catalog-toggle').addEventListener('click', backToFirst);
+                } else {
+                    var info = genreData[activePanel];
+                    statusEl.innerHTML =
+                        'Showing <strong>' + info.name + '</strong> &mdash; ' + info.count + ' songs' +
+                        ' &nbsp;&middot;&nbsp; Browse by genre above, or ' +
+                        '<button class="catalog-inline-btn" id="catalog-toggle" type="button">view all ' + TOTAL + ' songs &darr;</button>';
+                    document.getElementById('catalog-toggle').addEventListener('click', showAll);
+                }
+            }
+
+            function showAll() {
+                fullMode = true;
+                tabs.forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+                panels.forEach(function (p) { p.classList.add('active'); p.classList.add('full-mode'); });
+                scrollArea.scrollTop = 0;
+                renderStatus();
+            }
+
+            function backToFirst() {
+                fullMode = false;
+                activePanel = 'panel-funk';
+                tabs.forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+                panels.forEach(function (p) { p.classList.remove('active'); p.classList.remove('full-mode'); });
+                var firstTab = document.querySelector('[data-panel="panel-funk"]');
+                firstTab.classList.add('active');
+                firstTab.setAttribute('aria-selected', 'true');
+                document.getElementById('panel-funk').classList.add('active');
+                scrollArea.scrollTop = 0;
+                renderStatus();
+            }
 
             tabs.forEach(function (tab) {
                 tab.addEventListener('click', function () {
+                    fullMode = false;
+                    activePanel = tab.dataset.panel;
                     tabs.forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-                    panels.forEach(function (p) { p.classList.remove('active'); });
+                    panels.forEach(function (p) { p.classList.remove('active'); p.classList.remove('full-mode'); });
                     tab.classList.add('active');
                     tab.setAttribute('aria-selected', 'true');
-                    activePanel = tab.dataset.panel;
                     document.getElementById(activePanel).classList.add('active');
-                    searchEl.value = '';
-                    showAllItems();
+                    scrollArea.scrollTop = 0;
+                    renderStatus();
                 });
             });
 
-            searchEl.addEventListener('input', function () {
-                var q = this.value.trim().toLowerCase();
-                if (!q) { restoreActivePanel(); showAllItems(); return; }
-                panels.forEach(function (p) { p.classList.add('active'); });
-                tabs.forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-                document.querySelectorAll('.catalog-song-item').forEach(function (li) {
-                    li.hidden = li.textContent.toLowerCase().indexOf(q) < 0;
-                });
-            });
-
-            function showAllItems() {
-                document.querySelectorAll('.catalog-song-item').forEach(function (li) { li.hidden = false; });
-            }
-            function restoreActivePanel() {
-                panels.forEach(function (p) { p.classList.remove('active'); });
-                document.getElementById(activePanel).classList.add('active');
-                var t = document.querySelector('[data-panel="' + activePanel + '"]');
-                if (t) { t.classList.add('active'); t.setAttribute('aria-selected', 'true'); }
-            }
+            renderStatus();
         })();
         </script>
     </section>

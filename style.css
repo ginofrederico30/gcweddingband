@@ -1008,15 +1008,71 @@ img {
     background: rgba(255,255,255,0.2);
 }
 
-/* Genre panels */
-.genre-panel {
-    display: none;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 32px 48px;
+/* Catalog status bar */
+.catalog-status {
+    max-width: 900px;
+    margin: 0 auto 20px;
+    padding: 0 24px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--steel);
+    text-align: center;
+    min-height: 1.5em;
 }
 
+.catalog-inline-btn {
+    background: none;
+    border: none;
+    color: var(--navy);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.catalog-inline-btn:hover { color: var(--gold); }
+
+/* Scrollable song container */
+.catalog-scroll-area {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    max-height: 520px;
+    min-height: 280px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(21,40,64,0.18) transparent;
+}
+
+.catalog-scroll-area::-webkit-scrollbar { width: 5px; }
+.catalog-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.catalog-scroll-area::-webkit-scrollbar-thumb { background: rgba(21,40,64,0.18); border-radius: 3px; }
+
+/* Genre panels */
+.genre-panel { display: none; }
 .genre-panel.active { display: block; }
+
+/* Genre heading (visible only in full-catalog mode) */
+.genre-heading {
+    display: none;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--navy);
+    opacity: 0.45;
+    margin: 24px 0 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(21,40,64,0.1);
+}
+
+.genre-panel.full-mode:first-child .genre-heading { margin-top: 4px; }
+.genre-panel.full-mode .genre-heading { display: block; }
 
 /* Song grid within panel */
 .catalog-song-list {
