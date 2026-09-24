@@ -51,6 +51,7 @@ const SEED_SONGS = [
   { title: "Man! I Feel Like a Woman",                   artist: "Shania Twain",                    lead: "Savannah" },
   { title: "Man I Need",                                 artist: "Olivia Dean",                     lead: "Savannah" },
   { title: "Mr. Brightside",                             artist: "The Killers",                     lead: "Nick" },
+  { title: "Murder on the Dance Floor",                  artist: "Sophie Ellis-Bextor",             lead: "Savannah" },
   { title: "Music For a Sushi Restaurant",               artist: "Harry Styles",                    lead: "Matt" },
   { title: "My Girl",                                    artist: "The Temptations",                 lead: "Ian" },
   { title: "Pick Up the Pieces",                         artist: "Average White Band",              lead: "N/A" },
