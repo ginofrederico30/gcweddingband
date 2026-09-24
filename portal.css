@@ -1117,6 +1117,17 @@ body.is-impersonating #portal-nav { top: 40px; }
 .song-preview-spacer { display: inline-block; width: 26px; flex-shrink: 0; }
 .song-item:has(.song-preview-btn .fa-pause) .song-preview-btn { opacity: 1; }
 
+/* Song selector: preview button + title/artist share the first grid column */
+.song-selector-card .song-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.song-selector-card .song-text {
+    min-width: 0;
+    flex: 1;
+}
+
 .song-item input[type="checkbox"] {
     width: 18px;
     height: 18px;
@@ -1132,9 +1143,6 @@ body.is-impersonating #portal-nav { top: 40px; }
     font-size: 13px;
     font-weight: 600;
     color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .song-artist {

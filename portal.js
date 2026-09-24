@@ -2104,10 +2104,12 @@ function renderSongSelector(clientId) {
            aria-label="Preview ${escHtml(s.title)} on Spotify"><i class="fas fa-play"></i></button>`
       : `<span class="song-preview-spacer"></span>`;
     return `<div class="song-item">
-      ${previewBtn}
       <div class="song-info">
-        <div class="song-title">${escHtml(s.title)}${newBadge}</div>
-        <div class="song-artist">${escHtml(s.artist)}</div>
+        ${previewBtn}
+        <div class="song-text">
+          <div class="song-title">${escHtml(s.title)}${newBadge}</div>
+          <div class="song-artist">${escHtml(s.artist)}</div>
+        </div>
       </div>
       <div class="song-check-cell priority-cell">
         <input type="checkbox" data-song-id="${s.id}" data-pref="Priority"
