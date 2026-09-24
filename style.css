@@ -990,6 +990,10 @@ img {
     display: block;
 }
 
+.user img[src="maddie.png"]   { object-position: center 15%; }
+.user img[src="stylski2.png"] { object-position: center top; }
+.user img[src="megdrew.png"]  { object-position: center 12%; }
+
 .stars {
     display: flex;
     gap: 3px;
