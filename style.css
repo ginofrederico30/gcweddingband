@@ -968,6 +968,7 @@ img {
     transition: transform 0.4s ease, box-shadow 0.4s ease;
     display: flex;
     flex-direction: column;
+    height: 460px;
 }
 
 .testimonial-col:hover {
@@ -1019,11 +1020,24 @@ img {
     color: #555;
     line-height: 1.78;
     flex: 1;
+    min-height: 0;
     margin-top: 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 7;
-    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+}
+
+.testimonial-col > p::-webkit-scrollbar {
+    width: 3px;
+}
+
+.testimonial-col > p::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.testimonial-col > p::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 2px;
 }
 
 .testimonial-col .testimonial-signature {
