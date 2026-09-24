@@ -192,6 +192,11 @@ const SPOTIFY_PREVIEWS = {
 var _previewAudio = null;
 var _previewBtn   = null;
 
+/* Frozen set of song IDs that are "new" to a given client for this browser session.
+   Keyed by clientId. Computed once when the selector is first opened, never updated
+   mid-session so songs can't jump in/out while the client is clicking checkboxes. */
+var _newSongIds = {};
+
 function toggleSongPreview(btn) {
   var url = btn.dataset.previewUrl;
   if (_previewBtn === btn && _previewAudio && !_previewAudio.paused) {
@@ -573,12 +578,12 @@ function _clientHasStartedSelections(clientId) {
 }
 
 function countNewSongs(clientId) {
-  const client = DB.getClients().find(c => c.id === clientId);
-  if (!client) return 0;
-  if (!_clientHasStartedSelections(clientId)) return 0;
-  const songs = DB.getGCP(clientId).songs || {};
+  const gcp      = DB.getGCP(clientId);
+  const baseline = gcp.songsFirstViewedAt;
+  if (!baseline) return 0; // client hasn't opened the selector yet — nothing is new
+  const songs = gcp.songs || {};
   return DB.getMasterSongs().filter(s =>
-    s.addedAt > client.createdAt && !songs[s.id] && !_clientHasRequested(clientId, s)
+    s.addedAt > baseline && !songs[s.id] && !_clientHasRequested(clientId, s)
   ).length;
 }
 
@@ -2082,12 +2087,28 @@ function renderSongSelector(clientId) {
   const prefs    = {};
   Object.keys(rawPrefs).forEach(k => { prefs[k] = _normalizePref(rawPrefs[k]); });
 
+  // Set the first-view baseline the very first time this client opens the selector.
+  // Never overwrite it — songs added after this timestamp are "new" to this client.
+  if (!gcp.songsFirstViewedAt) {
+    gcp.songsFirstViewedAt = Date.now();
+    DB.setGCPField(clientId, 'songsFirstViewedAt', gcp.songsFirstViewedAt);
+  }
+
+  // Freeze the set of new song IDs once per browser session.
+  // Reused on subsequent calls (from updateSongPref) so nothing jumps mid-session.
+  if (!_newSongIds[clientId]) {
+    const baseline = gcp.songsFirstViewedAt;
+    _newSongIds[clientId] = new Set(
+      DB.getMasterSongs().filter(s => s.addedAt > baseline).map(s => s.id)
+    );
+  }
+  const frozenNewIds = _newSongIds[clientId];
+
   const query    = (document.getElementById('song-selector-search').value || '').toLowerCase();
   const allSongs = DB.getMasterSongs()
     .filter(s => !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query))
     .sort((a, b) => a.title.localeCompare(b.title));
-  const hasStarted = _clientHasStartedSelections(clientId);
-  const newSongs = hasStarted ? allSongs.filter(s => s.addedAt > client.createdAt && !_clientHasRequested(clientId, s)) : [];
+  const newSongs = allSongs.filter(s => frozenNewIds.has(s.id));
 
   const { total } = _songSelectionCounts(prefs);
   const labelEl = document.getElementById('songs-selected-count');
@@ -2095,7 +2116,7 @@ function renderSongSelector(clientId) {
 
 
   function songHTML(s) {
-    const isNew = hasStarted && s.addedAt > client.createdAt && !_clientHasRequested(clientId, s);
+    const isNew = frozenNewIds.has(s.id);
     const pref  = prefs[s.id] || '';
     const newBadge = (isNew && !pref) ? ' <span class="song-new-badge">New</span>' : '';
     const chk = (val) => pref === val ? 'checked' : '';
