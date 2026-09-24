@@ -949,25 +949,48 @@ img {
     width: 100%;
     padding: 90px 0 60px;
     background: #f8f7f4;
+    overflow: hidden;
 }
 
 .testimonial-row {
-    width: 88%;
-    max-width: 1400px;
-    margin: 0 auto 60px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 32px;
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 5% 28px;
+    margin-bottom: 60px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+}
+
+.testimonial-row::-webkit-scrollbar {
+    height: 4px;
+}
+
+.testimonial-row::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.testimonial-row::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 2px;
 }
 
 .testimonial-col {
+    flex: 0 0 360px;
+    width: 360px;
     background: #fff;
     border-radius: var(--radius);
-    padding: 36px;
+    padding: 0;
+    overflow: hidden;
     box-shadow: 0 4px 24px rgba(0,0,0,0.07);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
     display: flex;
     flex-direction: column;
+    scroll-snap-align: start;
 }
 
 .testimonial-col:hover {
@@ -976,31 +999,24 @@ img {
 }
 
 .user {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 18px;
+    display: block;
+    margin: 0;
+    overflow: hidden;
 }
 
 .user img {
     width: 100%;
-    max-width: 260px;
-    border-radius: 6px;
+    height: 220px;
     object-fit: cover;
-}
-
-.testimonial-col .fas.fa-quote-left {
-    color: var(--navy);
-    font-size: 18px;
-    margin-bottom: 10px;
-    opacity: 0.25;
+    object-position: center top;
     display: block;
 }
 
 .stars {
     display: flex;
     gap: 3px;
-    margin-bottom: 12px;
+    padding: 20px 24px 0;
+    margin-bottom: 10px;
 }
 
 .stars .fas.fa-star {
@@ -1011,38 +1027,35 @@ img {
 
 .testimonial-col h4 {
     font-family: var(--font-sans);
-    font-size: 17px;
+    font-size: 16px;
     color: var(--navy);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     line-height: 1.4;
     font-weight: 700;
+    padding: 0 24px;
 }
 
 .testimonial-col > p {
-    font-size: 15px;
+    font-size: 14px;
     font-family: var(--font-serif);
     font-style: italic;
     color: #555;
-    line-height: 1.78;
+    line-height: 1.75;
     flex: 1;
     margin-top: 0;
+    padding: 0 24px;
 }
 
 .testimonial-col .testimonial-signature {
-    text-align: right;
     font-style: normal;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: 11px;
     color: var(--navy);
-    margin-top: 20px;
-    opacity: 0.65;
+    opacity: 0.7;
     letter-spacing: 0.5px;
-}
-
-.testimonial-col .fas.fa-quote-right {
-    color: var(--navy);
-    font-size: 12px;
-    opacity: 0.25;
+    padding: 14px 24px 22px;
+    margin-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.07);
 }
 
 /* Awards */
@@ -1462,8 +1475,13 @@ img {
     .song-list h3 { text-align: center; }
 
     .testimonial-row {
-        width: 92%;
-        grid-template-columns: 1fr;
+        padding: 8px 16px 20px;
+        gap: 16px;
+    }
+
+    .testimonial-col {
+        flex: 0 0 300px;
+        width: 300px;
     }
 
     .awards-section {
@@ -1516,7 +1534,7 @@ img {
     .hero-tagline { font-size: 11px; letter-spacing: 4px; }
     .service-box { width: 100%; }
     .feature-box { width: 95%; }
-    .testimonial-row { width: 95%; }
+    .testimonial-col { flex: 0 0 280px; width: 280px; }
     .song-list { padding: 0 16px; }
     .shows-inner { padding: 0 16px; }
 }
