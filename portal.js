@@ -194,12 +194,12 @@ function toggleSongPreview(btn) {
   var url = btn.dataset.previewUrl;
   if (_previewBtn === btn && _previewAudio && !_previewAudio.paused) {
     _previewAudio.pause();
-    btn.innerHTML = '<i class="fab fa-spotify"></i>';
+    btn.innerHTML = '<i class="fas fa-play"></i>';
     return;
   }
   if (_previewAudio) {
     _previewAudio.pause();
-    if (_previewBtn) { _previewBtn.innerHTML = '<i class="fab fa-spotify"></i>'; }
+    if (_previewBtn) { _previewBtn.innerHTML = '<i class="fas fa-play"></i>'; }
   }
   _previewBtn = btn;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -208,13 +208,13 @@ function toggleSongPreview(btn) {
   _previewAudio.play().then(function() {
     btn.innerHTML = '<i class="fas fa-pause"></i>';
   }).catch(function() {
-    btn.innerHTML = '<i class="fab fa-spotify"></i>';
+    btn.innerHTML = '<i class="fas fa-play"></i>';
   });
   _previewAudio.addEventListener('ended', function() {
-    if (_previewBtn === btn) { btn.innerHTML = '<i class="fab fa-spotify"></i>'; _previewBtn = null; }
+    if (_previewBtn === btn) { btn.innerHTML = '<i class="fas fa-play"></i>'; _previewBtn = null; }
   });
   _previewAudio.addEventListener('error', function() {
-    if (_previewBtn === btn) { btn.innerHTML = '<i class="fab fa-spotify"></i>'; _previewBtn = null; }
+    if (_previewBtn === btn) { btn.innerHTML = '<i class="fas fa-play"></i>'; _previewBtn = null; }
   });
 }
 
@@ -2101,14 +2101,14 @@ function renderSongSelector(clientId) {
     const previewBtn = previewUrl
       ? `<button class="song-preview-btn" data-preview-url="${escHtml(previewUrl)}"
            onclick="toggleSongPreview(this)" title="Preview on Spotify"
-           aria-label="Preview ${escHtml(s.title)} on Spotify"><i class="fab fa-spotify"></i></button>`
+           aria-label="Preview ${escHtml(s.title)} on Spotify"><i class="fas fa-play"></i></button>`
       : `<span class="song-preview-spacer"></span>`;
     return `<div class="song-item">
+      ${previewBtn}
       <div class="song-info">
         <div class="song-title">${escHtml(s.title)}${newBadge}</div>
         <div class="song-artist">${escHtml(s.artist)}</div>
       </div>
-      ${previewBtn}
       <div class="song-check-cell priority-cell">
         <input type="checkbox" data-song-id="${s.id}" data-pref="Priority"
           onchange="updateSongPref('${clientId}','${s.id}','Priority',this.checked)"
