@@ -989,6 +989,8 @@ img {
     transition: all 0.2s;
 }
 
+.genre-tab--mixed { text-transform: none; letter-spacing: 0.3px; }
+
 .genre-tab:hover { border-color: var(--gold); color: var(--navy); }
 
 .genre-tab.active {
