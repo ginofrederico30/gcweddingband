@@ -861,7 +861,7 @@ img {
    Song Catalog
    ============================================ */
 #song-list {
-    background-color: var(--navy);
+    background-color: #fff;
     padding: 80px 0;
     text-align: center;
 }
@@ -883,19 +883,29 @@ img {
 }
 
 .title-text2 h2 {
-    color: white;
+    color: var(--navy);
     font-family: var(--font-serif);
     font-size: clamp(40px, 6vw, 72px);
     letter-spacing: 4px;
     line-height: 1;
 }
 
-/* Spotify embed */
+/* Spotify embed — sits below the catalog */
 .catalog-spotify {
     max-width: 680px;
-    margin: 0 auto 36px;
-    padding: 0 24px;
+    margin: 40px auto 0;
+    padding: 40px 24px 0;
     text-align: center;
+    border-top: 1px solid rgba(21,40,64,0.08);
+}
+
+.catalog-spotify-note {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin-bottom: 20px;
 }
 
 .spotify-link {
@@ -930,7 +940,7 @@ img {
     left: 40px;
     top: 50%;
     transform: translateY(-50%);
-    color: rgba(255,255,255,0.38);
+    color: rgba(21,40,64,0.35);
     pointer-events: none;
 }
 
@@ -938,18 +948,18 @@ img {
     width: 100%;
     box-sizing: border-box;
     padding: 11px 18px 11px 40px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(21,40,64,0.04);
+    border: 1px solid rgba(21,40,64,0.15);
     border-radius: 100px;
-    color: var(--cream);
+    color: var(--navy);
     font-family: var(--font-sans);
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s, background 0.2s;
 }
 
-#catalog-search::placeholder { color: rgba(255,255,255,0.32); }
-#catalog-search:focus { border-color: var(--gold); background: rgba(255,255,255,0.11); }
+#catalog-search::placeholder { color: rgba(21,40,64,0.35); }
+#catalog-search:focus { border-color: var(--gold); background: #fff; }
 
 /* Genre tabs */
 .genre-tabs {
@@ -967,9 +977,9 @@ img {
     gap: 8px;
     padding: 10px 22px;
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(21,40,64,0.2);
     border-radius: 100px;
-    color: rgba(255,255,255,0.55);
+    color: rgba(21,40,64,0.55);
     font-family: var(--font-sans);
     font-size: 12px;
     font-weight: 700;
@@ -979,19 +989,23 @@ img {
     transition: all 0.2s;
 }
 
-.genre-tab:hover { border-color: var(--gold); color: var(--cream); }
+.genre-tab:hover { border-color: var(--gold); color: var(--navy); }
 
 .genre-tab.active {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: var(--navy);
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
 }
 
 .tab-count {
-    background: rgba(0,0,0,0.18);
+    background: rgba(21,40,64,0.1);
     border-radius: 100px;
     padding: 1px 7px;
     font-size: 11px;
+}
+
+.genre-tab.active .tab-count {
+    background: rgba(255,255,255,0.2);
 }
 
 /* Genre panels */
@@ -1015,14 +1029,14 @@ img {
 
 .catalog-song-item {
     padding: 9px 0;
-    border-bottom: 1px solid rgba(173,184,187,0.07);
+    border-bottom: 1px solid rgba(21,40,64,0.07);
     line-height: 1.4;
     text-align: left;
 }
 
 .catalog-song-list song {
     font-family: var(--font-sans);
-    color: var(--cream);
+    color: var(--navy);
     font-style: normal;
     font-size: 15px;
     font-weight: 500;
@@ -1030,7 +1044,7 @@ img {
 
 .catalog-song-list em {
     font-family: var(--font-serif);
-    color: rgba(173,184,187,0.65);
+    color: var(--steel);
     font-size: 13px;
 }
 
