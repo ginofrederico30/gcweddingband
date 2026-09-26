@@ -61,6 +61,7 @@ const SEED_SONGS = [
   { title: "Murder On the Dancefloor",                     artist: "Sophie Ellis-Bextor",              lead: "Savannah",  genre: "throwback" },
   { title: "Music For a Sushi Restaurant",                 artist: "Harry Styles",                     lead: "Matt",      genre: "hits"      },
   { title: "My Girl",                                      artist: "The Temptations",                  lead: "Ian",       genre: "motown"    },
+  { title: "Party in the U.S.A.",                          artist: "Miley Cyrus",                      lead: "Savannah",  genre: "throwback" },
   { title: "Pick Up the Pieces",                           artist: "Average White Band",               lead: "N/A",       genre: "funk"      },
   { title: "Pink Pony Club",                               artist: "Chappell Roan",                    lead: "Savannah",  genre: "hits"      },
   { title: "Play That Funky Music",                        artist: "Wild Cherry",                      lead: "Ian",       genre: "funk"      },
@@ -94,6 +95,7 @@ const SEED_SONGS = [
   { title: "You Can Call Me Al",                           artist: "Paul Simon",                       lead: "TBD",       genre: "rock"      },
   { title: "You Make Me Feel Like Dancing",                artist: "Leo Sayer",                        lead: "Ian",       genre: "funk"      },
   { title: "You Make My Dreams (Come True)",               artist: "Daryl Hall & John Oates",          lead: "Matt",      genre: "rock"      },
+  { title: "You're the One That I Want",                   artist: "John Travolta & Olivia Newton-John", lead: "Ian/Savannah", genre: "funk"  },
   { title: "You Sexy Thing",                               artist: "Hot Chocolate",                    lead: "Ian",       genre: "funk"      },
 ];
 
@@ -152,6 +154,7 @@ const SPOTIFY_PREVIEWS = {
   "murder on the dancefloor":                    "https://p.scdn.co/mp3-preview/340bdf7b29f2725f0353cb77cc8f6996cdc9fbe8",
   "music for a sushi restaurant":                "https://p.scdn.co/mp3-preview/e3e77ccb5480c79cbca57f397442e9fb5995ad3c",
   "my girl":                                     "https://p.scdn.co/mp3-preview/a38a2f0fc30ffe90ecae49b9789517338c5ea193",
+  "party in the u.s.a.":                         "https://p.scdn.co/mp3-preview/b2ba87ea556f5c9f44c947b176ccec21da3e612f",
   "pick up the pieces":                          "https://p.scdn.co/mp3-preview/bedf045bbaf123f3df052fdfef7d3fa9275cf586",
   "pink pony club":                              "https://p.scdn.co/mp3-preview/064dd33ec1b86bb205a7e6875a247d61da32e8e9",
   "play that funky music":                       "https://p.scdn.co/mp3-preview/4b3c574d2e102bf5140c29d2934f2f0d5dc7bfcf",
@@ -185,6 +188,7 @@ const SPOTIFY_PREVIEWS = {
   "you can call me al":                          "https://p.scdn.co/mp3-preview/d9144f35328ebf1e07dea90119171fcf468e9f45",
   "you make me feel like dancing":               "https://p.scdn.co/mp3-preview/8d6039ebe4c4c26eb72cc57b859a6ef3f72ad869",
   "you make my dreams (come true)":              "https://p.scdn.co/mp3-preview/5f096f9722067db33f1453ea8804725ca15ac5bf",
+  "you're the one that i want":                  "https://p.scdn.co/mp3-preview/884b80e276aa1c46c5061b205acf1a85fe855e88",
   "you sexy thing":                              "https://p.scdn.co/mp3-preview/cf7d6e0e8f7cb98c438805bbb5631fbc45891e3f",
 };
 
