@@ -22,10 +22,12 @@ const SEED_SONGS = [
   { title: "Brick House",                                  artist: "Commodores",                       lead: "Ian",       genre: "funk"      },
   { title: "Bust a Move",                                  artist: "Young MC",                         lead: "Ian",       genre: "funk"      },
   { title: "Cake By the Ocean",                            artist: "DNCE",                             lead: "Savannah",  genre: "throwback" },
+  { title: "Can't Take My Eyes Off You",                   artist: "Frankie Valli",                    lead: "TBD",       genre: "motown"    },
   { title: "Canned Heat",                                  artist: "Jamiroquai",                       lead: "Ian",       genre: "funk"      },
   { title: "Celebration",                                  artist: "Kool & The Gang",                  lead: "Gino",      genre: "funk"      },
   { title: "Come and Get Your Love",                       artist: "Redbone",                          lead: "Ian",       genre: "rock"      },
   { title: "Come On Eileen",                               artist: "Dexys Midnight Runners",           lead: "Matt",      genre: "rock"      },
+  { title: "Coming Home",                                  artist: "Leon Bridges",                     lead: "TBD",       genre: "throwback" },
   { title: "Crazy in Love",                                artist: "Beyoncé",                          lead: "Savannah",  genre: "throwback" },
   { title: "Dancing in the Moonlight",                     artist: "King Harvest",                     lead: "Ian",       genre: "rock"      },
   { title: "Dancing On My Own",                            artist: "Robyn",                            lead: "TBD",       genre: "throwback" },
@@ -115,10 +117,12 @@ const SPOTIFY_PREVIEWS = {
   "brick house":                                 "https://p.scdn.co/mp3-preview/8e3acac4d6f2cda5ad2b8e62cf6ebc8001bcf6f4",
   "bust a move":                                 "https://p.scdn.co/mp3-preview/3703536d893b08110cae971a23ef1fbf7ae8d942",
   "cake by the ocean":                           "https://p.scdn.co/mp3-preview/f42a9a2157e1b4653ffe9c54c3bb9357c293ead6",
+  "can't take my eyes off you":                  "https://p.scdn.co/mp3-preview/939506d451586f6be13d48a3f7cb980ac5f996be",
   "canned heat":                                 "https://p.scdn.co/mp3-preview/17bed183741cd92a306cc7b129514b972ba54c89",
   "celebration":                                 "https://p.scdn.co/mp3-preview/1ba26bd1583538201bbd9c8b9d822b2d340eb301",
   "come and get your love":                      "https://p.scdn.co/mp3-preview/beb70a209af1e258ff3af3a01c92cc6a7295c7bb",
   "come on eileen":                              "https://p.scdn.co/mp3-preview/33413b567fcf367cc538874b5e33fd077b0d4b07",
+  "coming home":                                 "https://p.scdn.co/mp3-preview/3ee8253c3f5db313817cfb3da33bb628ceb2f6e0",
   "crazy in love":                               "https://p.scdn.co/mp3-preview/28d167ea8ccdb4740f163bf0cf44df80ad69f980",
   "dancing in the moonlight":                    "https://p.scdn.co/mp3-preview/7a9886f285cbed054d2209c1076094f573f97de2",
   "dancing on my own":                           "https://p.scdn.co/mp3-preview/7d025c444ac68bb2f20e48dd0259d68af79a5198",
@@ -582,12 +586,18 @@ function _clientHasStartedSelections(clientId) {
 }
 
 function countNewSongs(clientId) {
+  if (!countSelectedSongs(clientId)) return 0; // only show to clients who've started selecting
   const gcp      = DB.getGCP(clientId);
   const baseline = gcp.songsFirstViewedAt;
-  if (!baseline) return 0; // client hasn't opened the selector yet — nothing is new
+  if (!baseline) return 0;
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - THIRTY_DAYS;
   const songs = gcp.songs || {};
   return DB.getMasterSongs().filter(s =>
-    s.addedAt > baseline && !songs[s.id] && !_clientHasRequested(clientId, s)
+    s.addedAt > baseline &&
+    s.addedAt > cutoff &&
+    !songs[s.id] &&
+    !_clientHasRequested(clientId, s)
   ).length;
 }
 
@@ -2092,18 +2102,23 @@ function renderSongSelector(clientId) {
   Object.keys(rawPrefs).forEach(k => { prefs[k] = _normalizePref(rawPrefs[k]); });
 
   // Set the first-view baseline the very first time this client opens the selector.
-  // Never overwrite it — songs added after this timestamp are "new" to this client.
+  // Legacy clients who already have selections get baseline=1 so recently-added songs
+  // can surface as new. Fresh clients with no selections get Date.now() so nothing
+  // in the existing catalog ever jumps in as "new" once they start clicking.
   if (!gcp.songsFirstViewedAt) {
-    gcp.songsFirstViewedAt = Date.now();
+    gcp.songsFirstViewedAt = countSelectedSongs(clientId) > 0 ? 1 : Date.now();
     DB.setGCPField(clientId, 'songsFirstViewedAt', gcp.songsFirstViewedAt);
   }
 
-  // Freeze the set of new song IDs once per browser session.
-  // Reused on subsequent calls (from updateSongPref) so nothing jumps mid-session.
+  // Freeze the set of new song IDs once per browser session, applying the 30-day window.
   if (!_newSongIds[clientId]) {
-    const baseline = gcp.songsFirstViewedAt;
+    const baseline    = gcp.songsFirstViewedAt;
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    const cutoff      = Date.now() - THIRTY_DAYS;
     _newSongIds[clientId] = new Set(
-      DB.getMasterSongs().filter(s => s.addedAt > baseline).map(s => s.id)
+      DB.getMasterSongs()
+        .filter(s => s.addedAt > baseline && s.addedAt > cutoff)
+        .map(s => s.id)
     );
   }
   const frozenNewIds = _newSongIds[clientId];
@@ -2115,6 +2130,7 @@ function renderSongSelector(clientId) {
   const newSongs = allSongs.filter(s => frozenNewIds.has(s.id));
 
   const { total } = _songSelectionCounts(prefs);
+  const hasStarted = total > 0 || (gcp.songRequests || []).length > 0;
   const labelEl = document.getElementById('songs-selected-count');
   if (labelEl) labelEl.textContent = total + ' song' + (total === 1 ? '' : 's') + ' marked';
 
@@ -2122,7 +2138,7 @@ function renderSongSelector(clientId) {
   function songHTML(s) {
     const isNew = frozenNewIds.has(s.id);
     const pref  = prefs[s.id] || '';
-    const newBadge = (isNew && !pref) ? ' <span class="song-new-badge">New</span>' : '';
+    const newBadge = (isNew && !pref && hasStarted) ? ' <span class="song-new-badge">New</span>' : '';
     const chk = (val) => pref === val ? 'checked' : '';
     const previewUrl = SPOTIFY_PREVIEWS[(s.title || '').toLowerCase()];
     const previewBtn = previewUrl
@@ -2158,7 +2174,7 @@ function renderSongSelector(clientId) {
 
   const newSection = document.getElementById('new-songs-section');
   const newList    = document.getElementById('new-songs-list');
-  if (newSongs.length && !query) {
+  if (newSongs.length && !query && hasStarted) {
     newSection.classList.remove('hidden');
     newList.innerHTML = newSongs.map(songHTML).join('');
   } else {
