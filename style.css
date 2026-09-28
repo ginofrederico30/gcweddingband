@@ -187,6 +187,44 @@ img {
     border-color: rgba(255,255,255,0.7);
 }
 
+/* Nav social icons (Instagram + TikTok) */
+.nav-social-icons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-social-icon {
+    font-size: 18px;
+    opacity: 0.6;
+    transition: opacity var(--ease);
+    padding-bottom: 0;
+    line-height: 1;
+}
+
+.nav-social-icon::after { display: none; }
+
+.nav-social-icon:hover { opacity: 1; }
+
+/* Mobile menu social row */
+#mobile-menu .mobile-social-row {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    margin: 6px 0 10px;
+}
+
+#mobile-menu .mobile-social-row a {
+    font-size: 28px;
+    opacity: 0.8;
+    transition: opacity var(--ease);
+}
+
+#mobile-menu .mobile-social-row a:hover {
+    opacity: 1;
+    color: #fff;
+}
+
 /* Hamburger */
 .hamburger {
     display: none;
