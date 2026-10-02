@@ -20,7 +20,8 @@ service cloud.firestore {
     }
     match /gcp/{id} {
       allow read:  if isAdmin() || isArtist() || isOwner(id);
-      allow write: if isAdmin() || isOwner(id);
+      allow write: if isAdmin() || isOwner(id)
+                   || (isArtist() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vendorMeals']));
     }
     match /setlists/{id} {
       allow read:  if isAdmin() || isArtist() || isOwner(id);
