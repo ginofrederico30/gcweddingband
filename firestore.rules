@@ -29,12 +29,6 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['client', 'signedAt', 'signatureData'])
                     && validSignedAt();
 
-      // Client, after signing: only client.dressCode (synced from the checklist)
-      allow update: if isOwner(id)
-                    && resource.data.get('signedAt', null) != null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['client'])
-                    && request.resource.data.client.diff(resource.data.get('client', {})).affectedKeys().hasOnly(['dressCode']);
-
       // Client may create a contract doc only with an empty admin section
       allow create: if isOwner(id)
                     && request.resource.data.keys().hasOnly(['admin', 'client', 'signedAt', 'signatureData'])
