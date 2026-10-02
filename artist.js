@@ -621,7 +621,7 @@ function renderGigDetail(clientId) {
     infoRow('Coordinator', chk['cl-coordinator']
       ? chk['cl-coordinator'] + (chk['cl-coordinator-phone'] ? '  ·  ' + chk['cl-coordinator-phone'] : '')
       : '—'),
-    infoRow('Dress Code',       cl.dressCode || '—'),
+    infoRow('Dress Code',       chk['cl-dress-code'] || cl.dressCode || '—'),
     infoRow('Load-in Location', chk['cl-loadinlocation'] || '—'),
     infoRow('Parking',          chk['cl-parking'] || '—'),
     infoRow('Parking Payment',  chk['cl-parking-payment'] || '—'),
@@ -1728,7 +1728,7 @@ function _buildScheduleHTML(clientId, base) {
 
   const logHtml = [
     lgRow('Coordinator', [cl['cl-coordinator'], cl['cl-coordinator-phone']].filter(Boolean).join(' · ')),
-    lgRow('Dress Code',  cl2.dressCode || cl['cl-dress-code'] || ''),
+    lgRow('Dress Code',  cl['cl-dress-code'] || cl2.dressCode || ''),
     lgRow('Attendance',  cl['cl-attendance'] ? cl['cl-attendance'] + ' guests' : ''),
     lgRow('WiFi',        [cl['cl-wifi-name'], cl['cl-wifi-pass']].filter(Boolean).join(' / ')),
     lgRow('Parking',     cl['cl-parking']),

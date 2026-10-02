@@ -784,7 +784,7 @@ function renderPresignedEditFields(clientId) {
   if (g('ps-contact-name')) g('ps-contact-name').value = cl.contactName     || client2.name        || '';
   if (g('ps-spouse-name'))  g('ps-spouse-name').value  = client2.spouseName || '';
   if (g('ps-phone'))        g('ps-phone').value         = cl.phone           || client2.phone       || '';
-  if (g('ps-dress-code'))   g('ps-dress-code').value   = cl.dressCode     || '';
+  if (g('ps-dress-code'))   g('ps-dress-code').value   = (DB.getGCP(clientId).checklist || {})['cl-dress-code'] || cl.dressCode || '';
   const saved = a.scopeOfServices || [];
   document.querySelectorAll('input[name="ps-scope-service"]').forEach(cb => {
     cb.checked = saved.includes(cb.value);
@@ -804,6 +804,11 @@ function savePresignedFields(clientId) {
   contract.client.contactName  = g('ps-contact-name') ? g('ps-contact-name').value.trim()  : contract.client.contactName || '';
   contract.client.phone        = g('ps-phone')        ? g('ps-phone').value.trim()          : contract.client.phone      || '';
   contract.client.dressCode    = g('ps-dress-code')   ? g('ps-dress-code').value            : contract.client.dressCode  || '';
+  // Keep the checklist (what the artist portal reads) in step with the pre-signed form
+  const chk = DB.getGCP(clientId).checklist || {};
+  if (g('ps-dress-code') && (chk['cl-dress-code'] || '') !== contract.client.dressCode) {
+    DB.setGCPField(clientId, 'checklist', { ...chk, 'cl-dress-code': contract.client.dressCode });
+  }
   // Sync event date and spouse name to client record
   const clients = DB.getClients();
   const client  = clients.find(c => c.id === clientId);
@@ -862,7 +867,11 @@ function openClientDetail(clientId) {
   document.getElementById('ac-client-address').value        = cl.address   || '';
   document.getElementById('ac-client-email-contract').value = cl.email     || '';
   document.getElementById('ac-client-phone').value          = cl.phone     || '';
-  document.getElementById('ac-dress-code').value            = cl.dressCode || '';
+  // Signed dress code is often "TBD"; the final choice lives in the checklist
+  const chkDress = (DB.getGCP(clientId).checklist || {})['cl-dress-code'] || '';
+  document.getElementById('ac-dress-code').value            = chkDress
+    ? 'Signed: ' + (cl.dressCode || '—') + ' / Checklist: ' + chkDress
+    : cl.dressCode || '';
   document.getElementById('ac-payment-method').value        = cl.paymentMethod || '';
   document.getElementById('ac-consent').value               = cl.consent   || '';
   document.getElementById('ac-signed-status').value         = contract.signedAt
@@ -2859,14 +2868,6 @@ function saveChecklist(clientId) {
   // Resolve custom length: replace the "Custom" placeholder with the typed text
   cl['cl-first-dance-length'] = _resolveLengthValue('cl-first-dance-length', 'cl-first-dance-length-custom');
   DB.setGCPField(clientId, 'checklist', cl);
-  // Sync dress code back to contract.client so it appears in the contract view
-  const dcVal = cl['cl-dress-code'];
-  if (dcVal) {
-    const contract = DB.getContract(clientId);
-    if (!contract.client) contract.client = {};
-    contract.client.dressCode = dcVal;
-    DB.setContract(clientId, contract);
-  }
   showToast('Checklist saved!');
   const s = getSession();
   if (s && s.role === 'admin') { renderAdminDash(); showView('view-admin-dash'); }
@@ -2880,13 +2881,6 @@ function _checklistAutosave() {
   CHECKLIST_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cl[id] = el.value; });
   cl['cl-first-dance-length'] = _resolveLengthValue('cl-first-dance-length', 'cl-first-dance-length-custom');
   DB.setGCPField(_checklistClientId, 'checklist', cl);
-  const dcVal = cl['cl-dress-code'];
-  if (dcVal) {
-    const contract = DB.getContract(_checklistClientId);
-    if (!contract.client) contract.client = {};
-    contract.client.dressCode = dcVal;
-    DB.setContract(_checklistClientId, contract);
-  }
   const confirmEl = document.getElementById('checklist-saved-confirm');
   if (confirmEl) {
     confirmEl.textContent = 'Auto-saved';
