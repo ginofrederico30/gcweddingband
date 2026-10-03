@@ -730,10 +730,25 @@ body.is-impersonating #portal-nav { top: 40px; }
     padding: 10px 14px;
     border: 1px solid #e8e6e0;
     border-radius: 8px;
+    font-family: var(--font-sans);
     font-size: 14px;
-    color: #555;
+    color: #333;
     background: #fafaf8;
-    min-height: 42px;
+    line-height: 22px;
+    min-height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+/* iOS Safari draws date inputs natively (centred value, own padding); make them match text inputs */
+@supports (-webkit-touch-callout: none) {
+    .field-group input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+        text-align: left;
+    }
+    .field-group input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
 }
 
 .field-note {
@@ -1341,7 +1356,7 @@ body.is-impersonating #portal-nav { top: 40px; }
     flex-shrink: 0;
 }
 
-.module-info { flex: 1; }
+.module-info { flex: 1; min-width: 0; }
 
 .module-info h3 {
     font-family: var(--font-sans);
@@ -1357,12 +1372,27 @@ body.is-impersonating #portal-nav { top: 40px; }
     color: #999;
 }
 
-.module-status { flex-shrink: 0; }
+.module-status { flex-shrink: 0; max-width: 100%; }
 
 .module-arrow {
     color: #ccc;
     font-size: 14px;
     flex-shrink: 0;
+}
+
+/* Narrow screens: stack the status pill under the title so long labels never overflow */
+@media (max-width: 600px) {
+    .module-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas: "icon info arrow" "icon status arrow";
+        column-gap: 16px;
+        row-gap: 8px;
+    }
+    .module-icon   { grid-area: icon; }
+    .module-info   { grid-area: info; }
+    .module-status { grid-area: status; justify-self: start; }
+    .module-arrow  { grid-area: arrow; }
 }
 
 /* ============================================
@@ -2253,6 +2283,48 @@ body.is-impersonating #portal-nav { top: 40px; }
 }
 .contact-info-table tr:last-child td { border-bottom: none; }
 .contact-info-table td .inline-client-input { max-width: 100%; }
+.contact-info-table .ci-group-head { display: none; }
+
+/* Narrow screens: stack the table into an Artist block then a Client block,
+   each field labelled from data-label, so client inputs get the full width */
+@media (max-width: 600px) {
+    .contact-info-table { display: block; }
+    .contact-info-table thead { display: none; }
+    .contact-info-table tbody { display: grid; grid-template-columns: minmax(0, 1fr); }
+    .contact-info-table tr,
+    .contact-info-table tr.ci-group-head { display: contents; }
+    .contact-info-table td { display: block; border-bottom: none; padding: 6px 16px; }
+    .contact-info-table td.ci-label { display: none; }
+    .contact-info-table .ci-group-head td {
+        background: #f8f7f4;
+        padding: 10px 16px;
+        margin-bottom: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #888;
+        border-bottom: 1px solid #e8e6e0;
+    }
+    .contact-info-table .ci-group-client td { border-top: 1px solid #e8e6e0; margin-top: 10px; }
+    .contact-info-table .ci-group-artist td { order: 0; }
+    .contact-info-table .ci-artist          { order: 1; overflow-wrap: anywhere; }
+    .contact-info-table .ci-group-client td { order: 2; }
+    .contact-info-table .ci-client          { order: 3; }
+    .contact-info-table tr:last-child .ci-artist,
+    .contact-info-table tr:last-child .ci-client { padding-bottom: 14px; }
+    .contact-info-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #999;
+    }
+    .contact-info-table .inline-client-input { min-height: 44px; padding: 10px 12px; }
+}
 
 /* ============================================
    Contract — Signed / executed banners
@@ -2869,6 +2941,7 @@ body.is-impersonating #portal-nav { top: 40px; }
    iOS threshold — below it the browser auto-zooms and the zoom persists. */
 @media (max-width: 768px), (hover: none) {
     input, select, textarea { font-size: 16px !important; }
+    .field-group .readonly-field { font-size: 16px; }
 }
 
 @media (max-width: 480px) {

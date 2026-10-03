@@ -830,34 +830,37 @@
                     <table class="contact-info-table">
                         <thead><tr><th></th><th>ARTIST</th><th>CLIENT</th></tr></thead>
                         <tbody>
+                            <!-- Group headings: only shown on mobile, where the table stacks into Artist / Client blocks -->
+                            <tr class="ci-group-head ci-group-artist"><td colspan="3">Artist</td></tr>
+                            <tr class="ci-group-head ci-group-client"><td colspan="3">Client</td></tr>
                             <tr>
-                                <td><strong>Name</strong></td>
-                                <td>Good Company</td>
-                                <td>
+                                <td class="ci-label"><strong>Name</strong></td>
+                                <td class="ci-artist" data-label="Name">Good Company</td>
+                                <td class="ci-client" data-label="Name">
                                     <span id="cc-contact-name-display" class="cc-highlight-yellow readonly-inline hidden">—</span>
                                     <input type="text" id="cc-contact-name" class="inline-client-input" placeholder="Your full name">
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Address</strong></td>
-                                <td>176 N 20th St<br>Columbus, OH 43203</td>
-                                <td>
+                                <td class="ci-label"><strong>Address</strong></td>
+                                <td class="ci-artist" data-label="Address">176 N 20th St<br>Columbus, OH 43203</td>
+                                <td class="ci-client" data-label="Address">
                                     <span id="cc-address-display" class="cc-highlight-yellow readonly-inline hidden">—</span>
                                     <input type="text" id="cc-address" class="inline-client-input" placeholder="Street address, City, ST ZIP">
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Email</strong></td>
-                                <td>gino@gcweddingband.com</td>
-                                <td>
+                                <td class="ci-label"><strong>Email</strong></td>
+                                <td class="ci-artist" data-label="Email">gino@gcweddingband.com</td>
+                                <td class="ci-client" data-label="Email">
                                     <span id="cc-email-display" class="cc-highlight-yellow readonly-inline hidden">—</span>
                                     <input type="email" id="cc-email" class="inline-client-input" placeholder="your@email.com">
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Phone</strong></td>
-                                <td>(856) 381-2128</td>
-                                <td>
+                                <td class="ci-label"><strong>Phone</strong></td>
+                                <td class="ci-artist" data-label="Phone">(856) 381-2128</td>
+                                <td class="ci-client" data-label="Phone">
                                     <span id="cc-phone-display" class="cc-highlight-yellow readonly-inline hidden">—</span>
                                     <input type="tel" id="cc-phone" class="inline-client-input" placeholder="(555) 555-5555" maxlength="14">
                                 </td>
