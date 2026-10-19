@@ -1561,9 +1561,9 @@ function renderClientContract(clientId) {
   const balDueDateEl = document.getElementById('cc-balance-due-date');
   if (balDueDateEl) balDueDateEl.textContent = fmtDate(a.eventDate || client.eventDate) || '—';
 
-  // Populate scope-services-list from admin's checkbox selections.
-  // scope section is excluded from CONTRACT_SECTIONS so applyLangOverrides never touches it.
-  const servicesList = document.getElementById('scope-services-list');
+  // Populate the services list from admin's checkbox selections. Runs after applyLangOverrides,
+  // so a custom Section 2 still gets the list (overrides always store it empty).
+  const servicesList = document.querySelector('#contract-print-area ' + SCOPE_LIST_SEL);
   if (servicesList) {
     if (a.scopeOfServices && a.scopeOfServices.length) {
       const scopeOverrides = contract.scopeLabelOverrides || {};
@@ -1931,6 +1931,7 @@ async function adminCounterSign(clientId) {
 const _CONTRACT_HTML_DEFAULTS = {};
 
 const CONTRACT_SECTIONS = [
+  { key: 'scope',           label: '2. Scope of Services' },
   { key: 'clientReqs',      label: '3. Client Requirements' },
   { key: 'gcp',             label: '6. Good Company Planner' },
   { key: 'songRequests',    label: '7. Song Requests' },
@@ -1947,6 +1948,32 @@ const CONTRACT_SECTIONS = [
   { key: 'waiver',          label: '20. Waiver' },
   { key: 'governingLaw',    label: '21. Governing Law' }
 ];
+
+// Section 2 contains the services list, which renderClientContract fills from the admin's
+// checkbox selections. Editors show it as a read-only preview; it is always saved empty.
+const SCOPE_LIST_SEL = '[data-scope-services-list]';
+
+function _fillScopeListPreview(editEl, labels) {
+  const list = editEl && editEl.querySelector(SCOPE_LIST_SEL);
+  if (!list) return;
+  list.setAttribute('contenteditable', 'false');
+  list.innerHTML = labels.length
+    ? labels.map(l => `<li>${escHtml(l)}</li>`).join('')
+    : '<li style="color:#aaa;font-style:italic">Selected services appear here</li>';
+}
+
+/* Editor HTML with the services-list preview stripped, ready to compare/save */
+function _editorSectionHTML(editEl) {
+  const clone = editEl.cloneNode(true);
+  const list  = clone.querySelector(SCOPE_LIST_SEL);
+  if (list) { list.innerHTML = ''; list.removeAttribute('contenteditable'); }
+  return clone.innerHTML.trim();
+}
+
+/* Section 2 must keep its services list, or the selected services would vanish from the contract */
+function _scopeListMissing(editEl) {
+  return !!editEl && !editEl.querySelector(SCOPE_LIST_SEL);
+}
 
 function _sectionBaseHTML(key) {
   // Priority: master contract override, then the original page HTML (captured at load time).
@@ -1994,21 +2021,30 @@ function renderLangEditor(clientId) {
     </div>`;
   }).join('');
 
+  const scopeLabels = scope.map(svc => scopeOverrides[svc] || svc);
+  _fillScopeListPreview(document.getElementById('lang-scope'), scopeLabels);
+
   container.querySelectorAll('.lang-reset-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const edit = document.getElementById('lang-' + this.dataset.section);
-      if (edit) edit.innerHTML = _sectionBaseHTML(this.dataset.section);
+      if (!edit) return;
+      edit.innerHTML = _sectionBaseHTML(this.dataset.section);
+      _fillScopeListPreview(edit, scopeLabels);
     });
   });
 }
 
 function saveLangOverrides(clientId) {
+  if (_scopeListMissing(document.getElementById('lang-scope'))) {
+    showToast('Section 2 is missing its list of services. Click Reset on Section 2 to restore it.', 5000);
+    return;
+  }
   const contract   = DB.getContract(clientId);
   const customText = {};
   CONTRACT_SECTIONS.forEach(s => {
     const el = document.getElementById('lang-' + s.key);
     if (!el) return;
-    const currentHTML = el.innerHTML.trim();
+    const currentHTML = _editorSectionHTML(el);
     const baseHTML    = _sectionBaseHTML(s.key);
     if (currentHTML !== baseHTML) customText[s.key] = currentHTML;
   });
@@ -2039,6 +2075,9 @@ function applyLangOverrides(contract) {
       el.innerHTML = customText[s.key];
     } else if (masterText[s.key]) {
       el.innerHTML = masterText[s.key];
+    } else if (_CONTRACT_HTML_DEFAULTS[s.key]) {
+      // Reset, so a previously viewed client's custom text doesn't carry over
+      el.innerHTML = _CONTRACT_HTML_DEFAULTS[s.key];
     }
   });
 }
@@ -2065,21 +2104,29 @@ function renderMasterContractEditor() {
     </div>`;
   }).join('');
 
+  _fillScopeListPreview(document.getElementById('master-lang-scope'), []);
+
   container.querySelectorAll('.master-reset-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const edit = document.getElementById('master-lang-' + this.dataset.section);
-      if (edit) edit.innerHTML = _CONTRACT_HTML_DEFAULTS[this.dataset.section] || '';
+      if (!edit) return;
+      edit.innerHTML = _CONTRACT_HTML_DEFAULTS[this.dataset.section] || '';
+      _fillScopeListPreview(edit, []);
     });
   });
 }
 
 function saveMasterContract() {
+  if (_scopeListMissing(document.getElementById('master-lang-scope'))) {
+    showToast('Section 2 is missing its list of services. Click Reset to Original on Section 2 to restore it.', 5000);
+    return;
+  }
   const masterText = {};
   CONTRACT_SECTIONS.forEach(s => {
     const el = document.getElementById('master-lang-' + s.key);
     if (!el) return;
     const htmlDefault = _CONTRACT_HTML_DEFAULTS[s.key] || '';
-    const currentHTML = el.innerHTML.trim();
+    const currentHTML = _editorSectionHTML(el);
     if (currentHTML !== htmlDefault) masterText[s.key] = currentHTML;
   });
   DB.setMasterContract(masterText);
