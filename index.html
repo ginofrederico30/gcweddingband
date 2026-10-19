@@ -1042,6 +1042,14 @@
             });
         });
 
+        // Section links (e.g. /testimonials → /#testimonial): re-align once everything has loaded,
+        // since images loading above the section can push it down after the initial jump
+        window.addEventListener('load', function() {
+            var target = null;
+            try { target = location.hash && document.querySelector(location.hash); } catch (e) {}
+            if (target) target.scrollIntoView();
+        });
+
         // Navbar scroll behavior
         var navbar = document.getElementById('navbar');
         window.addEventListener('scroll', function() {
