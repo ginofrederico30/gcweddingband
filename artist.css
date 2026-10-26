@@ -63,12 +63,13 @@
 .status-hold { background: #fff1e0; color: #b45309; }
 .status-hold i { margin-right: 4px; }
 .artist-gig-name .status-hold { vertical-align: middle; margin-left: 8px; letter-spacing: 1px; }
-.artist-gig-card.artist-gig-hold { background: #f1f0ec; box-shadow: none; }
+.artist-gig-card.artist-gig-hold { background: #faf9f6; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+.artist-gig-card.artist-gig-hold:hover { box-shadow: var(--shadow-lg); }
 .artist-gig-card.artist-gig-hold .artist-gig-name { color: #6b7a86; }
 .artist-gig-card.artist-gig-hold .artist-gig-meta,
 .artist-gig-card.artist-gig-hold .artist-key-time,
 .artist-gig-card.artist-gig-hold .artist-key-time strong { color: #9a9a9a; }
-.artist-gig-card.artist-gig-hold .status-none { background: #fff; }
+.artist-gig-card.artist-gig-hold .status-none { background: #efede8; }
 .gig-hold-notice {
     display: flex;
     align-items: center;
