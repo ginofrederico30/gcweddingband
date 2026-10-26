@@ -296,16 +296,18 @@ function renderRehearsalTable() {
       if (!sl || (!sl.sets[0].length && !sl.sets[1].length)) return;
       const eventDate = (ADB.getContract(c.id).admin || {}).eventDate || c.eventDate || '';
       if (eventDate && eventDate < today) return;
+      const hold = isHold(c.id);
       [...(sl.sets[0] || []), ...(sl.sets[1] || [])].filter(s => s.source === 'request').forEach(s => {
         if (!s.id || !s.title) return;
         const master  = byId[s.id];
         const lead    = s.lead    || (master && master.lead)    || ARTIST_LEAD_BY_TITLE[(s.title || '').toLowerCase()] || '';
         const key     = s.key     || (master && master.key)     || _catalogKeyByTitle(s.title) || '';
         const spotify = s.spotify || (master && master.spotify) || '';
-        if (!songMap[s.id]) songMap[s.id] = { title: s.title, artist: s.artist || '', lead, key, spotify, dates: [] };
+        if (!songMap[s.id]) songMap[s.id] = { title: s.title, artist: s.artist || '', lead, key, spotify, dates: [], confirmedDates: [] };
         if (eventDate && !songMap[s.id].dates.includes(eventDate)) {
           songMap[s.id].dates.push(eventDate);
         }
+        if (eventDate && !hold) songMap[s.id].confirmedDates.push(eventDate);
       });
     });
 
@@ -321,7 +323,8 @@ function renderRehearsalTable() {
   });
 
   const rows = songs.map(s => {
-    const dateStr  = s.dates.slice(0, 2).map(d => fmtDateShort(d)).join(', ') + (s.dates.length > 2 ? ` +${s.dates.length - 2}` : '');
+    // A date is a Hold unless at least one gig on that date is confirmed
+    const dateStr  = s.dates.slice(0, 2).map(d => fmtDateShort(d) + (s.confirmedDates.includes(d) ? '' : ' (Hold)')).join(', ') + (s.dates.length > 2 ? ` +${s.dates.length - 2}` : '');
     const leadHtml  = s.lead ? `<span class="rehearsal-lead">${escHtml(s.lead)}</span>` : '<span class="rehearsal-no-lead">—</span>';
     const keyTag    = s.key ? ` <span class="key-tag">(${escHtml(s.key)})</span>` : '';
     const titleHtml = s.spotify
@@ -341,6 +344,15 @@ function renderRehearsalTable() {
 /* ============================================
    GIGS DASHBOARD
    ============================================ */
+
+/* A gig is a Hold (tentative date) until its contract is fully executed or on file.
+   Mirrors contractStatus() in portal.js: Pending, Ready to Sign and Awaiting Counter-Sig are Holds. */
+function isHold(clientId) {
+  const c = ADB.getContract(clientId);
+  return !(c.preSignedOutsidePortal || (c.signedAt && c.adminSignedAt));
+}
+const HOLD_TITLE = 'Contract not fully executed — this date is tentative';
+
 function renderGigsDash() {
   const clients = ADB.getClients();
   const _d    = new Date();
@@ -397,10 +409,14 @@ function renderGigsDash() {
     ].filter(Boolean).join('');
 
     const displayName = c.spouseName ? c.name + ' & ' + c.spouseName : c.name;
+    const hold = isHold(c.id);
+    const holdBadge = hold
+      ? ` <span class="status-badge status-hold" title="${HOLD_TITLE}"><i class="fas fa-hourglass-half"></i> Hold</span>`
+      : '';
     return `
-      <div class="artist-gig-card" data-client-id="${escHtml(c.id)}">
+      <div class="artist-gig-card${hold ? ' artist-gig-hold' : ''}" data-client-id="${escHtml(c.id)}">
         <div class="artist-gig-main">
-          <div class="artist-gig-name">${escHtml(displayName)}</div>
+          <div class="artist-gig-name">${escHtml(displayName)}${holdBadge}</div>
           <div class="artist-gig-meta">
             <span><i class="fas fa-calendar-alt"></i>${fmtDateShort(a.eventDate || c.eventDate)}</span>
             ${venue ? `<span><i class="fas fa-map-marker-alt"></i>${escHtml(venue)}</span>` : ''}
@@ -466,6 +482,7 @@ function renderGigDetail(clientId) {
   const gigDisplayName = client.spouseName ? client.name + ' & ' + client.spouseName : client.name;
   document.getElementById('gig-client-name').textContent = gigDisplayName;
   document.getElementById('gig-event-date').textContent  = fmtDate(a.eventDate || client.eventDate);
+  document.getElementById('gig-hold-notice').classList.toggle('hidden', !isHold(clientId));
 
   /* ---- Scope of Services ---- */
   document.getElementById('gig-scope').innerHTML = scope.length

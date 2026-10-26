@@ -59,6 +59,23 @@
     flex-shrink: 0;
 }
 
+/* ---- Hold (contract not fully executed — tentative date) ---- */
+.status-hold { background: #fff1e0; color: #b45309; }
+.status-hold i { margin-right: 4px; }
+.artist-gig-name .status-hold { vertical-align: middle; margin-left: 8px; letter-spacing: 1px; }
+.artist-gig-card.artist-gig-hold { border: 2px dashed #f5b971; }
+.artist-gig-card.artist-gig-hold:hover { border-color: #b45309; }
+.gig-hold-notice {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #b45309;
+}
+
 /* ---- Past events divider ---- */
 .artist-year-header {
     display: flex;
