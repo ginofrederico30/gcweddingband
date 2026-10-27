@@ -2967,6 +2967,50 @@ const CEREMONY_SONGS = [
   "Jesu, Joy of Man's Desiring",'Lover','This Will Be (An Everlasting Love)','Viva la Vida','What a Wonderful World'
 ];
 
+// 30-second previews from the "Good Company Ceremony Music" playlist (4iTRa31Y9hd5BYbrZjUIIU)
+const CEREMONY_PREVIEWS = {
+  'Accidentally in Love':               { artist: 'Paul Hankinson Covers',       url: 'https://p.scdn.co/mp3-preview/761d54dd3be8cbd739a3f77705f2b8fd1f1be200' },
+  'Ave Maria':                          { artist: 'Susan Bach',                  url: 'https://p.scdn.co/mp3-preview/8b83ef949a156e60568b4eb088b7b3aac8db0521' },
+  'Birds of a Feather':                 { artist: 'The Piano Cover Guy',         url: 'https://p.scdn.co/mp3-preview/3ec2f6471b1a5703e3e7fb39888fcdc7ef69ed0f' },
+  "Can't Help Falling in Love":         { artist: 'Alan Ng',                     url: 'https://p.scdn.co/mp3-preview/c0187be9267dbc7e3846b4c8ac7a380050ff0d0d' },
+  'Canon in D':                         { artist: 'Johann Pachelbel',            url: 'https://p.scdn.co/mp3-preview/f4cac52344cb7855730fb93dfa13e2da7335b11e' },
+  'Clair de Lune':                      { artist: 'Claude Debussy',              url: 'https://p.scdn.co/mp3-preview/389ee585ddbbbe8e99de9da4aae845e51928d04e' },
+  'Goodbye Yellow Brick Road':          { artist: 'Vitamin String Quartet',      url: 'https://p.scdn.co/mp3-preview/ab441d3f0e345e31fc4597140cca5389cfe9b498' },
+  "I'm Yours":                          { artist: 'Vitamin String Quartet',      url: 'https://p.scdn.co/mp3-preview/632232ab0b04a0ae7a4afb82c833d8b57a724b9b' },
+  "If I Ain't Got You":                 { artist: 'Steven Violín',               url: 'https://p.scdn.co/mp3-preview/3c213ce1570c9c20479a7710ee6ee75768038874' },
+  "Jesu, Joy of Man's Desiring":        { artist: 'J.S. Bach, Leon Fleisher',    url: 'https://p.scdn.co/mp3-preview/055dd148334d144c2d6a06f80c8543927f035059' },
+  'Lover':                              { artist: 'Paul Hankinson Covers, Clara Tietz', url: 'https://p.scdn.co/mp3-preview/999f1c685a4b8c93553d743ec9d6d9d836b10c4c' },
+  'This Will Be (An Everlasting Love)': { artist: 'Stringspace',                 url: 'https://p.scdn.co/mp3-preview/56cc0412f3eb5cc2f33c76d4d7f144d4359075e5' },
+  'Viva la Vida':                       { artist: 'La Vid Violin',               url: 'https://p.scdn.co/mp3-preview/92c19cc013ca3a3468b7dfda50e37667bd5e37c7' },
+  'What a Wonderful World':             { artist: 'Alan Ng',                     url: 'https://p.scdn.co/mp3-preview/d31c55e7c2c2f65545b4f2fd8b48fbf9b248c4e5' },
+};
+
+// Render the collapsible preview list; closing it stops any preview that's playing
+function _renderCeremonyPreviews() {
+  document.querySelectorAll('[data-ceremony-preview]').forEach(list => {
+    list.innerHTML = CEREMONY_SONGS.map(t => {
+      const p = CEREMONY_PREVIEWS[t];
+      const btn = p
+        ? `<button type="button" class="song-preview-btn" data-preview-url="${escHtml(p.url)}"
+             onclick="toggleSongPreview(this)" title="Play preview"
+             aria-label="Preview ${escHtml(t)}"><i class="fas fa-play"></i></button>`
+        : `<span class="song-preview-spacer"></span>`;
+      return `<div class="song-item"><div class="song-info">${btn}<div class="song-text">
+        <div class="song-title">${escHtml(t)}</div>
+        ${p ? `<div class="song-artist">${escHtml(p.artist)}</div>` : ''}
+      </div></div></div>`;
+    }).join('');
+    const det = list.closest('details');
+    if (det) det.ontoggle = function() {
+      if (!det.open && _previewAudio && _previewBtn && det.contains(_previewBtn)) {
+        _previewAudio.pause();
+        _previewBtn.innerHTML = '<i class="fas fa-play"></i>';
+        _previewBtn = null;
+      }
+    };
+  });
+}
+
 // Fill a song dropdown; a previously saved song that's no longer on the list is kept as an extra option
 function _fillCeremonySongSelect(sel, current) {
   const songs = CEREMONY_SONGS.slice();
@@ -2989,6 +3033,7 @@ function loadCeremony(clientId) {
   if (dutiesPanel) dutiesPanel.classList.toggle('hidden', !isDuties);
   if (hybridPanel) hybridPanel.classList.toggle('hidden', !isHybrid);
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cer[id] !== undefined) el.value = cer[id]; });
+  _renderCeremonyPreviews();
   CEREMONY_MOMENTS.forEach(k => {
     const liveSel = document.getElementById('cer-live-' + k + '-song');
     if (liveSel) _fillCeremonySongSelect(liveSel, cer['cer-live-' + k + '-song']);

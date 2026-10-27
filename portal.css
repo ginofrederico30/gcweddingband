@@ -1132,6 +1132,49 @@ body.is-impersonating #portal-nav { top: 40px; }
 .song-preview-spacer { display: inline-block; width: 26px; flex-shrink: 0; }
 .song-item:has(.song-preview-btn .fa-pause) .song-preview-btn { opacity: 1; }
 
+/* Ceremony planner: collapsible song previews */
+.cer-preview {
+    border: 1px solid #e3dfd6;
+    border-radius: var(--radius);
+    background: #fbfaf7;
+    margin-bottom: 4px;
+    overflow: hidden;
+}
+.cer-preview summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    transition: background var(--ease);
+}
+.cer-preview summary::-webkit-details-marker { display: none; }
+.cer-preview summary:hover { background: #f4f2ec; }
+.cer-preview summary:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgba(21,40,64,0.3); }
+.cer-preview-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.cer-preview-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-family: var(--font-sans); }
+.cer-preview-text strong { font-size: 14px; color: var(--navy); }
+.cer-preview-text span { font-size: 12px; color: #777; }
+.cer-preview-chev { color: var(--navy); font-size: 13px; transition: transform var(--ease); }
+.cer-preview[open] .cer-preview-chev { transform: rotate(180deg); }
+.cer-preview[open] summary { border-bottom: 1px solid #ebe7de; }
+.cer-preview .song-list { background: #fff; }
+.cer-preview .song-item { padding: 10px 18px; }
+.cer-preview .song-info { display: flex; align-items: center; gap: 10px; }
+.cer-preview .song-text { min-width: 0; }
+
 .spotify-playlist-btn {
     display: inline-flex;
     align-items: center;
