@@ -353,6 +353,14 @@ function isHold(clientId) {
 }
 const HOLD_TITLE = 'Contract not fully executed — this date is tentative';
 
+/* Extra services shown as stamps on dashboard gig cards */
+const SERVICE_STAMPS = [
+  { service: 'Jazz Cocktail Band',  label: 'Jazz Cocktail',    icon: 'fa-glass-martini-alt', cls: 'stamp-cocktail' },
+  { service: 'Live Ceremony Music', label: 'Live Ceremony',    icon: 'fa-guitar',           cls: 'stamp-ceremony' },
+  { service: 'Ceremony Duties',     label: 'Ceremony Duties',  icon: 'fa-headphones',       cls: 'stamp-ceremony' },
+  { service: 'Hybrid Ceremony',     label: 'Hybrid Ceremony',  icon: 'fa-music',            cls: 'stamp-ceremony' },
+];
+
 function renderGigsDash() {
   const clients = ADB.getClients();
   const _d    = new Date();
@@ -408,6 +416,12 @@ function renderGigsDash() {
       kt('fa-music',         'Band Start', chk['cl-dance-floor']),
     ].filter(Boolean).join('');
 
+    const scope = a.scopeOfServices || [];
+    const stampsHtml = SERVICE_STAMPS
+      .filter(st => scope.includes(st.service))
+      .map(st => `<span class="artist-service-stamp ${st.cls}"><i class="fas ${st.icon}"></i>${st.label}</span>`)
+      .join('');
+
     const displayName = c.spouseName ? c.name + ' & ' + c.spouseName : c.name;
     const hold = isHold(c.id);
     const holdBadge = hold
@@ -422,6 +436,7 @@ function renderGigsDash() {
             ${venue ? `<span><i class="fas fa-map-marker-alt"></i>${escHtml(venue)}</span>` : ''}
           </div>
           ${keyTimesHtml ? `<div class="artist-key-times-row">${keyTimesHtml}</div>` : ''}
+          ${stampsHtml ? `<div class="artist-service-stamps">${stampsHtml}</div>` : ''}
         </div>
         <div class="artist-gig-right">
           ${setlistBadge}
