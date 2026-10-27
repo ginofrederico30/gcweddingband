@@ -1077,6 +1077,16 @@
     .mcs-lg-label { width: 100px; }
 }
 
+/* Set Password screen sits centered on navy, like the login screen */
+#view-set-password {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 64px);
+    background: var(--navy);
+    padding: 40px 20px;
+}
+
 /* ============================================
    LOGIN — member / guest switch
    ============================================ */

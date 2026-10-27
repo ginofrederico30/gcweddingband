@@ -8,6 +8,7 @@ let _gigsDashLoaded = false;
 /* Who is signed in: { role: 'guest' | 'member' | 'admin', uid, member }.
    'guest' is the shared password login; only members and admin get My Portal. */
 let _session = null;
+let _savingPassword = false;   // true while Set Password is saving; auth events wait for it
 
 function artistLogout() {
   _gigsDashLoaded = false;
@@ -50,6 +51,16 @@ function noteLoginFailure() {
   _loginThrottle.fails++;
   if (_loginThrottle.fails >= 5) _loginThrottle.until = Date.now() + 30000 * Math.pow(2, _loginThrottle.fails - 5);
 }
+/* Read the member record, retrying once: right after sign-in Firestore can briefly
+   still be using the previous login and refuse the read */
+async function fetchMember(uid) {
+  try { return await MDB.getMember(uid); }
+  catch (e) {
+    await new Promise(r => setTimeout(r, 800));
+    return MDB.getMember(uid);
+  }
+}
+
 function loginErrorText(err, badMsg) {
   if (err.code === 'auth/too-many-requests') return 'Too many attempts. Please wait a few minutes and try again.';
   const badCodes = ['auth/wrong-password','auth/invalid-credential','auth/user-not-found','auth/invalid-email'];
@@ -2128,14 +2139,30 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Firebase auth state drives all routing */
   const _adminBypass = new URLSearchParams(window.location.search).get('admin') === '1';
 
+  // Each auth event gets a number; a slower earlier event must not overwrite a newer one
+  let _authRun = 0;
   _auth.onAuthStateChanged(async function(user) {
+    const run = ++_authRun;
+    if (_savingPassword) return;   // the Set Password handler finishes routing itself
     const isArtist = user && user.email === ARTIST_EMAIL;
     const isAdmin  = user && user.email === ADMIN_EMAIL;
 
     // Any other signed-in user may be a band member
     let member = null;
     if (user && !isArtist && !isAdmin) {
-      try { member = await MDB.getMember(user.uid); } catch (e) { member = null; }
+      try {
+        member = await fetchMember(user.uid);
+      } catch (e) {
+        if (run !== _authRun) return;
+        console.error('Member lookup error:', e);
+        showLoginPanel('member');
+        const errEl = document.getElementById('member-login-error');
+        errEl.textContent = 'Could not load your account. Please try again.';
+        errEl.classList.remove('hidden');
+        showView('view-login');
+        return;
+      }
+      if (run !== _authRun) return;
       if (member && !member.active) {
         const errEl = document.getElementById('member-login-error');
         errEl.textContent = 'This account is inactive. Contact gino@gcweddingband.com.';
@@ -2164,6 +2191,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (_gigsDashLoaded) return;
     try {
       await ADB.loadAll();
+      if (run !== _authRun) return;
       _gigsDashLoaded = true;
       _session = { role: isArtist ? 'guest' : isAdmin ? 'admin' : 'member', uid: user.uid, member };
       document.getElementById('pnav-logout').classList.toggle('hidden', isAdmin && _adminBypass);
@@ -2236,6 +2264,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (next === cur)     return fail('Choose a password different from your temporary one.');
     const user = _auth.currentUser;
     if (!user) return fail('Your session expired. Please sign in again.');
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    _savingPassword = true;
     try {
       const cred = firebase.auth.EmailAuthProvider.credential(user.email, cur);
       await user.reauthenticateWithCredential(cred);
@@ -2243,8 +2274,8 @@ document.addEventListener('DOMContentLoaded', function() {
       await MDB.clearMustChangePassword(user.uid);
       this.reset();
       showToast('Password saved.');
-      // Re-run routing now that the account is fully set up
-      const member = await MDB.getMember(user.uid);
+      // Finish routing here now that the account is fully set up
+      const member = await fetchMember(user.uid);
       await ADB.loadAll();
       _gigsDashLoaded = true;
       _session = { role: 'member', uid: user.uid, member };
@@ -2254,6 +2285,11 @@ document.addEventListener('DOMContentLoaded', function() {
       showView('view-gigs');
     } catch(err) {
       fail(loginErrorText(err, 'Your temporary password is incorrect.'));
+    } finally {
+      _savingPassword = false;
+      btn.disabled = false;
+      // Signed out mid-save (e.g. from another tab): back to the login screen
+      if (!_auth.currentUser && !_gigsDashLoaded) showView('view-login');
     }
   });
   document.getElementById('btn-setpw-signout').addEventListener('click', artistLogout);
