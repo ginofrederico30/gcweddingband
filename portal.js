@@ -551,7 +551,7 @@ function ceremonyProgress(cid) {
   const logistics = ['cer-start','cer-end','cer-officiant-mic','cer-readers-mic','cer-sep-location','cer-distance','cer-outdoor','cer-power'];
   let musicFields = [];
   if (scope.includes('Live Ceremony Music')) {
-    musicFields = ['cer-seating-genre','cer-live-family-song','cer-live-bride-song','cer-live-exit-song'];
+    musicFields = ['cer-live-family-song','cer-live-bride-song','cer-live-exit-song'];
   } else if (scope.includes('Ceremony Duties')) {
     musicFields = ['cer-duties-seating-link','cer-duties-family-link','cer-duties-bride-link','cer-duties-exit-link'];
   } else if (scope.includes('Hybrid Ceremony')) {
@@ -561,8 +561,8 @@ function ceremonyProgress(cid) {
   if (!required.length) return 0;
   let filled = required.filter(id => cer[id] !== '' && cer[id] != null).length;
   if (scope.includes('Hybrid Ceremony')) {
-    const modesFilled = ['seating','family','bride','exit'].filter(k => cer['cer-hybrid-' + k + '-mode']).length;
-    return Math.min(100, Math.round(((filled + modesFilled) / (required.length + 4)) * 100));
+    const modesFilled = CEREMONY_MOMENTS.filter(k => cer['cer-hybrid-' + k + '-mode']).length;
+    return Math.min(100, Math.round(((filled + modesFilled) / (required.length + CEREMONY_MOMENTS.length)) * 100));
   }
   return Math.min(100, Math.round((filled / required.length) * 100));
 }
@@ -1192,7 +1192,7 @@ function renderAdminPlanningDetails(clientId) {
     html += row('Power Available',         cer['cer-power']);
     html += row('Ceremony Location',       cer['cer-sep-location']);
     html += row('Distance to Venue',       cer['cer-distance']);
-    html += row('Seating Music',           cer['cer-seating-genre'] || cer['cer-hybrid-seating-genre'] || cer['cer-duties-seating-link'] || cer['cer-hybrid-seating-link']);
+    html += row('Seating Music',           cer['cer-duties-seating-link']);
     const hybridTag = k => cer['cer-hybrid-' + k + '-mode'] ? ' [' + cer['cer-hybrid-' + k + '-mode'] + ']' : '';
     html += row('Family Processional',  [cer['cer-live-family-song'] || cer['cer-duties-family-link'] || cer['cer-hybrid-family-song'], cer['cer-live-family-artist'] || cer['cer-duties-family-artist'] || cer['cer-hybrid-family-artist']].filter(Boolean).join(' — ') + hybridTag('family'));
     html += row('Bride Processional',   [cer['cer-live-bride-song'] || cer['cer-duties-bride-link'] || cer['cer-hybrid-bride-song'], cer['cer-live-bride-artist'] || cer['cer-duties-bride-artist'] || cer['cer-hybrid-bride-artist']].filter(Boolean).join(' — ') + hybridTag('bride'));
@@ -2948,20 +2948,32 @@ function _triggerChecklistAutosave() {
 const CEREMONY_FIELDS = [
   'cer-start','cer-end','cer-officiant-mic','cer-readers-mic',
   'cer-sep-location','cer-distance','cer-outdoor','cer-power',
-  'cer-seating-genre',
-  'cer-live-family-song','cer-live-family-artist','cer-live-family-link',
-  'cer-live-bride-song','cer-live-bride-artist','cer-live-bride-link',
-  'cer-live-exit-song','cer-live-exit-artist','cer-live-exit-link',
+  'cer-live-family-song','cer-live-bride-song','cer-live-exit-song',
   'cer-duties-seating-link',
   'cer-duties-family-link','cer-duties-family-artist','cer-duties-family-spotify',
   'cer-duties-bride-link','cer-duties-bride-artist','cer-duties-bride-spotify',
   'cer-duties-exit-link','cer-duties-exit-artist','cer-duties-exit-spotify',
-  'cer-hybrid-seating-genre','cer-hybrid-seating-link',
   'cer-hybrid-family-song','cer-hybrid-family-artist','cer-hybrid-family-link',
   'cer-hybrid-bride-song','cer-hybrid-bride-artist','cer-hybrid-bride-link',
   'cer-hybrid-exit-song','cer-hybrid-exit-artist','cer-hybrid-exit-link',
   'cer-notes'
 ];
+
+// Live ceremony moments are chosen from this list (no custom requests)
+const CEREMONY_MOMENTS = ['family','bride','exit'];
+const CEREMONY_SONGS = [
+  'Accidentally in Love','Ave Maria','Birds of a Feather',"Can't Help Falling in Love",'Canon in D',
+  'Clair de Lune','Goodbye Yellow Brick Road',"I'm Yours","If I Ain't Got You",
+  "Jesu, Joy of Man's Desiring",'Lover','This Will Be (An Everlasting Love)','Viva la Vida','What a Wonderful World'
+];
+
+// Fill a song dropdown; a previously saved song that's no longer on the list is kept as an extra option
+function _fillCeremonySongSelect(sel, current) {
+  const songs = CEREMONY_SONGS.slice();
+  if (current && !songs.includes(current)) songs.push(current);
+  sel.innerHTML = '<option value="">Select a song…</option>' + songs.map(t => '<option>' + escHtml(t) + '</option>').join('');
+  sel.value = current || '';
+}
 
 function loadCeremony(clientId) {
   const cer = DB.getGCP(clientId).ceremony || {};
@@ -2977,35 +2989,41 @@ function loadCeremony(clientId) {
   if (dutiesPanel) dutiesPanel.classList.toggle('hidden', !isDuties);
   if (hybridPanel) hybridPanel.classList.toggle('hidden', !isHybrid);
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && cer[id] !== undefined) el.value = cer[id]; });
+  CEREMONY_MOMENTS.forEach(k => {
+    const liveSel = document.getElementById('cer-live-' + k + '-song');
+    if (liveSel) _fillCeremonySongSelect(liveSel, cer['cer-live-' + k + '-song']);
+    const hybSel = document.getElementById('cer-hybrid-' + k + '-live-song');
+    if (hybSel) _fillCeremonySongSelect(hybSel, cer['cer-hybrid-' + k + '-mode'] === 'Live' ? cer['cer-hybrid-' + k + '-song'] : '');
+  });
   if (isHybrid) {
-    function restoreHybridMode(key, splitFields) {
+    CEREMONY_MOMENTS.forEach(function(key) {
       var savedMode = cer['cer-hybrid-' + key + '-mode'];
       if (!savedMode) return;
       var radio = document.querySelector('input[name="cer-hybrid-' + key + '-mode"][value="' + savedMode + '"]');
       if (radio) radio.checked = true;
-      if (splitFields) {
-        var lw = document.getElementById('cer-hybrid-' + key + '-live-wrap');
-        var dw = document.getElementById('cer-hybrid-' + key + '-dj-wrap');
-        if (lw) lw.classList.toggle('hidden', savedMode !== 'Live');
-        if (dw) dw.classList.toggle('hidden', savedMode !== 'DJ');
-      } else {
-        var fw = document.getElementById('cer-hybrid-' + key + '-fields-wrap');
-        if (fw) fw.classList.remove('hidden');
-      }
-    }
-    restoreHybridMode('seating', true);
-    restoreHybridMode('family',  false);
-    restoreHybridMode('bride',   false);
-    restoreHybridMode('exit',    false);
+      var lw = document.getElementById('cer-hybrid-' + key + '-live-wrap');
+      var dw = document.getElementById('cer-hybrid-' + key + '-dj-wrap');
+      if (lw) lw.classList.toggle('hidden', savedMode !== 'Live');
+      if (dw) dw.classList.toggle('hidden', savedMode !== 'DJ');
+    });
   }
 }
 
 function saveCeremony(clientId) {
   const cer = {};
   CEREMONY_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) cer[id] = el.value; });
-  ['seating','family','bride','exit'].forEach(function(key) {
+  CEREMONY_MOMENTS.forEach(function(key) {
+    // Live songs come from the dropdown only — clear any old artist / link
+    cer['cer-live-' + key + '-artist'] = '';
+    cer['cer-live-' + key + '-link'] = '';
     var checked = document.querySelector('input[name="cer-hybrid-' + key + '-mode"]:checked');
     if (checked) cer['cer-hybrid-' + key + '-mode'] = checked.value;
+    if (checked && checked.value === 'Live') {
+      var sel = document.getElementById('cer-hybrid-' + key + '-live-song');
+      cer['cer-hybrid-' + key + '-song'] = sel ? sel.value : '';
+      cer['cer-hybrid-' + key + '-artist'] = '';
+      cer['cer-hybrid-' + key + '-link'] = '';
+    }
   });
   DB.setGCPField(clientId, 'ceremony', cer);
   showToast('Ceremony planner saved!');
@@ -3623,28 +3641,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* ---- Hybrid Ceremony: Live/DJ moment toggles ---- */
   (function _wireHybridToggles() {
-    function toggle(key, splitFields) {
+    CEREMONY_MOMENTS.forEach(function(key) {
       ['Live','DJ'].forEach(function(mode) {
         var radio = document.querySelector('input[name="cer-hybrid-' + key + '-mode"][value="' + mode + '"]');
         if (!radio) return;
         radio.addEventListener('change', function() {
           if (!this.checked) return;
-          if (splitFields) {
-            var lw = document.getElementById('cer-hybrid-' + key + '-live-wrap');
-            var dw = document.getElementById('cer-hybrid-' + key + '-dj-wrap');
-            if (lw) lw.classList.toggle('hidden', mode !== 'Live');
-            if (dw) dw.classList.toggle('hidden', mode !== 'DJ');
-          } else {
-            var fw = document.getElementById('cer-hybrid-' + key + '-fields-wrap');
-            if (fw) fw.classList.remove('hidden');
-          }
+          var lw = document.getElementById('cer-hybrid-' + key + '-live-wrap');
+          var dw = document.getElementById('cer-hybrid-' + key + '-dj-wrap');
+          if (lw) lw.classList.toggle('hidden', mode !== 'Live');
+          if (dw) dw.classList.toggle('hidden', mode !== 'DJ');
         });
       });
-    }
-    toggle('seating', true);
-    toggle('family',  false);
-    toggle('bride',   false);
-    toggle('exit',    false);
+    });
   })();
 
   /* ---- Client: save ceremony ---- */

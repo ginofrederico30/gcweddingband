@@ -705,22 +705,12 @@ function renderGigDetail(clientId) {
 
     if (isLive) {
       cerRows.push(
-        infoRow('Seating / Prelude Genre', cer['cer-seating-genre'] || '—'),
         linkRow('Family / Wedding Party Processional', [cer['cer-live-family-song'], cer['cer-live-family-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-family-link'] || null),
         linkRow('Bride / Partner Entrance', [cer['cer-live-bride-song'], cer['cer-live-bride-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-bride-link'] || null),
         linkRow('Couple Exit / Recessional', [cer['cer-live-exit-song'], cer['cer-live-exit-artist']].filter(Boolean).join(' — ') || null, cer['cer-live-exit-link'] || null),
       );
     } else if (isHybrid) {
-      const seatMode = cer['cer-hybrid-seating-mode'];
-      const seatBadge = modeBadge(seatMode);
-      const seatVal = seatMode === 'Live'
-        ? (cer['cer-hybrid-seating-genre'] || '—')
-        : (cer['cer-hybrid-seating-link'] || '—');
-      const seatLabel = seatMode === 'DJ' ? 'Seating Playlist' : 'Seating / Prelude Genre';
       cerRows.push(
-        seatMode === 'DJ'
-          ? `<div class="artist-info-row"><div class="artist-info-label">${seatLabel}${seatBadge}</div><div class="artist-info-val${!cer['cer-hybrid-seating-link'] ? ' empty' : ''}"><a href="${escHtml(cer['cer-hybrid-seating-link'] || '#')}" target="_blank" rel="noopener" class="artist-spotify-link">${refLinkIcon(cer['cer-hybrid-seating-link'] || '')}Open Link</a></div></div>`
-          : `<div class="artist-info-row"><div class="artist-info-label">${seatLabel}${seatBadge}</div><div class="artist-info-val${!cer['cer-hybrid-seating-genre'] ? ' empty' : ''}">${escHtml(cer['cer-hybrid-seating-genre'] || '—')}</div></div>`,
         hybridSongRow('Family / Wedding Party Processional', cer['cer-hybrid-family-song'], cer['cer-hybrid-family-artist'], cer['cer-hybrid-family-link'], cer['cer-hybrid-family-mode']),
         hybridSongRow('Bride / Partner Entrance', cer['cer-hybrid-bride-song'], cer['cer-hybrid-bride-artist'], cer['cer-hybrid-bride-link'], cer['cer-hybrid-bride-mode']),
         hybridSongRow('Couple Exit / Recessional', cer['cer-hybrid-exit-song'], cer['cer-hybrid-exit-artist'], cer['cer-hybrid-exit-link'], cer['cer-hybrid-exit-mode']),
@@ -1547,15 +1537,10 @@ function _buildMCTimeline(clientId) {
     if (isLiveCeremony) {
       const fam  = [cer['cer-live-family-song'], cer['cer-live-family-artist']].filter(Boolean).join(' — ');
       const bride = [cer['cer-live-bride-song'], cer['cer-live-bride-artist']].filter(Boolean).join(' — ');
-      if (cer['cer-seating-genre']) cerDetails.push(info('Seating music: ' + cer['cer-seating-genre']));
       if (fam)   cerDetails.push(songD('♫ Family / WP Processional: ' + fam));
       if (bride) cerDetails.push(songD('♫ Bride Entrance: ' + bride));
     } else if (isHybrid) {
       const modeTag = k => cer['cer-hybrid-' + k + '-mode'] ? ' [' + cer['cer-hybrid-' + k + '-mode'] + ']' : '';
-      if (cer['cer-hybrid-seating-mode'] === 'Live' && cer['cer-hybrid-seating-genre'])
-        cerDetails.push(info('Seating music: ' + cer['cer-hybrid-seating-genre']));
-      else if (cer['cer-hybrid-seating-mode'] === 'DJ' && cer['cer-hybrid-seating-link'])
-        cerDetails.push(info('Seating playlist: ' + cer['cer-hybrid-seating-link']));
       const fam  = [cer['cer-hybrid-family-song'], cer['cer-hybrid-family-artist']].filter(Boolean).join(' — ');
       const bride = [cer['cer-hybrid-bride-song'], cer['cer-hybrid-bride-artist']].filter(Boolean).join(' — ');
       if (fam)   cerDetails.push(songD('♫ Family / WP Processional: ' + fam + modeTag('family')));
