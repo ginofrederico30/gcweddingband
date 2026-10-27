@@ -638,6 +638,200 @@ function calcContractTotals() {
 }
 
 /* ============================================
+   BAND PAYOUTS (admin only)
+   One payouts/{memberId}/gigs/{clientId} doc per member, saved on its own —
+   never part of the contract record, so executed contracts are untouched.
+   ============================================ */
+const PAYOUT_KEYS   = ['reception', 'mc', 'cocktail', 'ceremony', 'travel'];
+const PAYOUT_LABELS = { reception: 'Reception', mc: 'MC', cocktail: 'Cocktail', ceremony: 'Ceremony', travel: 'Travel' };
+let _payoutRows = [];   // [{ id, name, active, included, vals: { reception: number|null, ... } }]
+let _payoutGigId = null;
+
+/* Blank cell = not entered (null); a typed 0 is a real $0 */
+function parsePayoutCell(v) {
+  const t = String(v || '').replace(/[$,\s]/g, '');
+  if (t === '') return null;
+  const n = parseFloat(t);
+  return isNaN(n) ? null : Math.round(n * 100) / 100;
+}
+function fmtPayoutCell(n) { return n === null || n === undefined ? '' : fmtMoney(n); }
+function fmtUSD(n) { return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+async function renderPayoutsCard(clientId) {
+  _payoutGigId = clientId;
+  _payoutRows  = [];
+  const wrap = document.getElementById('payouts-table-wrap');
+  const statusEl = document.getElementById('payouts-status');
+  document.getElementById('payouts-saved').classList.add('hidden');
+  wrap.innerHTML = '<p class="payouts-empty">Loading band members…</p>';
+  document.getElementById('payouts-breakdown').innerHTML = '';
+  statusEl.textContent = '';
+
+  let members, docs;
+  try {
+    members = await MDB.listMembers();
+    docs    = await MDB.getGigPayouts(clientId, members.map(m => m.id));
+  } catch (e) {
+    console.error('Payouts load error:', e);
+    if (_payoutGigId === clientId) wrap.innerHTML = '<p class="payouts-empty">Could not load band payouts.</p>';
+    return;
+  }
+  if (_payoutGigId !== clientId) return;   // admin opened another client meanwhile
+
+  // Active members, plus deactivated members who were on this gig
+  _payoutRows = members.filter(m => m.active || docs[m.id]).map(m => {
+    const d = docs[m.id] || {};
+    const vals = {};
+    PAYOUT_KEYS.forEach(k => { vals[k] = typeof d[k] === 'number' ? d[k] : null; });
+    return { id: m.id, name: m.name, active: m.active, included: docs[m.id] ? d.included !== false : true, vals };
+  });
+  const saved = Object.keys(docs).length > 0;
+  statusEl.textContent = saved ? 'Saved' : 'Not set';
+  statusEl.className   = 'status-badge ' + (saved ? 'status-signed' : 'status-none');
+
+  if (!_payoutRows.length) {
+    wrap.innerHTML = '<p class="payouts-empty">No band members yet. Add them from My Portal → Band Members.</p>';
+    updatePayoutTotals();
+    return;
+  }
+
+  const head = '<tr><th class="po-member-col">Member</th>' + PAYOUT_KEYS.map(k => `<th>${PAYOUT_LABELS[k]}</th>`).join('') + '<th>Total</th></tr>';
+  const body = _payoutRows.map((r, i) => `
+    <tr data-po-row="${i}" class="${r.included ? '' : 'po-excluded'}">
+      <td class="po-member-col">
+        <label class="po-include" title="Include on this gig">
+          <input type="checkbox" data-po-include="${i}"${r.included ? ' checked' : ''}>
+          <span>${escHtml(r.name)}${r.active ? '' : ' <em class="po-inactive">inactive</em>'}</span>
+        </label>
+      </td>
+      ${PAYOUT_KEYS.map(k => `<td><input type="text" inputmode="decimal" class="po-cell" data-po-cell="${i}" data-po-key="${k}"
+          value="${escHtml(fmtPayoutCell(r.vals[k]))}" placeholder="—" aria-label="${escHtml(r.name)} ${PAYOUT_LABELS[k]}"${r.included ? '' : ' disabled'}></td>`).join('')}
+      <td class="po-total" data-po-row-total="${i}"></td>
+    </tr>`).join('');
+  const foot = '<tr><th class="po-member-col">Total</th>' + PAYOUT_KEYS.map(k => `<td data-po-col-total="${k}"></td>`).join('') + '<td class="po-total" data-po-grand></td></tr>';
+  wrap.innerHTML = `<table class="payouts-table"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
+
+  wrap.querySelectorAll('[data-po-cell]').forEach(inp => {
+    const row = _payoutRows[+inp.dataset.poCell];
+    const key = inp.dataset.poKey;
+    inp.addEventListener('focus', function() {
+      const n = row.vals[key];
+      this.value = n === null ? '' : String(n);
+      this.select();
+    });
+    inp.addEventListener('input', function() {
+      row.vals[key] = parsePayoutCell(this.value);
+      markPayoutsDirty();
+      updatePayoutTotals();
+    });
+    inp.addEventListener('blur', function() { this.value = fmtPayoutCell(row.vals[key]); });
+  });
+  wrap.querySelectorAll('[data-po-include]').forEach(cb => {
+    cb.addEventListener('change', function() {
+      const i = +this.dataset.poInclude;
+      _payoutRows[i].included = this.checked;
+      const tr = wrap.querySelector(`[data-po-row="${i}"]`);
+      tr.classList.toggle('po-excluded', !this.checked);
+      tr.querySelectorAll('.po-cell').forEach(c => { c.disabled = !this.checked; });
+      markPayoutsDirty();
+      updatePayoutTotals();
+    });
+  });
+  updatePayoutTotals();
+}
+
+function markPayoutsDirty() {
+  document.getElementById('payouts-saved').classList.add('hidden');
+  const statusEl = document.getElementById('payouts-status');
+  statusEl.textContent = 'Unsaved changes';
+  statusEl.className   = 'status-badge status-pending';
+}
+
+/* Row/column totals + the business breakdown. Display only — never saved. */
+function updatePayoutTotals() {
+  const wrap = document.getElementById('payouts-table-wrap');
+  const colTotals = {};
+  PAYOUT_KEYS.forEach(k => { colTotals[k] = 0; });
+  _payoutRows.forEach((r, i) => {
+    const rowTotal = PAYOUT_KEYS.reduce((sum, k) => sum + (r.vals[k] || 0), 0);
+    const cell = wrap.querySelector(`[data-po-row-total="${i}"]`);
+    if (cell) cell.textContent = r.included ? fmtUSD(rowTotal) : '—';
+    if (r.included) PAYOUT_KEYS.forEach(k => { colTotals[k] += r.vals[k] || 0; });
+  });
+  PAYOUT_KEYS.forEach(k => {
+    const c = wrap.querySelector(`[data-po-col-total="${k}"]`);
+    if (c) c.textContent = fmtUSD(colTotals[k]);
+  });
+  const bandPerf   = colTotals.reception + colTotals.mc + colTotals.cocktail + colTotals.ceremony;
+  const bandTravel = colTotals.travel;
+  const bandTotal  = bandPerf + bandTravel;
+  const g = wrap.querySelector('[data-po-grand]');
+  if (g) g.textContent = fmtUSD(bandTotal);
+
+  // Contract side comes from the contract's own fee fields (pre-signed contracts have none on file)
+  const contract  = _payoutGigId ? DB.getContract(_payoutGigId) : {};
+  const onFile    = !contract.preSignedOutsidePortal;
+  const fee       = onFile ? parseMoney(document.getElementById('ac-performance-fee').value) : 0;
+  const travel    = onFile ? parseMoney(document.getElementById('ac-transportation').value) : 0;
+  const lodging   = onFile ? parseMoney(document.getElementById('ac-lodging').value) : 0;
+  const total     = fee + travel + lodging;
+
+  const line = (label, c, band, cls) => {
+    const keeps = c - (band === null ? 0 : band);
+    const over  = onFile && band !== null && band > c;
+    return `<tr class="${cls || ''}${over ? ' po-over' : ''}">
+      <th>${label}</th>
+      <td>${onFile ? fmtUSD(c) : '<span class="po-muted">Not on file</span>'}</td>
+      <td>${band === null ? '<span class="po-muted">n/a</span>' : fmtUSD(band)}</td>
+      <td>${onFile ? fmtUSD(keeps) : '—'}${over ? ' <i class="fas fa-exclamation-triangle" title="Band payouts exceed the contract fee"></i>' : ''}</td>
+    </tr>`;
+  };
+  const keepsTotal = total - bandTotal;
+  const pct = onFile && total > 0 ? (keepsTotal / total * 100) : null;
+  document.getElementById('payouts-breakdown').innerHTML = `
+    <h4 class="form-section-label">Business Breakdown</h4>
+    <div class="payouts-table-wrap">
+      <table class="breakdown-table">
+        <thead><tr><th></th><th>Contract</th><th>Band payouts</th><th>Business keeps</th></tr></thead>
+        <tbody>
+          ${line('Performance', fee, bandPerf)}
+          ${line('Travel', travel, bandTravel)}
+          ${line('Lodging', lodging, null)}
+          ${line('Total', total, bandTotal, 'bd-total')}
+        </tbody>
+      </table>
+    </div>
+    ${pct !== null ? `<p class="bd-pct${keepsTotal < 0 ? ' po-over' : ''}">Business keeps <strong>${pct.toFixed(1)}%</strong> of the contract total.</p>` : ''}
+    ${onFile ? '' : '<p class="bd-pct po-muted">Fees for contracts signed outside the portal aren\'t on file.</p>'}`;
+}
+
+async function savePayouts() {
+  const gigId = _payoutGigId;
+  if (!gigId || !_payoutRows.length) return;
+  const btn = document.getElementById('btn-save-payouts');
+  btn.disabled = true;
+  const rows = {};
+  _payoutRows.forEach(r => {
+    rows[r.id] = { included: r.included, memberName: r.name };
+    PAYOUT_KEYS.forEach(k => { rows[r.id][k] = r.vals[k]; });
+  });
+  try {
+    await MDB.saveGigPayouts(gigId, rows);
+    if (_payoutGigId !== gigId) return;
+    const statusEl = document.getElementById('payouts-status');
+    statusEl.textContent = 'Saved';
+    statusEl.className   = 'status-badge status-signed';
+    document.getElementById('payouts-saved').classList.remove('hidden');
+    showToast('Band payouts saved.');
+  } catch (e) {
+    console.error('Payouts save error:', e);
+    showToast('Could not save payouts. Please try again.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ============================================
    GOOGLE MAPS AUTOCOMPLETE (if key is configured)
    ============================================ */
 function attachPlacesAutocomplete(inputId, types) {
@@ -832,6 +1026,7 @@ function openClientDetail(clientId) {
 
   document.getElementById('admin-client-name').textContent     = client.name;
   document.getElementById('admin-client-eventdate').textContent = client.eventDate ? 'Wedding: ' + fmtDate(client.eventDate) : '';
+  renderPayoutsCard(clientId);
 
   const cs = contractStatus(clientId);
   const badge = document.getElementById('admin-contract-badge');
@@ -3292,6 +3487,12 @@ document.addEventListener('DOMContentLoaded', function() {
       this.value = n ? String(n) : '';
     });
   });
+
+  /* ---- Admin: band payouts (separate from the contract save) ---- */
+  ['ac-performance-fee','ac-transportation','ac-lodging'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePayoutTotals);
+  });
+  document.getElementById('btn-save-payouts').addEventListener('click', savePayouts);
 
   /* ---- Admin: save contract ---- */
   document.getElementById('admin-contract-form').addEventListener('submit', function(e) {

@@ -314,6 +314,25 @@ const MDB = {
     });
   },
 
+  /* Admin: payout rows for one gig, keyed by member id (only members with a saved row) */
+  async getGigPayouts(gigId, memberIds) {
+    const snaps = await Promise.all(memberIds.map(id => _db.doc('payouts/' + id + '/gigs/' + gigId).get()));
+    const out = {};
+    snaps.forEach((snap, i) => { if (snap.exists) out[memberIds[i]] = snap.data(); });
+    return out;
+  },
+
+  /* Admin: save every row of a gig's payout table in one batch. Writes payouts only —
+     never the contract. rows: { [memberId]: { included, reception, mc, cocktail, ceremony, travel } } */
+  saveGigPayouts(gigId, rows) {
+    const batch = _db.batch();
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    Object.entries(rows).forEach(([memberId, row]) => {
+      batch.set(_db.doc('payouts/' + memberId + '/gigs/' + gigId), { ...row, updatedAt: now });
+    });
+    return batch.commit();
+  },
+
   /* Payout docs for one member, keyed by gig (client) id */
   async getPayoutDocs(memberId) {
     const snap = await _db.collection('payouts/' + memberId + '/gigs').get();

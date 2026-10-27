@@ -1353,6 +1353,17 @@
 .mp-pay-row dd { margin: 0; font-family: var(--font-sans); font-size: 15px; color: #333; }
 .mp-pay-total dt { color: var(--navy); }
 .mp-pay-total dd { font-weight: 700; color: var(--navy); }
+.mp-not-set {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: #f1efea;
+    color: #8a8a8a;
+    font-size: 9px;
+    letter-spacing: .8px;
+    vertical-align: middle;
+}
 
 @media (max-width: 768px) {
     .artist-tabs { top: 56px; }

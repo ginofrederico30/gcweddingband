@@ -20,17 +20,20 @@ const PAYOUT_PARTS = [
   ['travel',    'Travel'],
 ];
 
-/* The single source of payout numbers: { [gigId]: { reception, mc, cocktail, ceremony, travel, total } }.
-   Reads payouts/{memberId}/gigs/{gigId}. Nothing is stored there yet, so every value is $0.
-   When the Google Sheet is connected, only this function changes. */
+/* The single source of payout numbers:
+   { [gigId]: { reception, mc, cocktail, ceremony, travel, total, included, notSet } }.
+   Reads this member's row of each gig's payout table (payouts/{memberId}/gigs/{gigId}),
+   entered by admin on the contract screen. No row yet = included, $0, not set. */
 async function getPayoutsForMember(memberId, gigIds) {
   const docs = await MDB.getPayoutDocs(memberId);
   const out = {};
   gigIds.forEach(id => {
-    const d = docs[id] || {};
+    const d = docs[id];
     const row = {};
-    PAYOUT_PARTS.forEach(([k]) => { row[k] = Number(d[k]) || 0; });
-    row.total = PAYOUT_PARTS.reduce((sum, [k]) => sum + row[k], 0);
+    PAYOUT_PARTS.forEach(([k]) => { row[k] = d && typeof d[k] === 'number' ? d[k] : 0; });
+    row.total    = PAYOUT_PARTS.reduce((sum, [k]) => sum + row[k], 0);
+    row.included = !d || d.included !== false;
+    row.notSet   = !d || PAYOUT_PARTS.every(([k]) => typeof d[k] !== 'number');
     out[id] = row;
   });
   return out;
@@ -118,10 +121,24 @@ function renderMyPortal() {
 async function renderPayoutsSection(body) {
   const _d    = new Date();
   const today = `${_d.getFullYear()}-${String(_d.getMonth()+1).padStart(2,'0')}-${String(_d.getDate()).padStart(2,'0')}`;
-  const clients  = ADB.getClients();
-  const upcoming = clients.filter(c => !c.eventDate || c.eventDate >= today)
+  const memberId = _mp.memberId;
+  body.innerHTML = '<p class="empty-state">Loading…</p>';
+  const clients = ADB.getClients();
+  let payouts;
+  try {
+    payouts = await getPayoutsForMember(memberId, clients.map(c => c.id));
+  } catch (e) {
+    console.error('Payout load error:', e);
+    body.innerHTML = '<p class="empty-state">Could not load payouts.</p>';
+    return;
+  }
+  if (memberId !== _mp.memberId) return;   // admin switched members while loading
+
+  // Gigs this member is excluded from don't appear at all
+  const mine     = clients.filter(c => payouts[c.id].included);
+  const upcoming = mine.filter(c => !c.eventDate || c.eventDate >= today)
     .sort((a,b) => (a.eventDate||'9999').localeCompare(b.eventDate||'9999'));
-  const past     = clients.filter(c => c.eventDate && c.eventDate < today)
+  const past     = mine.filter(c => c.eventDate && c.eventDate < today)
     .sort((a,b) => b.eventDate.localeCompare(a.eventDate));
   const shown    = _mp.showPast ? upcoming.concat(past) : upcoming;
 
@@ -133,25 +150,14 @@ async function renderPayoutsSection(body) {
       </div>
       ${past.length ? `<label class="mp-past-toggle"><input type="checkbox" id="mp-show-past"${_mp.showPast ? ' checked' : ''}> Show past gigs</label>` : ''}
     </div>
-    <p class="empty-state">Loading…</p>`;
+    <div id="mp-payout-list"></div>`;
   const pastCb = document.getElementById('mp-show-past');
   if (pastCb) pastCb.addEventListener('change', () => { _mp.showPast = pastCb.checked; renderPayoutsSection(body); });
-
-  const memberId = _mp.memberId;
-  let payouts;
-  try {
-    payouts = await getPayoutsForMember(memberId, shown.map(c => c.id));
-  } catch (e) {
-    console.error('Payout load error:', e);
-    body.querySelector('.empty-state').textContent = 'Could not load payouts.';
-    return;
-  }
-  if (memberId !== _mp.memberId) return;   // admin switched members while loading
 
   const grand = shown.reduce((sum, c) => sum + payouts[c.id].total, 0);
   const cards = list => list.map(c => payoutCardHTML(c, payouts[c.id])).join('');
 
-  body.querySelector('.empty-state').outerHTML = `
+  document.getElementById('mp-payout-list').outerHTML = `
     <div class="mp-total-card">
       <div>
         <div class="mp-total-label">Total payout</div>
@@ -186,7 +192,7 @@ function payoutCardHTML(c, p) {
       ${where ? `<div class="mp-gig-where"><i class="fas fa-map-marker-alt"></i>${where}</div>` : ''}
       <dl class="mp-pay">
         ${rows}
-        <div class="mp-pay-row mp-pay-total"><dt>Total</dt><dd>${fmtPayout(p.total)}</dd></div>
+        <div class="mp-pay-row mp-pay-total"><dt>Total${p.notSet ? ' <span class="mp-not-set">Not set yet</span>' : ''}</dt><dd>${fmtPayout(p.total)}</dd></div>
       </dl>
     </div>`;
 }
