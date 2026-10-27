@@ -371,6 +371,8 @@ function updateNav(session) {
   const userEl     = document.getElementById('pnav-user');
   const logoutEl   = document.getElementById('pnav-logout');
   const artistLink = document.getElementById('pnav-artist-view');
+  const myPortalLink = document.getElementById('pnav-my-portal');
+  if (myPortalLink) myPortalLink.classList.toggle('hidden', !session || !!_adminSession || session.role !== 'admin');
   if (!session) {
     section.textContent = '';
     userEl.textContent  = '';
@@ -847,6 +849,7 @@ function openClientDetail(clientId) {
   const a = contract.admin || {};
   document.getElementById('ac-client-name').value     = a.clientName    || client.name;
   document.getElementById('ac-spouse-name').value     = client.spouseName || '';
+  document.getElementById('ac-venue-city').value      = client.venueCity  || '';
   document.getElementById('ac-event-date').value       = a.eventDate     || client.eventDate || '';
   document.getElementById('ac-performance-fee').value  = a.performanceFee ? fmtMoneyInput(a.performanceFee) : '';
   document.getElementById('ac-transportation').value   = a.transportation  ? fmtMoneyInput(a.transportation)  : '';
@@ -3321,6 +3324,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const _client   = _clients.find(c => c.id === currentAdminClientId);
     if (_client) {
       _client.spouseName = spouseVal;
+      _client.venueCity  = document.getElementById('ac-venue-city').value.trim();
       if (contract.admin.eventDate) _client.eventDate = contract.admin.eventDate;
       DB.setClients(_clients);
     }

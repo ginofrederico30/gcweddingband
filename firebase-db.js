@@ -268,3 +268,57 @@ const ADB = {
     });
   }
 };
+
+/* ============================================
+   MDB — Band member accounts + payouts (My Portal)
+   Logins live in Firebase Auth; members/{uid} holds
+   name, email, active and mustChangePassword.
+   Payouts live at payouts/{memberId}/gigs/{clientId}.
+   Firestore rules limit members to their own docs.
+   ============================================ */
+const MDB = {
+  async getMember(uid) {
+    const snap = await _db.doc('members/' + uid).get();
+    return snap.exists ? { id: snap.id, ...snap.data() } : null;
+  },
+
+  /* Admin only */
+  async listMembers() {
+    const snap = await _db.collection('members').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  },
+
+  /* Admin only — creates the login without signing the admin out */
+  async createMember(name, email, tempPassword) {
+    const uid = await createClientAuth(email, tempPassword);
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    await _db.doc('members/' + uid).set({
+      name, email: email.toLowerCase(), active: true, mustChangePassword: true,
+      createdAt: now, updatedAt: now
+    });
+    return uid;
+  },
+
+  /* Admin only */
+  setActive(uid, active) {
+    return _db.doc('members/' + uid).update({
+      active, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  },
+
+  /* Member, after setting a new password */
+  clearMustChangePassword(uid) {
+    return _db.doc('members/' + uid).update({
+      mustChangePassword: false, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  },
+
+  /* Payout docs for one member, keyed by gig (client) id */
+  async getPayoutDocs(memberId) {
+    const snap = await _db.collection('payouts/' + memberId + '/gigs').get();
+    const out = {};
+    snap.docs.forEach(d => { out[d.id] = d.data(); });
+    return out;
+  }
+};

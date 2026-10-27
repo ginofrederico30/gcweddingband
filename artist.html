@@ -24,28 +24,85 @@
         <img src="Circle GC Logo_White.png" alt="Good Company Wedding Band" class="pnav-logo">
         <span>Good Company</span>
     </a>
-    <span class="pnav-section">Artist Portal</span>
+    <span class="pnav-section" id="pnav-section">Artist Portal</span>
     <div class="pnav-right">
         <a id="pnav-back-to-admin" href="portal.html" class="pnav-artist-link hidden"><i class="fas fa-arrow-left"></i> Admin Portal</a>
         <button id="pnav-logout" class="pnav-logout hidden"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </div>
 </nav>
 
+<!-- ============ MEMBER TABS (members + admin only; guests never see these) ============ -->
+<div id="artist-tabs" class="artist-tabs hidden" role="tablist">
+    <button type="button" class="artist-tab" data-tab="artist" role="tab"><i class="fas fa-music"></i> Artist Portal</button>
+    <button type="button" class="artist-tab" data-tab="my-portal" role="tab"><i class="fas fa-user"></i> My Portal</button>
+</div>
+
 <!-- ============ VIEW: LOGIN ============ -->
 <div id="view-login" class="portal-view hidden">
     <div class="login-wrap">
         <img src="Circle GC Logo_White.png" alt="Good Company Wedding Band" class="login-logo">
         <h1 class="login-title">Artist Portal</h1>
-        <p class="login-sub">Band member access — enter the shared password</p>
-        <form id="artist-login-form" class="login-form" novalidate>
-            <div class="field-group">
-                <label for="artist-password">Password</label>
-                <input type="password" id="artist-password" placeholder="Band password" required autocomplete="current-password">
-            </div>
-            <p id="login-error" class="form-error hidden"></p>
-            <button type="submit" class="btn-primary btn-full" style="margin-top:12px">Sign In</button>
-        </form>
+
+        <!-- Band member sign-in -->
+        <div id="login-member">
+            <p class="login-sub">Sign in with your band member account</p>
+            <form id="member-login-form" class="login-form" novalidate>
+                <div class="field-group">
+                    <label for="member-email">Email</label>
+                    <input type="email" id="member-email" placeholder="you@example.com" required autocomplete="username">
+                </div>
+                <div class="field-group">
+                    <label for="member-password">Password</label>
+                    <input type="password" id="member-password" placeholder="Password" required autocomplete="current-password">
+                </div>
+                <p id="member-login-error" class="form-error hidden"></p>
+                <button type="submit" class="btn-primary btn-full" style="margin-top:12px">Sign In</button>
+            </form>
+            <div class="login-divider"><span>or</span></div>
+            <button type="button" id="btn-show-guest" class="btn-secondary btn-full">Continue as Guest</button>
+        </div>
+
+        <!-- Guest: existing shared-password sign-in -->
+        <div id="login-guest" class="hidden">
+            <p class="login-sub">Guest access — enter the shared password</p>
+            <form id="artist-login-form" class="login-form" novalidate>
+                <div class="field-group">
+                    <label for="artist-password">Password</label>
+                    <input type="password" id="artist-password" placeholder="Band password" required autocomplete="current-password">
+                </div>
+                <p id="login-error" class="form-error hidden"></p>
+                <button type="submit" class="btn-primary btn-full" style="margin-top:12px">Sign In</button>
+            </form>
+            <button type="button" id="btn-show-member" class="login-switch"><i class="fas fa-arrow-left"></i> Sign in with your account</button>
+        </div>
+
         <p class="login-help">Need access? Contact <a href="mailto:gino@gcweddingband.com">gino@gcweddingband.com</a></p>
+    </div>
+</div>
+
+<!-- ============ VIEW: SET PASSWORD (first login with a temporary password) ============ -->
+<div id="view-set-password" class="portal-view hidden">
+    <div class="login-wrap">
+        <img src="Circle GC Logo_White.png" alt="Good Company Wedding Band" class="login-logo">
+        <h1 class="login-title">Set Your Password</h1>
+        <p class="login-sub">Welcome, <span id="setpw-name"></span>. Choose a new password to continue.</p>
+        <form id="set-password-form" class="login-form" novalidate>
+            <div class="field-group">
+                <label for="setpw-current">Temporary Password</label>
+                <input type="password" id="setpw-current" required autocomplete="current-password">
+            </div>
+            <div class="field-group">
+                <label for="setpw-new">New Password</label>
+                <input type="password" id="setpw-new" placeholder="At least 8 characters" required autocomplete="new-password">
+            </div>
+            <div class="field-group">
+                <label for="setpw-confirm">Confirm New Password</label>
+                <input type="password" id="setpw-confirm" required autocomplete="new-password">
+            </div>
+            <p id="setpw-error" class="form-error hidden"></p>
+            <button type="submit" class="btn-primary btn-full" style="margin-top:12px">Save Password</button>
+        </form>
+        <button type="button" id="btn-setpw-signout" class="login-switch">Sign out</button>
     </div>
 </div>
 
@@ -79,6 +136,11 @@
         <div id="gigs-list"></div>
         <p id="no-gigs-msg" class="empty-state hidden">No gigs scheduled yet.</p>
     </div>
+</div>
+
+<!-- ============ VIEW: MY PORTAL (rendered by my-portal.js) ============ -->
+<div id="view-my-portal" class="portal-view hidden">
+    <div class="portal-container" id="my-portal-root"></div>
 </div>
 
 <!-- ============ VIEW: GIG DETAIL ============ -->
@@ -274,5 +336,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="firebase-db.js"></script>
 <script src="artist.js"></script>
+<script src="my-portal.js"></script>
 </body>
 </html>

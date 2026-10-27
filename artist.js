@@ -5,11 +5,18 @@
 
 /* ---- Auth ---- */
 let _gigsDashLoaded = false;
+/* Who is signed in: { role: 'guest' | 'member' | 'admin', uid, member }.
+   'guest' is the shared password login; only members and admin get My Portal. */
+let _session = null;
 
 function artistLogout() {
   _gigsDashLoaded = false;
+  _session = null;
+  history.replaceState(null, '', location.pathname + location.search);   // next login starts on the Artist Portal
   _auth.signOut().then(() => {
     document.getElementById('pnav-logout').classList.add('hidden');
+    document.getElementById('artist-tabs').classList.add('hidden');
+    showLoginPanel('member');
     showView('view-login');
   }).catch(e => console.error('Sign out error:', e));
 }
@@ -19,6 +26,34 @@ function showView(id) {
   document.querySelectorAll('.portal-view').forEach(v => v.classList.add('hidden'));
   const el = document.getElementById(id);
   if (el) el.classList.remove('hidden');
+  // Member tabs: highlight the area this view belongs to
+  const tab = id === 'view-my-portal' ? 'my-portal' : 'artist';
+  document.querySelectorAll('.artist-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  const sect = document.getElementById('pnav-section');
+  if (sect) sect.textContent = tab === 'my-portal' ? 'My Portal' : 'Artist Portal';
+}
+
+/* ---- Login panels: member (email + password) or guest (shared password) ---- */
+function showLoginPanel(which) {
+  document.getElementById('login-member').classList.toggle('hidden', which !== 'member');
+  document.getElementById('login-guest').classList.toggle('hidden', which !== 'guest');
+}
+
+/* Slow down repeated failed logins on this device. Firebase Auth also throttles
+   on its side and answers auth/too-many-requests. */
+const _loginThrottle = { fails: 0, until: 0 };
+function loginLockedMessage() {
+  const wait = Math.ceil((_loginThrottle.until - Date.now()) / 1000);
+  return wait > 0 ? 'Too many attempts. Try again in ' + wait + ' seconds.' : '';
+}
+function noteLoginFailure() {
+  _loginThrottle.fails++;
+  if (_loginThrottle.fails >= 5) _loginThrottle.until = Date.now() + 30000 * Math.pow(2, _loginThrottle.fails - 5);
+}
+function loginErrorText(err, badMsg) {
+  if (err.code === 'auth/too-many-requests') return 'Too many attempts. Please wait a few minutes and try again.';
+  const badCodes = ['auth/wrong-password','auth/invalid-credential','auth/user-not-found','auth/invalid-email'];
+  return badCodes.includes(err.code) ? badMsg : err.message;
 }
 
 /* ---- Toast ---- */
@@ -2096,12 +2131,32 @@ document.addEventListener('DOMContentLoaded', function() {
   _auth.onAuthStateChanged(async function(user) {
     const isArtist = user && user.email === ARTIST_EMAIL;
     const isAdmin  = user && user.email === ADMIN_EMAIL;
-    const allowed  = isArtist || (isAdmin && _adminBypass);
 
+    // Any other signed-in user may be a band member
+    let member = null;
+    if (user && !isArtist && !isAdmin) {
+      try { member = await MDB.getMember(user.uid); } catch (e) { member = null; }
+      if (member && !member.active) {
+        const errEl = document.getElementById('member-login-error');
+        errEl.textContent = 'This account is inactive. Contact gino@gcweddingband.com.';
+        errEl.classList.remove('hidden');
+        await _auth.signOut();
+        return;
+      }
+      if (member && member.mustChangePassword) {
+        document.getElementById('setpw-name').textContent = member.name || member.email;
+        document.getElementById('pnav-logout').classList.add('hidden');
+        showView('view-set-password');
+        return;
+      }
+    }
+
+    const allowed = isArtist || (isAdmin && _adminBypass) || !!member;
     if (!allowed) {
       if (!_gigsDashLoaded) {
         document.getElementById('pnav-logout').classList.add('hidden');
         document.getElementById('pnav-back-to-admin').classList.add('hidden');
+        document.getElementById('artist-tabs').classList.add('hidden');
         showView('view-login');
       }
       return;
@@ -2110,31 +2165,117 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       await ADB.loadAll();
       _gigsDashLoaded = true;
+      _session = { role: isArtist ? 'guest' : isAdmin ? 'admin' : 'member', uid: user.uid, member };
       document.getElementById('pnav-logout').classList.toggle('hidden', isAdmin && _adminBypass);
       const backBtn = document.getElementById('pnav-back-to-admin');
       if (isAdmin && _adminBypass) backBtn.classList.remove('hidden');
+      document.getElementById('artist-tabs').classList.toggle('hidden', _session.role === 'guest');
       renderGigsDash();
-      showView('view-gigs');
+      if (location.hash === '#my-portal' && _session.role !== 'guest') openMyPortal();
+      else showView('view-gigs');
     } catch(err) {
       console.error('Artist portal load error:', err);
       showToast('Error loading data. Please refresh the page.');
     }
   });
 
-  /* Login — password-only form, email is fixed to ARTIST_EMAIL */
+  /* Member login — email + password */
+  document.getElementById('member-login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('member-login-error');
+    errEl.classList.add('hidden');
+    const locked = loginLockedMessage();
+    if (locked) { errEl.textContent = locked; errEl.classList.remove('hidden'); return; }
+    const email = document.getElementById('member-email').value.trim();
+    const pw    = document.getElementById('member-password').value;
+    try {
+      await _auth.signInWithEmailAndPassword(email, pw);
+      _loginThrottle.fails = 0;
+      if (email.toLowerCase() === ADMIN_EMAIL) { location.href = 'artist.html?admin=1'; return; }
+      // onAuthStateChanged handles routing
+    } catch(err) {
+      noteLoginFailure();
+      errEl.textContent = loginErrorText(err, 'Incorrect email or password. Please try again.');
+      errEl.classList.remove('hidden');
+    }
+  });
+
+  /* Guest login — password-only form, email is fixed to ARTIST_EMAIL */
   document.getElementById('artist-login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const errEl = document.getElementById('login-error');
     errEl.classList.add('hidden');
+    const locked = loginLockedMessage();
+    if (locked) { errEl.textContent = locked; errEl.classList.remove('hidden'); return; }
     const pw = document.getElementById('artist-password').value;
     try {
       await _auth.signInWithEmailAndPassword(ARTIST_EMAIL, pw);
+      _loginThrottle.fails = 0;
       // onAuthStateChanged handles routing
     } catch(err) {
-      const badCodes = ['auth/wrong-password','auth/invalid-credential','auth/user-not-found'];
-      errEl.textContent = badCodes.includes(err.code) ? 'Incorrect password. Please try again.' : err.message;
+      noteLoginFailure();
+      errEl.textContent = loginErrorText(err, 'Incorrect password. Please try again.');
       errEl.classList.remove('hidden');
     }
+  });
+
+  document.getElementById('btn-show-guest').addEventListener('click', () => showLoginPanel('guest'));
+  document.getElementById('btn-show-member').addEventListener('click', () => showLoginPanel('member'));
+
+  /* First login: replace the temporary password before anything else loads */
+  document.getElementById('set-password-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('setpw-error');
+    errEl.classList.add('hidden');
+    const cur  = document.getElementById('setpw-current').value;
+    const next = document.getElementById('setpw-new').value;
+    const conf = document.getElementById('setpw-confirm').value;
+    const fail = msg => { errEl.textContent = msg; errEl.classList.remove('hidden'); };
+    if (next.length < 8)  return fail('Your new password must be at least 8 characters.');
+    if (next !== conf)    return fail('The new passwords don\'t match.');
+    if (next === cur)     return fail('Choose a password different from your temporary one.');
+    const user = _auth.currentUser;
+    if (!user) return fail('Your session expired. Please sign in again.');
+    try {
+      const cred = firebase.auth.EmailAuthProvider.credential(user.email, cur);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(next);
+      await MDB.clearMustChangePassword(user.uid);
+      this.reset();
+      showToast('Password saved.');
+      // Re-run routing now that the account is fully set up
+      const member = await MDB.getMember(user.uid);
+      await ADB.loadAll();
+      _gigsDashLoaded = true;
+      _session = { role: 'member', uid: user.uid, member };
+      document.getElementById('pnav-logout').classList.remove('hidden');
+      document.getElementById('artist-tabs').classList.remove('hidden');
+      renderGigsDash();
+      showView('view-gigs');
+    } catch(err) {
+      fail(loginErrorText(err, 'Your temporary password is incorrect.'));
+    }
+  });
+  document.getElementById('btn-setpw-signout').addEventListener('click', artistLogout);
+
+  /* #my-portal typed or linked while the page is already open */
+  window.addEventListener('hashchange', () => {
+    if (!_gigsDashLoaded) return;
+    if (location.hash === '#my-portal') openMyPortal();
+  });
+
+  /* Member tabs */
+  document.querySelectorAll('.artist-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'my-portal') {
+        openMyPortal();
+      } else {
+        history.replaceState(null, '', location.pathname + location.search);
+        renderGigsDash();
+        showView('view-gigs');
+      }
+      window.scrollTo(0, 0);
+    });
   });
 
   /* Logout */

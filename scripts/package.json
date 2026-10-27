@@ -1,0 +1,8 @@
+{
+  "name": "gc-scripts",
+  "private": true,
+  "description": "Admin scripts run from a laptop (not deployed)",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
