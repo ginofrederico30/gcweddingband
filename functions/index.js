@@ -40,9 +40,17 @@ exports.deleteAuthUserByEmail = functions.https.onCall(async (data, context) => 
 
 // AI summarization for MC schedule notes — called from artist portal
 // Requires: firebase functions:config:set anthropic.key="sk-ant-..."
+// Active band member who has replaced their temporary password (mirrors isMember() in firestore.rules)
+async function isActiveMember(uid) {
+  if (!uid) return false;
+  const snap = await admin.firestore().doc('members/' + uid).get();
+  return snap.exists && snap.get('active') === true && snap.get('mustChangePassword') === false;
+}
+
 exports.summarizeScheduleNotes = functions.https.onCall(async (data, context) => {
   const email = context.auth && context.auth.token.email;
-  if (!email || (email !== ADMIN_EMAIL && email !== ARTIST_EMAIL)) {
+  const band  = email === ADMIN_EMAIL || email === ARTIST_EMAIL || await isActiveMember(context.auth && context.auth.uid);
+  if (!band) {
     throw new functions.https.HttpsError('permission-denied', 'Auth required');
   }
 

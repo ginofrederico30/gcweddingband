@@ -6,12 +6,20 @@ service cloud.firestore {
     function isArtist()      { return request.auth != null && request.auth.token.email == 'artist@gcweddingband.com'; }
     function isOwner(id)     { return request.auth != null && request.auth.uid == id; }
 
+    // Band member with their own login: active, and has replaced their temporary password
+    function memberPath()    { return /databases/$(database)/documents/members/$(request.auth.uid); }
+    function isMember()      { return request.auth != null && exists(memberPath())
+                                 && get(memberPath()).data.active == true
+                                 && get(memberPath()).data.mustChangePassword == false; }
+    // Anyone who can use the Artist Portal: the shared guest login or a member
+    function isBand()        { return isArtist() || isMember(); }
+
     match /config/{doc} {
       allow read:  if request.auth != null;
       allow write: if isAdmin();
     }
     match /clients/{id} {
-      allow read:  if isAdmin() || isArtist() || isOwner(id);
+      allow read:  if isAdmin() || isBand() || isOwner(id);
       allow write: if isAdmin();
     }
     function validSignedAt() {
@@ -20,7 +28,7 @@ service cloud.firestore {
     }
 
     match /contracts/{id} {
-      allow read:   if isAdmin() || isArtist() || isOwner(id);
+      allow read:   if isAdmin() || isBand() || isOwner(id);
       allow write:  if isAdmin();
 
       // Client, before signing: only the client section + signature fields
@@ -36,13 +44,32 @@ service cloud.firestore {
                     && validSignedAt();
     }
     match /gcp/{id} {
-      allow read:  if isAdmin() || isArtist() || isOwner(id);
+      allow read:  if isAdmin() || isBand() || isOwner(id);
       allow write: if isAdmin() || isOwner(id)
-                   || (isArtist() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vendorMeals']));
+                   || (isBand() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vendorMeals']));
     }
     match /setlists/{id} {
-      allow read:  if isAdmin() || isArtist() || isOwner(id);
-      allow write: if isAdmin() || isArtist();
+      allow read:  if isAdmin() || isBand() || isOwner(id);
+      allow write: if isAdmin() || isBand();
+    }
+
+    // Band member accounts (login lives in Firebase Auth; this holds the profile + flags)
+    match /members/{uid} {
+      allow read:   if isAdmin() || isOwner(uid);
+      allow write:  if isAdmin();
+
+      // Member clears their own must-change flag after setting a new password
+      allow update: if isOwner(uid)
+                    && resource.data.active == true
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword', 'updatedAt'])
+                    && request.resource.data.mustChangePassword == false
+                    && request.resource.data.updatedAt == request.time;
+    }
+
+    // Payouts, one doc per member per gig (gigId = client id). Members read only their own.
+    match /payouts/{uid}/gigs/{gigId} {
+      allow read:  if isAdmin() || (isOwner(uid) && isMember());
+      allow write: if isAdmin();
     }
   }
 }
