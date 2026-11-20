@@ -1617,6 +1617,8 @@ function _buildMCTimeline(clientId) {
       const modeTag = cer['cer-hybrid-exit-mode'] ? ' [' + cer['cer-hybrid-exit-mode'] + ']' : '';
       if (exit) exitDetails.push(songD('♫ Recessional: ' + exit + modeTag));
     }
+    // Ceremony Planner "Notes for the Band", right before cocktail hour
+    if (cer['cer-notes']) exitDetails.push(noteD('Ceremony notes: ' + cer['cer-notes'], 'ceremony-notes'));
     add(cer['cer-end'], 'fa-door-open', 'CEREMONY ENDS', exitDetails);
   }
 
@@ -1810,7 +1812,9 @@ function _buildScheduleHTML(clientId, base) {
     </div>`;
   }
 
-  if (ceremonyNotes) {
+  // Only when there was no Ceremony Ends line in the timeline to hold them
+  const ceremonyNotesInTimeline = timeline.some(it => it.details.some(d => d.noteId === 'ceremony-notes'));
+  if (ceremonyNotes && !ceremonyNotesInTimeline) {
     html += `<div class="mcs-section">
       <div class="mcs-section-hdr">Ceremony Notes</div>
       <div class="mcs-notes-body"><div class="mcs-d mcs-d-note" id="mcs-note-ceremony-notes">${escHtml(ceremonyNotes)}</div></div>
