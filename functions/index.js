@@ -1,6 +1,10 @@
 const functions = require('firebase-functions');
 const admin     = require('firebase-admin');
 const { FieldValue } = require('firebase-admin/firestore');
+const { defineSecret } = require('firebase-functions/params');
+const Anthropic = require('@anthropic-ai/sdk');
+const { zodOutputFormat } = require('@anthropic-ai/sdk/helpers/zod');
+const { z } = require('zod');
 admin.initializeApp();
 
 const ADMIN_EMAIL  = 'gino@gcweddingband.com';
@@ -45,7 +49,6 @@ exports.deleteAuthUserByEmail = functions.https.onCall(async (request) => {
 });
 
 // AI summarization for MC schedule notes — called from artist portal
-// Requires: firebase functions:config:set anthropic.key="sk-ant-..."
 // Active band member who has replaced their temporary password (mirrors isMember() in firestore.rules)
 async function isActiveMember(uid) {
   if (!uid) return false;
@@ -53,7 +56,18 @@ async function isActiveMember(uid) {
   return snap.exists && snap.get('active') === true && snap.get('mustChangePassword') === false;
 }
 
-exports.summarizeScheduleNotes = functions.https.onCall(async (request) => {
+// Anthropic API key, stored with: npx firebase functions:secrets:set ANTHROPIC_API_KEY
+const anthropicKey = defineSecret('ANTHROPIC_API_KEY');
+
+const NoteSummaries = z.object({
+  summaries: z.array(z.object({
+    id:      z.number().int(),
+    summary: z.string(),
+    times:   z.array(z.object({ time: z.string(), context: z.string() })),
+  })),
+});
+
+exports.summarizeScheduleNotes = functions.https.onCall({ secrets: [anthropicKey] }, async (request) => {
   const data  = request.data;
   const email = request.auth && request.auth.token.email;
   const band  = email === ADMIN_EMAIL || email === ARTIST_EMAIL || await isActiveMember(request.auth && request.auth.uid);
@@ -61,48 +75,36 @@ exports.summarizeScheduleNotes = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('permission-denied', 'Auth required');
   }
 
-  const { sections } = data;
+  const { sections } = data || {};
   if (!Array.isArray(sections) || !sections.length) return { summaries: [] };
 
-  // Old runtime-config storage; not available on this functions version, so this is empty
-  // until the key is moved to a secret.
-  let apiKey = null;
-  try { apiKey = ((functions.config && functions.config()) .anthropic || {}).key; } catch (e) { apiKey = null; }
+  const apiKey = anthropicKey.value();
   if (!apiKey) return { summaries: [] }; // degrade gracefully if key not configured
 
   const numbered = sections
     .map((s, i) => `[${i}] (${s.role})\n${s.text}`)
     .join('\n\n---\n\n');
 
-  const systemPrompt = `You are preparing a wedding MC run-of-show document. For each numbered note, write a concise 1–2 sentence summary that is actionable for the MC on the day. If any specific times are mentioned (e.g. "at 7:30", "after dinner", "before cake cutting"), extract them as structured time hints. Return ONLY a valid JSON array with no markdown fences, like: [{"id":0,"summary":"...","times":[{"time":"7:30 PM","context":"toast begins"}]}]`;
+  const systemPrompt = `You are preparing a wedding MC run-of-show document. For each numbered note, write a concise 1–2 sentence summary that is actionable for the MC on the day, using the note's number as its id. If any specific times are mentioned (e.g. "at 7:30", "after dinner", "before cake cutting"), extract them as time hints with a short context; otherwise leave times empty.`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'x-api-key': apiKey,
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `Summarize these ${sections.length} note(s) for the MC:\n\n${numbered}` }]
-      })
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.parse({
+      model: 'claude-haiku-5-5',
+      max_tokens: 16000,
+      output_config: { effort: 'low', format: zodOutputFormat(NoteSummaries) },
+      system: systemPrompt,
+      messages: [{ role: 'user', content: `Summarize these ${sections.length} note(s) for the MC:\n\n${numbered}` }],
     });
-
-    if (!resp.ok) {
-      console.error('Anthropic API error:', resp.status, await resp.text());
+    if (response.stop_reason === 'refusal' || !response.parsed_output) {
+      console.warn('summarizeScheduleNotes: no summaries', response.stop_reason, response.stop_details || '');
       return { summaries: [] };
     }
-
-    const result = await resp.json();
-    const text   = (result.content && result.content[0] && result.content[0].text) || '[]';
-    const match  = text.match(/\[[\s\S]*\]/);
-    return { summaries: match ? JSON.parse(match[0]) : [] };
+    return { summaries: response.parsed_output.summaries };
   } catch (err) {
-    console.error('summarizeScheduleNotes error:', err);
+    if (err instanceof Anthropic.RateLimitError) console.warn('summarizeScheduleNotes rate limited');
+    else if (err instanceof Anthropic.APIError) console.error('Anthropic API error:', err.status, err.message);
+    else console.error('summarizeScheduleNotes error:', err);
     return { summaries: [] };
   }
 });
