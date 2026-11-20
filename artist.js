@@ -1821,84 +1821,13 @@ function _buildScheduleHTML(clientId, base) {
   return html;
 }
 
-function _collectNotesSections(clientId) {
-  const gcp      = ADB.getGCP(clientId);
-  const cl       = gcp.checklist || {};
-  const cer      = gcp.ceremony  || {};
-  const contract = ADB.getContract(clientId);
-  const a        = contract.admin || {};
-  const MIN      = 100;
-  const sections = [];
-
-  if ((cl['cl-notes'] || '').length > MIN)
-    sections.push({ id: 'general-notes', text: cl['cl-notes'], role: 'general-client-notes' });
-
-  const cerNotes = cer['cer-live-notes'] || cer['cer-duties-notes'] || '';
-  if (cerNotes.length > MIN)
-    sections.push({ id: 'ceremony-notes', text: cerNotes, role: 'ceremony-notes' });
-
-  (gcp.speeches || []).forEach(s => {
-    if ((s.notes || '').length > MIN)
-      sections.push({ id: 'speech-' + s.id, text: s.notes, role: 'speech-notes' });
-  });
-
-  if ((a.adminNotes || '').length > MIN)
-    sections.push({ id: 'admin-notes', text: a.adminNotes, role: 'admin-notes' });
-
-  return sections;
-}
-
-function _applyAISummaries(sections, summaries) {
-  summaries.forEach(s => {
-    const sec = sections[s.id];
-    if (!sec) return;
-    const el = document.getElementById('mcs-note-' + sec.id);
-    if (!el) return;
-    let html = '<span class="mcs-ai-badge"><i class="fas fa-robot"></i> AI Summary</span>';
-    html += `<div class="mcs-ai-text">${escHtml(s.summary)}</div>`;
-    if (s.times && s.times.length) {
-      html += '<div class="mcs-ai-times">';
-      s.times.forEach(t => {
-        html += `<span class="mcs-ai-time"><i class="fas fa-clock"></i> ${escHtml(t.time)}${t.context ? ' — ' + escHtml(t.context) : ''}</span>`;
-      });
-      html += '</div>';
-    }
-    el.innerHTML = html;
-    el.classList.add('mcs-d-note-summarized');
-  });
-}
-
-async function renderSchedulePreview() {
+function renderSchedulePreview() {
   const clientId = _currentClientId;
   if (!clientId) return;
 
-  const statusEl = document.getElementById('schedule-ai-status');
-  statusEl.classList.add('hidden');
   document.getElementById('schedule-preview-content').innerHTML = _buildScheduleHTML(clientId, null);
   showView('view-schedule-preview');
   window.scrollTo(0, 0);
-
-  const sections = _collectNotesSections(clientId);
-  if (!sections.length || !_functions) return;
-
-  statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating AI summaries…';
-  statusEl.classList.remove('hidden');
-
-  try {
-    const fn      = _functions.httpsCallable('summarizeScheduleNotes');
-    const result  = await fn({ sections });
-    const sumList = result.data.summaries || [];
-    if (sumList.length) {
-      _applyAISummaries(sections, sumList);
-      statusEl.innerHTML = '<i class="fas fa-check"></i> AI summaries applied';
-      setTimeout(() => statusEl.classList.add('hidden'), 2200);
-    } else {
-      statusEl.classList.add('hidden');
-    }
-  } catch (err) {
-    console.warn('AI summarization skipped:', err.message || err);
-    statusEl.classList.add('hidden');
-  }
 }
 
 function downloadSchedulePDF() {
@@ -1911,7 +1840,7 @@ function downloadSchedulePDF() {
   const name     = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : 'Schedule';
   const base     = window.location.origin;
 
-  // Capture current DOM (may already have AI summaries applied)
+  // Capture the schedule as shown on screen
   const contentEl = document.getElementById('schedule-preview-content');
   const bodyHTML  = contentEl ? contentEl.innerHTML : _buildScheduleHTML(clientId, base);
 
@@ -1948,11 +1877,6 @@ function downloadSchedulePDF() {
   .mcs-d-script{color:#5c3a00;font-style:italic;background:#fff9f0;padding:4px 8px;border-left:3px solid #e0a000;border-radius:2px;margin-top:4px}
   .mcs-d-names{color:#333;background:#f8f8f8;padding:3px 8px;border-radius:4px;font-size:10px;white-space:pre-wrap}
   .mcs-d-note{color:#444;background:#f5f5f0;padding:5px 8px;border-radius:4px;border-left:3px solid #ccc;white-space:pre-wrap}
-  .mcs-d-note-summarized{border-left-color:#153147;background:#f0f4f9}
-  .mcs-ai-badge{display:inline-block;background:#153147;color:#fff;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:10px;margin-bottom:4px}
-  .mcs-ai-text{font-size:11px;color:#333;line-height:1.6}
-  .mcs-ai-times{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
-  .mcs-ai-time{display:inline-flex;align-items:center;gap:3px;background:#e8f3e8;color:#2a5c2a;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px}
   .mcs-untimed{padding:4px 0}
   .mcs-untimed-row{padding:8px 0;border-bottom:1px solid #f0ede8}
   .mcs-untimed-row:last-child{border-bottom:none}
