@@ -6,9 +6,13 @@ admin.initializeApp();
 const ADMIN_EMAIL  = 'gino@gcweddingband.com';
 const ARTIST_EMAIL = 'artist@gcweddingband.com';
 
+// This firebase-functions version calls onCall handlers with a single request
+// ({ data, auth }), not the older (data, context) pair.
+
 // Delete by UID (called when admin deletes a client)
-exports.deleteAuthUser = functions.https.onCall(async (data, context) => {
-  if (!context.auth || context.auth.token.email !== ADMIN_EMAIL) {
+exports.deleteAuthUser = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || request.auth.token.email !== ADMIN_EMAIL) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
   if (!data || !data.uid) {
@@ -23,8 +27,9 @@ exports.deleteAuthUser = functions.https.onCall(async (data, context) => {
 });
 
 // Delete by email (called when re-adding a previously deleted client)
-exports.deleteAuthUserByEmail = functions.https.onCall(async (data, context) => {
-  if (!context.auth || context.auth.token.email !== ADMIN_EMAIL) {
+exports.deleteAuthUserByEmail = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || request.auth.token.email !== ADMIN_EMAIL) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
   if (!data || !data.email) {
@@ -48,9 +53,10 @@ async function isActiveMember(uid) {
   return snap.exists && snap.get('active') === true && snap.get('mustChangePassword') === false;
 }
 
-exports.summarizeScheduleNotes = functions.https.onCall(async (data, context) => {
-  const email = context.auth && context.auth.token.email;
-  const band  = email === ADMIN_EMAIL || email === ARTIST_EMAIL || await isActiveMember(context.auth && context.auth.uid);
+exports.summarizeScheduleNotes = functions.https.onCall(async (request) => {
+  const data  = request.data;
+  const email = request.auth && request.auth.token.email;
+  const band  = email === ADMIN_EMAIL || email === ARTIST_EMAIL || await isActiveMember(request.auth && request.auth.uid);
   if (!band) {
     throw new functions.https.HttpsError('permission-denied', 'Auth required');
   }
@@ -58,7 +64,10 @@ exports.summarizeScheduleNotes = functions.https.onCall(async (data, context) =>
   const { sections } = data;
   if (!Array.isArray(sections) || !sections.length) return { summaries: [] };
 
-  const apiKey = (functions.config().anthropic || {}).key;
+  // Old runtime-config storage; not available on this functions version, so this is empty
+  // until the key is moved to a secret.
+  let apiKey = null;
+  try { apiKey = ((functions.config && functions.config()) .anthropic || {}).key; } catch (e) { apiKey = null; }
   if (!apiKey) return { summaries: [] }; // degrade gracefully if key not configured
 
   const numbered = sections
