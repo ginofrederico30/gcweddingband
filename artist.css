@@ -1212,6 +1212,21 @@
 .mp-member-info { flex: 1; min-width: 0; display: flex; flex-direction: column; font-family: var(--font-sans); }
 .mp-member-info strong { font-size: 14px; color: var(--navy); }
 .mp-member-info span { font-size: 12px; color: #888; overflow: hidden; text-overflow: ellipsis; }
+.mp-reset-notice {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background: #fff8e6;
+    border: 1px solid #f0d58a;
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #6b5200;
+}
+.mp-reset-notice i { margin-top: 3px; }
+.mp-reset-notice strong { font-size: 14px; letter-spacing: .5px; user-select: all; }
 .mp-manage-empty { font-family: var(--font-sans); font-size: 13px; color: #888; padding: 12px 0; }
 .mp-link-btn {
     background: none;
@@ -1378,4 +1393,6 @@
     .mp-pay-total dd { font-size: 17px; }
     .mp-total-amount { font-size: 26px; }
     .mp-gig { padding: 16px; }
+    .mp-member-row { flex-wrap: wrap; row-gap: 6px; }
+    .mp-member-info { flex-basis: 100%; }
 }

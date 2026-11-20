@@ -46,7 +46,14 @@ const _mp = {
   members:  null,     // admin only: all member docs
   showPast: false,
   manageOpen: false,
+  resetNotice: null,  // { memberId, password } shown after a reset until the next one
 };
+
+/* Suggested temporary password: easy to read out or text */
+function suggestTempPassword() {
+  const words = ['groove', 'encore', 'tempo', 'rhythm', 'chorus', 'backbeat', 'downbeat', 'refrain'];
+  return words[Math.floor(Math.random() * words.length)] + (1000 + Math.floor(Math.random() * 9000));
+}
 
 function fmtPayout(n) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
@@ -212,8 +219,15 @@ function adminBarHTML() {
     <div class="mp-member-row">
       <div class="mp-member-info"><strong>${escHtml(m.name)}</strong><span>${escHtml(m.email)}</span></div>
       ${status(m)}
+      ${m.active ? `<button type="button" class="mp-link-btn" data-mp-reset="${escHtml(m.id)}">Reset password</button>` : ''}
       <button type="button" class="mp-link-btn" data-mp-toggle-active="${escHtml(m.id)}">${m.active ? 'Deactivate' : 'Reactivate'}</button>
-    </div>`).join('');
+    </div>
+    ${_mp.resetNotice && _mp.resetNotice.memberId === m.id ? `
+    <div class="mp-reset-notice">
+      <i class="fas fa-key"></i>
+      <span>Temporary password for ${escHtml(m.name)}: <strong>${escHtml(_mp.resetNotice.password)}</strong>.
+      Send it to them. They'll choose a new one when they sign in.</span>
+    </div>` : ''}`).join('');
   return `
     <div class="mp-admin-bar">
       ${_mp.members.length ? `<label class="mp-picker"><span>View as</span><select id="mp-member-picker">${opts}</select></label>` : ''}
@@ -244,6 +258,28 @@ function wireAdminBar(root) {
     root.querySelector('#mp-manage').classList.toggle('hidden', !_mp.manageOpen);
     toggle.setAttribute('aria-expanded', String(_mp.manageOpen));
   });
+
+  root.querySelectorAll('[data-mp-reset]').forEach(btn => btn.addEventListener('click', async () => {
+    const m = _mp.members.find(x => x.id === btn.dataset.mpReset);
+    if (!m) return;
+    const pw = prompt('New temporary password for ' + m.name + ' (at least 6 characters).\n'
+      + 'They will be signed out and asked to choose their own password at next sign-in.', suggestTempPassword());
+    if (pw === null) return;
+    if (pw.trim().length < 6) { showToast('Temporary password must be at least 6 characters.'); return; }
+    if (!_functions) { showToast('Password reset is unavailable right now.'); return; }
+    btn.disabled = true;
+    try {
+      await _functions.httpsCallable('resetMemberPassword')({ uid: m.id, password: pw.trim() });
+      _mp.resetNotice = { memberId: m.id, password: pw.trim() };
+      _mp.members = await MDB.listMembers();
+      showToast('Password reset for ' + m.name + '.');
+      renderMyPortal();
+    } catch (e) {
+      console.error('Reset password error:', e);
+      btn.disabled = false;
+      showToast('Could not reset the password. Please try again.');
+    }
+  }));
 
   root.querySelectorAll('[data-mp-toggle-active]').forEach(btn => btn.addEventListener('click', async () => {
     const m = _mp.members.find(x => x.id === btn.dataset.mpToggleActive);
