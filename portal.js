@@ -1743,21 +1743,12 @@ function renderClientContract(clientId) {
 
   // Admin-populated fields (read-only in client view)
   document.getElementById('cc-event-date').textContent        = fmtDate(a.eventDate || client.eventDate);
-  document.getElementById('cc-fee').textContent               = fmtMoney(a.performanceFee);
-  document.getElementById('cc-transportation').textContent    = fmtMoney(a.transportation);
-  document.getElementById('cc-lodging').textContent           = fmtMoney(a.lodging);
-
-  const fee     = parseFloat(a.performanceFee) || 0;
-  const trans   = parseFloat(a.transportation)  || 0;
-  const lodge   = parseFloat(a.lodging)          || 0;
-  const total   = fee + trans + lodge;
-  const deposit = total * 0.25;
-  const balance = total - deposit;
-  document.getElementById('cc-total').textContent         = fmtMoney(total);
-  document.getElementById('cc-deposit').textContent       = fmtMoney(deposit);
-  document.getElementById('cc-final-balance').textContent = fmtMoney(balance);
-  const balDueDateEl = document.getElementById('cc-balance-due-date');
-  if (balDueDateEl) balDueDateEl.textContent = fmtDate(a.eventDate || client.eventDate) || '—';
+  // Section 4 amounts. Runs after applyLangOverrides, so a custom Section 4 is filled too;
+  // a field the admin removed from the wording is simply skipped.
+  const payVals = _paymentFieldValues(a, client);
+  document.querySelectorAll('#contract-print-area [data-pay-field]').forEach(el => {
+    if (el.dataset.payField in payVals) el.textContent = payVals[el.dataset.payField];
+  });
 
   // Populate the services list from admin's checkbox selections. Runs after applyLangOverrides,
   // so a custom Section 2 still gets the list (overrides always store it empty).
@@ -2130,6 +2121,7 @@ const _CONTRACT_HTML_DEFAULTS = {};
 
 const CONTRACT_SECTIONS = [
   { key: 'scope',           label: '2. Scope of Services' },
+  { key: 'paymentTerms',    label: '4. Payment Terms' },
   { key: 'clientReqs',      label: '3. Client Requirements' },
   { key: 'gcp',             label: '6. Good Company Planner' },
   { key: 'songRequests',    label: '7. Song Requests' },
@@ -2160,11 +2152,47 @@ function _fillScopeListPreview(editEl, labels) {
     : '<li style="color:#aaa;font-style:italic">Selected services appear here</li>';
 }
 
-/* Editor HTML with the services-list preview stripped, ready to compare/save */
+// Section 4 amounts and dates are [data-pay-field] slots filled from the contract fees.
+// Editors show them as read-only previews; they are always saved as "—".
+const PAY_FIELD_SEL = '[data-pay-field]';
+
+function _paymentFieldValues(a, client) {
+  const fee     = parseFloat(a.performanceFee) || 0;
+  const trans   = parseFloat(a.transportation)  || 0;
+  const lodge   = parseFloat(a.lodging)          || 0;
+  const total   = fee + trans + lodge;
+  const deposit = total * 0.25;
+  return {
+    fee:            fmtMoney(a.performanceFee),
+    transportation: fmtMoney(a.transportation),
+    lodging:        fmtMoney(a.lodging),
+    total:          fmtMoney(total),
+    deposit:        fmtMoney(deposit),
+    balance:        fmtMoney(total - deposit),
+    balanceDue:     fmtDate(a.eventDate || (client && client.eventDate)) || '—',
+  };
+}
+
+/* Master editor has no client, so slots show what fills them */
+const PAY_FIELD_LABELS = {
+  fee: '[performance fee]', transportation: '[transportation]', lodging: '[lodging]',
+  total: '[total cost]', deposit: '[25% deposit]', balance: '[remaining balance]', balanceDue: '[event date]',
+};
+
+function _fillPayFieldsPreview(editEl, values) {
+  if (!editEl) return;
+  editEl.querySelectorAll(PAY_FIELD_SEL).forEach(el => {
+    el.setAttribute('contenteditable', 'false');
+    el.textContent = values[el.dataset.payField] || '—';
+  });
+}
+
+/* Editor HTML with the services-list and amount previews stripped, ready to compare/save */
 function _editorSectionHTML(editEl) {
   const clone = editEl.cloneNode(true);
   const list  = clone.querySelector(SCOPE_LIST_SEL);
   if (list) { list.innerHTML = ''; list.removeAttribute('contenteditable'); }
+  clone.querySelectorAll(PAY_FIELD_SEL).forEach(el => { el.textContent = '—'; el.removeAttribute('contenteditable'); });
   return clone.innerHTML.trim();
 }
 
@@ -2215,12 +2243,15 @@ function renderLangEditor(clientId) {
         <span>${escHtml(s.label)}${isCustom ? ' <span class="lang-custom-badge">Custom</span>' : ''}</span>
         <button type="button" class="lang-reset-btn" data-section="${s.key}" title="Reset to master/default">Reset</button>
       </div>
+      ${s.key === 'paymentTerms' ? '<p class="lang-section-hint">Highlighted amounts and dates fill in from the contract fees. Edit the wording around them, or delete one to remove it.</p>' : ''}
       <div class="lang-section-edit" id="lang-${s.key}" contenteditable="true">${currentHTML}</div>
     </div>`;
   }).join('');
 
   const scopeLabels = scope.map(svc => scopeOverrides[svc] || svc);
   _fillScopeListPreview(document.getElementById('lang-scope'), scopeLabels);
+  const payPreview = _paymentFieldValues(contract.admin || {}, DB.getClients().find(c => c.id === clientId));
+  _fillPayFieldsPreview(document.getElementById('lang-paymentTerms'), payPreview);
 
   container.querySelectorAll('.lang-reset-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -2228,6 +2259,7 @@ function renderLangEditor(clientId) {
       if (!edit) return;
       edit.innerHTML = _sectionBaseHTML(this.dataset.section);
       _fillScopeListPreview(edit, scopeLabels);
+      _fillPayFieldsPreview(edit, payPreview);
     });
   });
 }
@@ -2298,11 +2330,13 @@ function renderMasterContractEditor() {
         <span>${escHtml(s.label)}${isOverride ? ' <span class="lang-custom-badge">Modified</span>' : ''}</span>
         <button type="button" class="lang-reset-btn master-reset-btn" data-section="${s.key}" title="Reset to original HTML default">Reset to Original</button>
       </div>
+      ${s.key === 'paymentTerms' ? '<p class="lang-section-hint">Highlighted amounts and dates fill in from each contract\'s fees. Edit the wording around them, or delete one to remove it.</p>' : ''}
       <div class="lang-section-edit" id="master-lang-${s.key}" contenteditable="true">${currentHTML}</div>
     </div>`;
   }).join('');
 
   _fillScopeListPreview(document.getElementById('master-lang-scope'), []);
+  _fillPayFieldsPreview(document.getElementById('master-lang-paymentTerms'), PAY_FIELD_LABELS);
 
   container.querySelectorAll('.master-reset-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -2310,6 +2344,7 @@ function renderMasterContractEditor() {
       if (!edit) return;
       edit.innerHTML = _CONTRACT_HTML_DEFAULTS[this.dataset.section] || '';
       _fillScopeListPreview(edit, []);
+      _fillPayFieldsPreview(edit, PAY_FIELD_LABELS);
     });
   });
 }

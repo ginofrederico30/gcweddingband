@@ -2502,6 +2502,16 @@ body.is-impersonating #portal-nav { top: 40px; }
     align-items: center;
     justify-content: space-between;
 }
+.lang-section-hint {
+    margin: 0;
+    padding: 8px 16px;
+    background: #fbfaf7;
+    border-bottom: 1px solid #f0eee9;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: #888;
+}
+.lang-section-edit [data-pay-field] { cursor: default; user-select: none; }
 .lang-reset-btn {
     font-family: var(--font-sans);
     font-size: 10px;
