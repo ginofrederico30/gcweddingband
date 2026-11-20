@@ -1720,8 +1720,8 @@ function _buildScheduleHTML(clientId, base) {
   const displayName = client ? (client.spouseName ? client.name + ' & ' + client.spouseName : client.name) : '—';
   const eventDate   = fmtDate(a.eventDate || (client && client.eventDate) || '');
   const venue       = cl2.venue || a.venue || '';
-  const adminNotes  = a.adminNotes || '';
-  const clientNotes = cl['cl-notes'] || '';
+  const clientNotes   = cl['cl-notes'] || '';
+  const ceremonyNotes = (gcp.ceremony || {})['cer-notes'] || '';
   const timeline    = _buildMCTimeline(clientId);
 
   const untimedSpeeches = (gcp.speeches      || []).filter(s => !s.time);
@@ -1805,15 +1805,15 @@ function _buildScheduleHTML(clientId, base) {
 
   if (clientNotes) {
     html += `<div class="mcs-section">
-      <div class="mcs-section-hdr">Client Notes</div>
+      <div class="mcs-section-hdr">Day-of Checklist Notes</div>
       <div class="mcs-notes-body"><div class="mcs-d mcs-d-note" id="mcs-note-general-notes">${escHtml(clientNotes)}</div></div>
     </div>`;
   }
 
-  if (adminNotes) {
-    html += `<div class="mcs-section mcs-internal-section">
-      <div class="mcs-section-hdr mcs-internal-hdr"><i class="fas fa-lock"></i> Admin Notes — Internal</div>
-      <div class="mcs-notes-body"><div class="mcs-d mcs-d-note" id="mcs-note-admin-notes">${escHtml(adminNotes)}</div></div>
+  if (ceremonyNotes) {
+    html += `<div class="mcs-section">
+      <div class="mcs-section-hdr">Ceremony Notes</div>
+      <div class="mcs-notes-body"><div class="mcs-d mcs-d-note" id="mcs-note-ceremony-notes">${escHtml(ceremonyNotes)}</div></div>
     </div>`;
   }
 
@@ -1863,8 +1863,6 @@ function downloadSchedulePDF() {
   .mcs-section{margin-bottom:18px}
   .mcs-section-hdr{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#153147;padding:7px 0 5px;border-bottom:2px solid #153147;break-after:avoid}
   .mcs-row,.mcs-untimed-row{page-break-inside:avoid}
-  .mcs-internal-hdr{color:#8a3a00;border-color:#8a3a00}
-  .mcs-internal-section{background:#fffaf5;padding:8px;border-radius:6px}
   .mcs-timeline{}
   .mcs-row{display:flex;gap:16px;padding:8px 0;border-bottom:1px solid #f0ede8;align-items:flex-start}
   .mcs-row:last-child{border-bottom:none}
